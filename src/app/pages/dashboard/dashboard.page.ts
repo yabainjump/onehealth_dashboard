@@ -22,6 +22,7 @@ import {
   LucideTrees,
   LucideTriangleAlert,
 } from '@lucide/angular';
+import { HttpErrorResponse } from '@angular/common/http';
 
 import { OneHealthDataService } from '../../core/data/one-health-data.service';
 import { DEMO_REFERENCE_DATE } from '../../core/data/mock/ceeac-reference';
@@ -133,8 +134,8 @@ export class DashboardPage implements OnInit {
       this.scenarioMessage.set(
         'Scénario terminé : quatre observations et un signal décisionnel sont disponibles.',
       );
-    } catch {
-      this.scenarioMessage.set("L'exécution du scénario a échoué. Vérifiez la connexion au Hub.");
+    } catch (error: unknown) {
+      this.scenarioMessage.set(this.scenarioErrorMessage(error));
     } finally {
       this.scenarioBusy.set(false);
     }
@@ -212,6 +213,18 @@ export class DashboardPage implements OnInit {
         })),
       );
     }
+  }
+
+  private scenarioErrorMessage(error: unknown): string {
+    if (error instanceof HttpErrorResponse) {
+      const apiMessage = error.error?.message;
+      const detail = Array.isArray(apiMessage) ? apiMessage.join(' ') : apiMessage;
+      if (typeof detail === 'string' && detail !== 'Internal server error') {
+        return `Scénario refusé : ${detail}`;
+      }
+      return `L'exécution du scénario a échoué côté Hub (HTTP ${error.status || 0}).`;
+    }
+    return "L'exécution du scénario a échoué. Vérifiez la connexion au Hub.";
   }
 
   private sectorLabel(sector: HealthSector): PriorityAlert['sector'] {
