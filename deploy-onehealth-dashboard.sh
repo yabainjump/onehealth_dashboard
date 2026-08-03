@@ -143,6 +143,11 @@ if [ ! -f "$BUILD_DIR/index.html" ]; then
   exit 1
 fi
 
+if grep -Eqi '[[:space:]]on[a-z]+[[:space:]]*=' "$BUILD_DIR/index.html"; then
+  echo "Error: index.html contains an inline event handler blocked by the dashboard CSP."
+  exit 1
+fi
+
 if [ "$CLEAN_WEB_DIR" = "true" ]; then
   find "$WEB_DIR" -mindepth 1 \
     ! -name ".well-known" \
@@ -166,7 +171,7 @@ fi
 if [ "$VERIFY_PUBLIC_URL" = "true" ]; then
   RESPONSE_BODY="$(mktemp)"
   RESPONSE_HEADERS="$(mktemp)"
-  trap 'rm -f "$RESPONSE_BODY" "$RESPONSE_HEADERS"' EXIT
+  trap 'rm -f "$RESPONSE_BODY" "$RESPONSE_HEADERS" "${CORS_HEADERS:-}"' EXIT
 
   STATUS="$(curl -sS -L --connect-timeout 10 --max-time 30 \
     -D "$RESPONSE_HEADERS" -o "$RESPONSE_BODY" -w '%{http_code}' \
@@ -187,6 +192,22 @@ if [ "$VERIFY_PUBLIC_URL" = "true" ]; then
     echo "Error: the deployed site is missing its Content-Security-Policy header."
     exit 1
   fi
+
+  CORS_HEADERS="$(mktemp)"
+  CORS_STATUS="$(curl -sS --connect-timeout 10 --max-time 30 \
+    -X OPTIONS -D "$CORS_HEADERS" -o /dev/null -w '%{http_code}' \
+    -H "Origin: $PUBLIC_WEB_URL" \
+    -H 'Access-Control-Request-Method: POST' \
+    -H 'Access-Control-Request-Headers: content-type,authorization' \
+    "$DASHBOARD_API_BASE_URL/auth/login")"
+  if [ "$CORS_STATUS" != "204" ] || \
+     ! grep -Fqi "Access-Control-Allow-Origin: $PUBLIC_WEB_URL" "$CORS_HEADERS"; then
+    rm -f "$CORS_HEADERS"
+    echo "Error: the backend does not authorize $PUBLIC_WEB_URL in CORS_ORIGIN."
+    echo "Update $HOME/apps/onehealth_backend/.env and restart the backend with --update-env."
+    exit 1
+  fi
+  rm -f "$CORS_HEADERS"
 
   rm -f "$RESPONSE_BODY" "$RESPONSE_HEADERS"
   trap - EXIT

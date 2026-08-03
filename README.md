@@ -133,8 +133,9 @@ Variables optionnelles : `DASHBOARD_API_BASE_URL`, `ALLOW_DEMO_FALLBACK`, `APP_D
 `BRANCH`, `NODE_BIN_DIR`, `NODE_BIN`, `NPM_BIN`, `CLEAN_WEB_DIR`, `PUBLIC_WEB_URL` et
 `VERIFY_PUBLIC_URL`.
 
-Le backend doit autoriser `https://onehealthdashboard.yaba-in.com` dans `CORS_ORIGIN`, sans
-supprimer l'origine de l'application communautaire.
+Le backend doit autoriser `https://onehealthdashboard.yaba-in.com` dans la variable
+`CORS_ORIGIN` de `$HOME/apps/onehealth_backend/.env`, sans supprimer l'origine de l'application
+communautaire. Le processus PM2 doit ensuite être redémarré avec `--update-env`.
 
 ## Prochaine couche technique
 
