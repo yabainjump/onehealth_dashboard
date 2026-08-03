@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { dashboardAdministratorGuard } from './core/auth/dashboard-administrator.guard';
 import { dashboardAuthGuard } from './core/auth/dashboard-auth.guard';
 import { hubDataResolver } from './core/data/hub-data.resolver';
 
@@ -63,6 +64,15 @@ export const routes: Routes = [
         title: 'Connecteurs | One Health Network Dashboard',
         loadComponent: () =>
           import('./pages/connectors/connectors.page').then((module) => module.ConnectorsPage),
+      },
+      {
+        path: 'administration',
+        title: 'Administration Hub | One Health Network Dashboard',
+        canActivate: [dashboardAdministratorGuard],
+        loadComponent: () =>
+          import('./pages/administration/administration.page').then(
+            (module) => module.AdministrationPage,
+          ),
       },
     ],
   },

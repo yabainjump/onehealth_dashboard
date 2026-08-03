@@ -74,6 +74,17 @@
         <svg lucideDatabase size="18"></svg>
         <span>Connecteurs</span>
       </a>
+      @if (auth.canManageHubUsers()) {
+        <a
+          routerLink="/administration"
+          routerLinkActive="nav__link--active"
+          class="nav__link"
+          (click)="closeMenu()"
+        >
+          <svg lucideSettings size="18"></svg>
+          <span>Administration Hub</span>
+        </a>
+      }
     </nav>
 
     <div class="sidebar__bottom">
@@ -85,10 +96,6 @@
       >
         <svg lucideSlidersHorizontal size="16"></svg>
         <span>Filtrer par secteur</span>
-      </a>
-      <a class="nav__link nav__link--compact" href="#parametres">
-        <svg lucideSettings size="17"></svg>
-        <span>Paramètres</span>
       </a>
       <a class="nav__link nav__link--compact" href="#aide">
         <svg lucideCircleHelp size="17"></svg>

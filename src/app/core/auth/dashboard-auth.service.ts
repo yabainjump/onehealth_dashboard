@@ -95,6 +95,10 @@ export class DashboardAuthService {
     return !!user && (user.role === 'admin' || user.hubRoles.includes('hub_admin'));
   }
 
+  canManageHubUsers(user: DashboardUser | null = this.currentUser()): boolean {
+    return !!user && user.role === 'admin';
+  }
+
   async logout(): Promise<void> {
     if (this.session.getToken()) {
       try {
