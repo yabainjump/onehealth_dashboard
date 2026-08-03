@@ -100,25 +100,21 @@
         </a>
       </header>
 
-      <div class="risk-map" aria-label="Aperçu cartographique des risques simulés">
-        <img src="assets/figma/risk-map.png" alt="Carte des États membres de la CEEAC" width="512" height="281">
-        <span class="map-marker map-marker--critical map-marker--cameroon" title="Signal critique au Cameroun"></span>
-        <span class="map-marker map-marker--high map-marker--gabon" title="Signal élevé au Gabon"></span>
-        <span class="map-marker map-marker--observation map-marker--drc" title="Observation en RDC"></span>
-
+      <div class="risk-map" aria-label="Aperçu de la carte régionale One Health">
+        <app-regional-map-preview [period]="selectedPeriod()" />
         <div class="map-legend">
-          <strong>Niveaux de risque</strong>
-          <span><i class="legend-dot legend-dot--critical"></i> Critique</span>
-          <span><i class="legend-dot legend-dot--high"></i> Élevé</span>
-          <span><i class="legend-dot legend-dot--observation"></i> Observation</span>
+          <strong>Secteurs</strong>
+          <span><i class="legend-dot legend-dot--human"></i> Santé humaine</span>
+          <span><i class="legend-dot legend-dot--animal"></i> Santé animale</span>
+          <span><i class="legend-dot legend-dot--environment"></i> Environnement</span>
         </div>
-        <span class="map-demo-label">Données simulées</span>
+        <span class="map-demo-label">Lecture seule · {{ mapDataLabel() }}</span>
       </div>
 
       <footer class="map-card__footer">
-        <span><strong>{{ dataSummary.byStage['verified-alert'] }}</strong> alertes vérifiées</span>
-        <span><strong>{{ dataSummary.byStage.signal }}</strong> signaux à vérifier</span>
-        <span><strong>{{ dataSummary.countries }}</strong> États représentés</span>
+        <span><strong>{{ displayedSummary().alerts }}</strong> alertes vérifiées</span>
+        <span><strong>{{ displayedSummary().signals }}</strong> signaux à vérifier</span>
+        <span><strong>{{ displayedSummary().countries }}</strong> États représentés</span>
       </footer>
     </article>
 

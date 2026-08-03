@@ -245,43 +245,12 @@
   height: 360px;
   overflow: hidden;
   background: #e7edf2;
-
-  > img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    filter: saturate(0.45) contrast(0.94);
-    transform: scale(1.16);
-  }
-}
-
-.map-marker {
-  position: absolute;
-  width: 13px;
-  height: 13px;
-  border: 2px solid #fff;
-  border-radius: 50%;
-  box-shadow: 0 2px 8px rgb(15 33 54 / 35%);
-
-  &::after {
-    position: absolute;
-    inset: -6px;
-    content: '';
-    border: 1px solid currentColor;
-    border-radius: 50%;
-    opacity: 0.22;
-  }
-
-  &--critical { color: var(--oh-danger); background: var(--oh-danger); }
-  &--high { color: var(--oh-warning); background: var(--oh-warning); }
-  &--observation { color: var(--oh-observation); background: var(--oh-observation); }
-  &--cameroon { top: 35%; left: 39%; }
-  &--gabon { top: 63%; left: 34%; }
-  &--drc { top: 54%; left: 58%; }
+  isolation: isolate;
 }
 
 .map-legend {
   position: absolute;
+  z-index: 500;
   left: 16px;
   bottom: 16px;
   display: grid;
@@ -294,6 +263,7 @@
   color: var(--oh-ink-600);
   font-size: 0.625rem;
   backdrop-filter: blur(8px);
+  pointer-events: none;
 
   strong {
     margin-bottom: 2px;
@@ -315,13 +285,14 @@
   height: 7px;
   border-radius: 50%;
 
-  &--critical { background: var(--oh-danger); }
-  &--high { background: var(--oh-warning); }
-  &--observation { background: var(--oh-observation); }
+  &--human { background: #d83a42; }
+  &--animal { background: #ef7b18; }
+  &--environment { background: #2187c9; }
 }
 
 .map-demo-label {
   position: absolute;
+  z-index: 500;
   right: 13px;
   bottom: 12px;
   padding: 5px 8px;
@@ -329,6 +300,7 @@
   background: rgb(255 255 255 / 85%);
   color: var(--oh-ink-600);
   font-size: 0.5625rem;
+  pointer-events: none;
 }
 
 .map-card__footer {

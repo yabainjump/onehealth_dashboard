@@ -19,6 +19,7 @@ import {
 import { OneHealthDataService } from '../../core/data/one-health-data.service';
 import { DEMO_REFERENCE_DATE } from '../../core/data/mock/ceeac-reference';
 import { HealthSector, MapPeriod } from '../../core/data/models/one-health-observation.model';
+import { RegionalMapPreviewComponent } from '../../shared/components/regional-map-preview/regional-map-preview.component';
 
 interface PriorityAlert {
   readonly id: string;
@@ -41,6 +42,7 @@ interface DecisionItem {
   selector: 'app-dashboard-page',
   imports: [
     RouterLink,
+    RegionalMapPreviewComponent,
     LucideArrowRight,
     LucideCheckCircle2,
     LucideClipboardCheck,
@@ -77,6 +79,9 @@ export class DashboardPage {
       signals: observations.filter((observation) => observation.stage === 'signal').length,
     };
   });
+  protected readonly mapDataLabel = computed(() =>
+    this.dataService.dataMode() === 'api' ? 'Données API Hub' : 'Données de démonstration',
+  );
 
   protected readonly priorityAlerts: readonly PriorityAlert[] = this.dataService.verifiedAlerts.map(
     (observation) => ({
