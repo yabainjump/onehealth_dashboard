@@ -95,6 +95,33 @@ La carte utilise Leaflet et les tuiles publiques OpenStreetMap, sans clé payant
 
 Si une Content Security Policy est appliquée par l'hébergement, autoriser au minimum `https://*.tile.openstreetmap.org` dans `img-src` et `connect-src`. Pour un trafic institutionnel important, prévoir ensuite un fournisseur de tuiles ou un serveur de tuiles régional dédié.
 
+### Déploiement cPanel
+
+Le script `deploy-onehealth-dashboard.sh` déploie la branche `main` dans
+`$HOME/public_html/onehealthdashboard.yaba-in.com`. Il génère localement le fichier
+`environment.ts` ignoré par Git, compile Angular, installe la configuration Apache et vérifie
+la page d'accueil ainsi que la route `/connexion`.
+
+Première installation sur le serveur :
+
+```bash
+mkdir -p "$HOME/apps"
+git clone https://github.com/yabainjump/onehealth_dashboard.git "$HOME/apps/onehealth_dashboard"
+bash "$HOME/apps/onehealth_dashboard/deploy-onehealth-dashboard.sh"
+```
+
+Déploiements suivants :
+
+```bash
+bash "$HOME/apps/onehealth_dashboard/deploy-onehealth-dashboard.sh"
+```
+
+Variables optionnelles : `DASHBOARD_API_BASE_URL`, `ALLOW_DEMO_FALLBACK`, `APP_DIR`, `WEB_DIR`,
+`BRANCH`, `NODE_BIN_DIR`, `CLEAN_WEB_DIR`, `PUBLIC_WEB_URL` et `VERIFY_PUBLIC_URL`.
+
+Le backend doit autoriser `https://onehealthdashboard.yaba-in.com` dans `CORS_ORIGIN`, sans
+supprimer l'origine de l'application communautaire.
+
 ## Prochaine couche technique
 
 Les prochaines couches sont la supervision des connecteurs simulés, les analyses sectorielles et la bibliothèque de rapports. Aucune donnée fictive ne doit être confondue avec une donnée sanitaire officielle.
