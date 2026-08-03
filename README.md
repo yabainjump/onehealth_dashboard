@@ -105,19 +105,27 @@ la page d'accueil ainsi que la route `/connexion`.
 Première installation sur le serveur :
 
 ```bash
-mkdir -p "$HOME/apps"
-git clone https://github.com/yabainjump/onehealth_dashboard.git "$HOME/apps/onehealth_dashboard"
-bash "$HOME/apps/onehealth_dashboard/deploy-onehealth-dashboard.sh"
+curl -fsSL \
+  https://raw.githubusercontent.com/yabainjump/onehealth_dashboard/main/deploy-onehealth-dashboard.sh \
+  -o "$HOME/deploy-onehealth-dashboard.sh"
+chmod 700 "$HOME/deploy-onehealth-dashboard.sh"
 ```
 
-Déploiements suivants :
+Commande de déploiement initial et des déploiements suivants avec Node NVM :
 
 ```bash
-bash "$HOME/apps/onehealth_dashboard/deploy-onehealth-dashboard.sh"
+cd ~
+APP_DIR="$HOME/apps/onehealth_dashboard" \
+WEB_DIR="$HOME/public_html/onehealthdashboard.yaba-in.com" \
+NODE_BIN_DIR="$HOME/.nvm/versions/node/v20.20.2/bin" \
+NPM_BIN="$HOME/.nvm/versions/node/v20.20.2/bin/npm" \
+NODE_BIN="$HOME/.nvm/versions/node/v20.20.2/bin/node" \
+bash "$HOME/deploy-onehealth-dashboard.sh"
 ```
 
 Variables optionnelles : `DASHBOARD_API_BASE_URL`, `ALLOW_DEMO_FALLBACK`, `APP_DIR`, `WEB_DIR`,
-`BRANCH`, `NODE_BIN_DIR`, `CLEAN_WEB_DIR`, `PUBLIC_WEB_URL` et `VERIFY_PUBLIC_URL`.
+`BRANCH`, `NODE_BIN_DIR`, `NODE_BIN`, `NPM_BIN`, `CLEAN_WEB_DIR`, `PUBLIC_WEB_URL` et
+`VERIFY_PUBLIC_URL`.
 
 Le backend doit autoriser `https://onehealthdashboard.yaba-in.com` dans `CORS_ORIGIN`, sans
 supprimer l'origine de l'application communautaire.

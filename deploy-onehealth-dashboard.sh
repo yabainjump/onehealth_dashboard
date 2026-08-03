@@ -7,13 +7,14 @@ WEB_DIR="${WEB_DIR:-$HOME/public_html/onehealthdashboard.yaba-in.com}"
 BRANCH="${BRANCH:-main}"
 NODE_BIN_DIR="${NODE_BIN_DIR:-/opt/cpanel/ea-nodejs20/bin}"
 NPM_BIN="${NPM_BIN:-$NODE_BIN_DIR/npm}"
+NODE_BIN="${NODE_BIN:-$NODE_BIN_DIR/node}"
 DASHBOARD_API_BASE_URL="${DASHBOARD_API_BASE_URL:-https://backend.onehealthnetwork.yaba-in.com/api}"
 ALLOW_DEMO_FALLBACK="${ALLOW_DEMO_FALLBACK:-true}"
 PUBLIC_WEB_URL="${PUBLIC_WEB_URL:-https://onehealthdashboard.yaba-in.com}"
 CLEAN_WEB_DIR="${CLEAN_WEB_DIR:-true}"
 VERIFY_PUBLIC_URL="${VERIFY_PUBLIC_URL:-true}"
 
-export PATH="$NODE_BIN_DIR:$PATH"
+export PATH="$(dirname "$NODE_BIN"):$NODE_BIN_DIR:$PATH"
 
 DASHBOARD_API_BASE_URL="${DASHBOARD_API_BASE_URL%/}"
 PUBLIC_WEB_URL="${PUBLIC_WEB_URL%/}"
@@ -124,6 +125,9 @@ printf '%s\n' \
   "  apiBaseUrl: '$DASHBOARD_API_BASE_URL'," \
   "  allowDemoFallback: $ALLOW_DEMO_FALLBACK," \
   '};' > src/environments/environment.ts
+
+"$NODE_BIN" --version
+"$NPM_BIN" --version
 
 if [ -f package-lock.json ]; then
   "$NPM_BIN" ci
