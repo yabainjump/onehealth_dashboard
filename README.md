@@ -105,11 +105,17 @@ la page d'accueil ainsi que la route `/connexion`.
 Première installation sur le serveur :
 
 ```bash
-curl -fsSL \
-  https://raw.githubusercontent.com/yabainjump/onehealth_dashboard/main/deploy-onehealth-dashboard.sh \
-  -o "$HOME/deploy-onehealth-dashboard.sh"
-chmod 700 "$HOME/deploy-onehealth-dashboard.sh"
+mkdir -p "$HOME/apps"
+git clone https://github.com/yabainjump/onehealth_dashboard.git \
+  "$HOME/apps/onehealth_dashboard"
+install -m 0700 \
+  "$HOME/apps/onehealth_dashboard/deploy-onehealth-dashboard.sh" \
+  "$HOME/deploy-onehealth-dashboard.sh"
 ```
+
+Si le dépôt est privé, Git demandera un utilisateur GitHub et un Personal Access Token, ou
+utilisera la clé SSH déjà configurée sur le serveur. L'URL publique `raw.githubusercontent.com`
+ne doit pas être utilisée pour amorcer le déploiement d'un dépôt privé.
 
 Commande de déploiement initial et des déploiements suivants avec Node NVM :
 
