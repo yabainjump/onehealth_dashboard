@@ -1,0 +1,318 @@
+<section class="connectors-page">
+  <header class="connectors-header oh-card">
+    <div>
+      <p><svg lucideServerCog size="16"></svg> Supervision technique</p>
+      <h1>Suivi des connecteurs</h1>
+      <span>Disponibilité des flux DHIS2, ARIS 3 et CAPC-AC dans les États membres.</span>
+    </div>
+
+    <div class="connectors-header__actions">
+      <button class="oh-button" type="button" (click)="showContactHelp()">
+        <svg lucideMail size="15"></svg>
+        Contacter le point focal
+      </button>
+      @if (canManage()) {
+        <button
+          class="oh-button oh-button--primary"
+          type="button"
+          [disabled]="synchronizing()"
+          (click)="synchronize()"
+        >
+          <svg lucideRefreshCw size="15" [class.is-spinning]="synchronizing()"></svg>
+          {{ synchronizing() ? 'Synchronisation…' : 'Relancer la synchronisation' }}
+        </button>
+      }
+    </div>
+  </header>
+
+  <div class="demo-notice" role="status">
+    <svg lucideCircleAlert size="17"></svg>
+    <span>
+      <strong>Données simulées — version démonstrateur.</strong>
+      Une relance relit les lots fictifs et ignore les doublons ; elle ne crée pas de nouvelles
+      alertes.
+    </span>
+  </div>
+
+  @if (feedback()) {
+    <div class="page-feedback" role="status">{{ feedback() }}</div>
+  }
+
+  <div class="availability-grid" aria-label="Disponibilité par secteur">
+    <article class="availability-card availability-card--human oh-card">
+      <header>
+        <span><svg lucideStethoscope size="18"></svg> Santé humaine</span>
+        <strong
+          [class]="
+            'availability availability--' +
+            availabilityTone(sectorSummary('human').availabilityPercent)
+          "
+        >
+          {{ sectorSummary('human').availabilityPercent }} % disp.
+        </strong>
+      </header>
+      <div class="availability-card__value">
+        <strong>{{ sectorSummary('human').operational }}/{{ sectorSummary('human').total }}</strong>
+        <span>flux opérationnels</span>
+      </div>
+      <div class="availability-track">
+        <i [style.width.%]="sectorSummary('human').availabilityPercent"></i>
+      </div>
+      <small>Disponibilité · 7 derniers jours</small>
+    </article>
+
+    <article class="availability-card availability-card--animal oh-card">
+      <header>
+        <span><svg lucidePawPrint size="18"></svg> Santé animale</span>
+        <strong
+          [class]="
+            'availability availability--' +
+            availabilityTone(sectorSummary('animal').availabilityPercent)
+          "
+        >
+          {{ sectorSummary('animal').availabilityPercent }} % disp.
+        </strong>
+      </header>
+      <div class="availability-card__value">
+        <strong
+          >{{ sectorSummary('animal').operational }}/{{ sectorSummary('animal').total }}</strong
+        >
+        <span>flux opérationnels</span>
+      </div>
+      <div class="availability-track">
+        <i [style.width.%]="sectorSummary('animal').availabilityPercent"></i>
+      </div>
+      <small>Disponibilité · 7 derniers jours</small>
+    </article>
+
+    <article class="availability-card availability-card--environment oh-card">
+      <header>
+        <span><svg lucideTrees size="18"></svg> Environnement</span>
+        <strong
+          [class]="
+            'availability availability--' +
+            availabilityTone(sectorSummary('environment').availabilityPercent)
+          "
+        >
+          {{ sectorSummary('environment').availabilityPercent }} % disp.
+        </strong>
+      </header>
+      <div class="availability-card__value">
+        <strong
+          >{{ sectorSummary('environment').operational }}/{{
+            sectorSummary('environment').total
+          }}</strong
+        >
+        <span>flux opérationnels</span>
+      </div>
+      <div class="availability-track">
+        <i [style.width.%]="sectorSummary('environment').availabilityPercent"></i>
+      </div>
+      <small>Disponibilité · 7 derniers jours</small>
+    </article>
+  </div>
+
+  <article class="flows-card oh-card">
+    <header class="flows-card__header">
+      <div>
+        <h2>État des flux de données</h2>
+        <span
+          >{{ summary()?.countries || 0 }} pays · {{ summary()?.total || 0 }} connecteurs
+          configurés</span
+        >
+      </div>
+      <label class="connector-search">
+        <svg lucideSearch size="16"></svg>
+        <span class="sr-only">Rechercher un connecteur</span>
+        <input
+          type="search"
+          maxlength="100"
+          placeholder="Pays, institution, source…"
+          (input)="onSearch($event)"
+        />
+      </label>
+    </header>
+
+    <div class="connector-filters">
+      <label>
+        <span>Secteur</span>
+        <select (change)="onSectorChange($event)">
+          <option value="all">Tous les secteurs</option>
+          <option value="human">Santé humaine</option>
+          <option value="animal">Santé animale</option>
+          <option value="environment">Environnement</option>
+        </select>
+      </label>
+      <label>
+        <span>État du flux</span>
+        <select (change)="onStatusChange($event)">
+          <option value="all">Tous les statuts</option>
+          <option value="operational">Opérationnel</option>
+          <option value="degraded">Dégradé</option>
+          <option value="error">En erreur</option>
+          <option value="suspended">Suspendu</option>
+        </select>
+      </label>
+      <div class="status-summary" aria-label="Résumé des statuts">
+        <span
+          ><i class="dot dot--operational"></i
+          >{{ summary()?.statuses?.operational || 0 }} opérationnels</span
+        >
+        <span
+          ><i class="dot dot--degraded"></i>{{ summary()?.statuses?.degraded || 0 }} dégradés</span
+        >
+        <span><i class="dot dot--error"></i>{{ summary()?.statuses?.error || 0 }} en erreur</span>
+      </div>
+    </div>
+
+    @if (loading()) {
+      <div class="loading-state" role="status">
+        <svg lucideRefreshCw size="22" class="is-spinning"></svg>
+        <strong>Chargement de la supervision…</strong>
+      </div>
+    } @else if (error()) {
+      <div class="error-state" role="alert">
+        <svg lucideCircleAlert size="23"></svg>
+        <strong>Impossible d’afficher les connecteurs</strong>
+        <span>{{ error() }}</span>
+        <button class="oh-button" type="button" (click)="load()">Réessayer</button>
+      </div>
+    } @else if (pagedConnectors().length) {
+      <div class="connector-table" role="table" aria-label="État des flux de données">
+        <div class="connector-table__head" role="row">
+          <span role="columnheader">Pays</span>
+          <span role="columnheader">Institution</span>
+          <span role="columnheader">Secteur</span>
+          <span role="columnheader">Système source</span>
+          <span role="columnheader">Type</span>
+          <span role="columnheader">Dernière synchro</span>
+          <span role="columnheader">Volume</span>
+          <span role="columnheader">Statut</span>
+        </div>
+
+        @for (connector of pagedConnectors(); track connector.id) {
+          <div
+            class="connector-row"
+            [class.connector-row--error]="connector.status === 'error'"
+            [class.connector-row--suspended]="connector.status === 'suspended'"
+            role="row"
+          >
+            <span class="country-cell" role="cell">
+              <i>{{ connector.countryCode }}</i>
+              <strong>{{ connector.countryName }}</strong>
+            </span>
+            <span class="institution-cell" role="cell">{{ connector.institution }}</span>
+            <span class="sector-cell" role="cell">
+              <i [class]="'sector-symbol sector-symbol--' + connector.sector">
+                @switch (connector.sector) {
+                  @case ('human') {
+                    <svg lucideStethoscope size="14"></svg>
+                  }
+                  @case ('animal') {
+                    <svg lucidePawPrint size="14"></svg>
+                  }
+                  @case ('environment') {
+                    <svg lucideTrees size="14"></svg>
+                  }
+                }
+              </i>
+              {{ sectorLabel(connector.sector) }}
+            </span>
+            <span class="source-cell" role="cell">
+              <strong>{{ connector.sourceSystem }}</strong>
+              <small>{{ connector.id }}</small>
+            </span>
+            <span role="cell"
+              ><i class="protocol-badge">{{ protocolLabel(connector.protocol) }}</i></span
+            >
+            <span class="sync-cell" role="cell">
+              <strong>{{ formatLastSync(connector.lastSyncAt) }}</strong>
+              @if (connector.error) {
+                <small [title]="connector.error.message">{{ connector.error.code }}</small>
+              }
+            </span>
+            <span class="volume-cell" role="cell">
+              <strong>{{ connector.volume.received }}</strong>
+              <small>lignes</small>
+            </span>
+            <span role="cell">
+              <i [class]="'status-badge status-badge--' + connector.status">
+                <span></span>{{ statusLabel(connector.status) }}
+              </i>
+            </span>
+          </div>
+        }
+      </div>
+
+      <div class="connector-mobile-list" aria-label="État des flux de données">
+        @for (connector of pagedConnectors(); track connector.id) {
+          <article
+            class="connector-mobile"
+            [class.connector-mobile--error]="connector.status === 'error'"
+          >
+            <header>
+              <span class="country-cell"
+                ><i>{{ connector.countryCode }}</i
+                ><strong>{{ connector.countryName }}</strong></span
+              >
+              <i [class]="'status-badge status-badge--' + connector.status">
+                <span></span>{{ statusLabel(connector.status) }}
+              </i>
+            </header>
+            <div>
+              <span
+                ><small>Source</small><strong>{{ connector.sourceSystem }}</strong></span
+              >
+              <span
+                ><small>Institution</small><strong>{{ connector.institution }}</strong></span
+              >
+              <span
+                ><small>Dernière synchro</small
+                ><strong>{{ formatLastSync(connector.lastSyncAt) }}</strong></span
+              >
+              <span
+                ><small>Volume</small><strong>{{ connector.volume.received }} lignes</strong></span
+              >
+            </div>
+            <footer>
+              <span>{{ sectorLabel(connector.sector) }}</span>
+              <span>{{ protocolLabel(connector.protocol) }}</span>
+              <small>{{ connector.id }}</small>
+            </footer>
+          </article>
+        }
+      </div>
+    } @else {
+      <div class="empty-state">
+        <svg lucideSearch size="23"></svg>
+        <strong>Aucun connecteur trouvé</strong>
+        <span>Modifiez la recherche ou les filtres.</span>
+      </div>
+    }
+
+    @if (!loading() && !error()) {
+      <footer class="pagination">
+        <span>{{ resultRange() }}</span>
+        <div>
+          <button
+            type="button"
+            aria-label="Page précédente"
+            [disabled]="currentPage() <= 1"
+            (click)="previousPage()"
+          >
+            <svg lucideChevronLeft size="15"></svg>
+          </button>
+          <strong>Page {{ currentPage() }} / {{ totalPages() }}</strong>
+          <button
+            type="button"
+            aria-label="Page suivante"
+            [disabled]="currentPage() >= totalPages()"
+            (click)="nextPage()"
+          >
+            <svg lucideChevronRight size="15"></svg>
+          </button>
+        </div>
+      </footer>
+    }
+  </article>
+</section>

@@ -1,0 +1,257 @@
+<section class="analyses-page">
+  <header class="analysis-header">
+    <div>
+      <p>Espace décisionnel</p>
+      <h1>Espace Analyste Régional</h1>
+      <span>Analyse multisectorielle des signaux faibles et rapprochements épidémiologiques.</span>
+      <small>Données simulées — Version démonstrateur</small>
+    </div>
+    <button class="oh-button oh-button--primary" type="button" (click)="exportCsv()">
+      <svg lucideDownload size="16"></svg>
+      Exporter l’analyse
+    </button>
+  </header>
+
+  <div class="analysis-notice" role="status">
+    <svg lucideInfo size="17"></svg>
+    <span>
+      Les rapprochements affichés sont <strong>descriptifs</strong> : ils ne prouvent aucune
+      causalité et doivent être interprétés par un expert One Health.
+    </span>
+  </div>
+
+  <div class="analysis-filters oh-card">
+    <strong><svg lucideFilter size="16"></svg> Filtres actifs</strong>
+    <label>
+      <span>Pays</span>
+      <select [value]="selectedCountry()" (change)="onCountryChange($event)">
+        <option value="all">Tous les pays autorisés</option>
+        @for (country of availableCountries; track country.code) {
+          <option [value]="country.code">{{ country.name }}</option>
+        }
+      </select>
+    </label>
+    <label>
+      <span>Secteur</span>
+      <select [value]="selectedSector()" (change)="onSectorChange($event)">
+        <option value="all">Multisectoriel</option>
+        <option value="human">Santé humaine</option>
+        <option value="animal">Santé animale</option>
+        <option value="environment">Climat et environnement</option>
+      </select>
+    </label>
+    <label>
+      <span>Période</span>
+      <select [value]="selectedPeriod()" (change)="onPeriodChange($event)">
+        <option value="30">30 derniers jours</option>
+        <option value="90">90 derniers jours</option>
+        <option value="365">12 derniers mois</option>
+      </select>
+    </label>
+    <button type="button" (click)="resetFilters()">Réinitialiser</button>
+  </div>
+
+  <div class="analysis-grid">
+    <article class="correlation-card oh-card">
+      <header>
+        <div>
+          <span>Analyse temporelle</span>
+          <h2>{{ chart().title }}</h2>
+          <p>{{ chart().description }}</p>
+        </div>
+        <div class="correlation-score">
+          <small>{{ correlationLabel(chart().correlation) }}</small>
+          <strong>{{ chart().correlation === null ? '—' : chart().correlation }}</strong>
+        </div>
+      </header>
+
+      <div class="chart-wrap">
+        <svg
+          class="analysis-chart"
+          viewBox="0 0 620 260"
+          role="img"
+          [attr.aria-label]="chart().title"
+          preserveAspectRatio="none"
+        >
+          <line x1="42" y1="50" x2="590" y2="50" class="chart-grid-line"></line>
+          <line x1="42" y1="90" x2="590" y2="90" class="chart-grid-line"></line>
+          <line x1="42" y1="130" x2="590" y2="130" class="chart-grid-line"></line>
+          <line x1="42" y1="170" x2="590" y2="170" class="chart-grid-line"></line>
+          <line x1="42" y1="210" x2="590" y2="210" class="chart-axis-line"></line>
+
+          @for (point of chart().points; track point.label) {
+            <rect
+              [attr.x]="point.x"
+              [attr.y]="point.primaryY"
+              width="30"
+              [attr.height]="point.primaryHeight"
+              rx="4"
+              class="chart-bar"
+            >
+              <title>{{ chart().primaryLabel }} : {{ point.primaryValue }}</title>
+            </rect>
+            <text [attr.x]="point.x + 15" y="238" text-anchor="middle" class="chart-label">
+              {{ point.label }}
+            </text>
+          }
+
+          <polyline [attr.points]="chart().linePoints" class="chart-line"></polyline>
+          @for (point of chart().points; track point.label) {
+            <circle [attr.cx]="point.x + 15" [attr.cy]="point.secondaryY" r="4" class="chart-point">
+              <title>{{ chart().secondaryLabel }} : {{ point.secondaryValue }}</title>
+            </circle>
+          }
+        </svg>
+      </div>
+
+      <footer class="chart-legend">
+        <span><i class="chart-legend__bar"></i>{{ chart().primaryLabel }}</span>
+        <span><i class="chart-legend__line"></i>{{ chart().secondaryLabel }}</span>
+        <small>{{ filteredObservations().length }} observations dans la sélection</small>
+      </footer>
+    </article>
+
+    <aside class="analysis-side">
+      <article class="quality-card oh-card">
+        <header>
+          <span><svg lucideShieldCheck size="18"></svg></span>
+          <div>
+            <h2>Score de qualité des données</h2>
+            <small>Moyenne {{ averageQuality() }} %</small>
+          </div>
+        </header>
+        <div class="quality-list">
+          @for (quality of qualityScores(); track quality.countryCode) {
+            <div class="quality-item">
+              <span
+                ><strong>{{ quality.countryName }}</strong
+                ><small>{{ quality.records }} données · 3 critères</small></span
+              >
+              <b [class]="'quality-value quality-value--' + qualityTone(quality.score)"
+                >{{ quality.score }}%</b
+              >
+              <div class="quality-track">
+                <i
+                  [class]="'quality-track__fill quality-track__fill--' + qualityTone(quality.score)"
+                  [style.width.%]="quality.score"
+                ></i>
+              </div>
+            </div>
+          } @empty {
+            <p class="side-empty">Aucune donnée pour cette sélection.</p>
+          }
+        </div>
+      </article>
+
+      <article class="sources-card oh-card">
+        <header>
+          <h2>Sources actives</h2>
+          <span>{{ filteredObservations().length }} données</span>
+        </header>
+        <div class="active-sources">
+          @for (source of activeSources(); track source.source) {
+            <div [class.active-source--inactive]="source.count === 0" class="active-source">
+              <i [class]="'source-icon source-icon--' + source.sector">
+                @switch (source.sector) {
+                  @case ('human') {
+                    <svg lucideStethoscope size="16"></svg>
+                  }
+                  @case ('animal') {
+                    <svg lucidePawPrint size="16"></svg>
+                  }
+                  @case ('environment') {
+                    <svg lucideCloudRain size="16"></svg>
+                  }
+                }
+              </i>
+              <span
+                ><strong>{{ source.source }}</strong
+                ><small>{{ source.label }}</small></span
+              >
+              <b>{{ source.count }}</b>
+            </div>
+          }
+        </div>
+      </article>
+    </aside>
+  </div>
+
+  <article class="signals-card oh-card">
+    <header>
+      <div>
+        <span><svg lucideActivity size="18"></svg></span>
+        <div>
+          <h2>Tableau détaillé des signaux détectés</h2>
+          <small>Priorité calculée à partir du statut et de la gravité</small>
+        </div>
+      </div>
+      <button class="oh-button" type="button" (click)="exportCsv()">
+        <svg lucideDownload size="15"></svg> Exporter CSV
+      </button>
+    </header>
+
+    @if (prioritySignals().length) {
+      <div class="signals-table" role="table" aria-label="Signaux détectés">
+        <div class="signals-table__head" role="row">
+          <span role="columnheader">Date</span>
+          <span role="columnheader">Localisation</span>
+          <span role="columnheader">Signalement</span>
+          <span role="columnheader">Secteurs impliqués</span>
+          <span role="columnheader">Gravité</span>
+          <span role="columnheader">Action</span>
+        </div>
+        @for (signal of prioritySignals(); track signal.id) {
+          <div class="signal-row" role="row">
+            <span class="signal-row__date" role="cell">{{ formatDate(signal.observedAt) }}</span>
+            <span class="signal-row__location" role="cell"
+              ><strong>{{ signal.adminArea }}</strong
+              ><small>{{ signal.countryName }}</small></span
+            >
+            <span class="signal-row__event" role="cell"
+              ><strong>{{ signal.title }}</strong
+              ><small>{{ signal.sourceSystem }} · {{ stageLabel(signal) }}</small></span
+            >
+            <span class="signal-row__sectors" role="cell">
+              @for (sector of relatedSectors(signal); track sector) {
+                <i [class]="'sector-chip sector-chip--' + sector">{{ sectorLabel(sector) }}</i>
+              }
+            </span>
+            <span role="cell"
+              ><i [class]="'severity severity--' + signal.severity"
+                ><span></span>{{ severityLabel(signal) }}</i
+              ></span
+            >
+            <span role="cell"
+              ><a class="analyze-link" [routerLink]="['/alertes', signal.id]"
+                >Analyser <svg lucideChevronRight size="14"></svg></a
+            ></span>
+          </div>
+        }
+      </div>
+
+      <div class="mobile-signal-list">
+        @for (signal of prioritySignals(); track signal.id) {
+          <a class="mobile-signal" [routerLink]="['/alertes', signal.id]">
+            <header>
+              <i [class]="'severity severity--' + signal.severity"
+                ><span></span>{{ severityLabel(signal) }}</i
+              ><small>{{ formatDate(signal.observedAt) }}</small>
+            </header>
+            <strong>{{ signal.title }}</strong>
+            <p>{{ signal.adminArea }} · {{ signal.countryName }}</p>
+            <footer>
+              <span>{{ signal.sourceSystem }} · {{ stageLabel(signal) }}</span
+              ><svg lucideChevronRight size="15"></svg>
+            </footer>
+          </a>
+        }
+      </div>
+    } @else {
+      <div class="empty-signals">
+        <svg lucideTrees size="23"></svg>
+        <strong>Aucun signal dans cette sélection</strong>
+        <span>Élargissez la période ou réinitialisez les filtres.</span>
+      </div>
+    }
+  </article>
+</section>

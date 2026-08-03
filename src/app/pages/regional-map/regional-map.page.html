@@ -1,0 +1,221 @@
+<section class="map-page">
+  <header class="map-page__header">
+    <div>
+      <p>Cartographie régionale</p>
+      <h1>Carte interactive CEEAC</h1>
+      <span>165 observations simulées, normalisées et traçables dans les onze États membres.</span>
+    </div>
+
+    <div class="map-page__header-actions">
+      <button class="oh-button mobile-filter-button" type="button" (click)="toggleFilters()">
+        <svg lucideFilter size="16"></svg>
+        Filtres
+      </button>
+      <button class="oh-button" type="button" (click)="resetFilters()">
+        <svg lucideRotateCcw size="16"></svg>
+        Réinitialiser
+      </button>
+    </div>
+  </header>
+
+  <div class="data-disclaimer" role="status">
+    <svg lucideShieldCheck size="17"></svg>
+    <span>
+      <strong>Démonstrateur.</strong> Les points affichés sont fictifs et ne constituent pas des
+      alertes sanitaires officielles.
+    </span>
+  </div>
+
+  <div class="map-workspace oh-card">
+    <aside class="map-filters" [class.map-filters--open]="filtersOpen()" aria-label="Filtres de la carte">
+      <header class="map-filters__header">
+        <span><svg lucideFilter size="18"></svg> Filtres de données</span>
+        <button type="button" aria-label="Fermer les filtres" (click)="closeFilters()">
+          <svg lucideX size="18"></svg>
+        </button>
+      </header>
+
+      <div class="map-filters__body">
+        <fieldset class="filter-group">
+          <legend><svg lucideCalendarDays size="14"></svg> Période temporelle</legend>
+          <div class="period-control">
+            <button
+              type="button"
+              [class.period-control__item--active]="period() === '7d'"
+              (click)="selectPeriod('7d')"
+            >
+              7 jours
+            </button>
+            <button
+              type="button"
+              [class.period-control__item--active]="period() === '30d'"
+              (click)="selectPeriod('30d')"
+            >
+              30 jours
+            </button>
+            <button
+              type="button"
+              [class.period-control__item--active]="period() === 'year'"
+              (click)="selectPeriod('year')"
+            >
+              Année
+            </button>
+          </div>
+        </fieldset>
+
+        <fieldset class="filter-group">
+          <legend>Sources sectorielles</legend>
+          <div class="sector-options">
+            @for (option of sectorOptions; track option.id) {
+              <button
+                type="button"
+                class="sector-option"
+                [class]="'sector-option sector-option--' + option.id"
+                [class.sector-option--inactive]="!isSectorActive(option.id)"
+                [attr.aria-pressed]="isSectorActive(option.id)"
+                (click)="toggleSector(option.id)"
+              >
+                <span class="sector-option__check">
+                  @if (isSectorActive(option.id)) {
+                    <svg lucideCheck size="13"></svg>
+                  }
+                </span>
+                <span class="sector-option__icon">
+                  @switch (option.id) {
+                    @case ('human') { <svg lucideStethoscope size="17"></svg> }
+                    @case ('animal') { <svg lucidePawPrint size="17"></svg> }
+                    @case ('environment') { <svg lucideTrees size="17"></svg> }
+                  }
+                </span>
+                <span class="sector-option__copy">
+                  <strong>{{ option.label }}</strong>
+                  <small>{{ option.description }}</small>
+                </span>
+                <span class="sector-option__dot"></span>
+              </button>
+            }
+          </div>
+        </fieldset>
+
+        <fieldset class="filter-group">
+          <legend>Cycle de qualification</legend>
+          <div class="stage-options">
+            @for (option of stageOptions; track option.id) {
+              <button
+                type="button"
+                [class.stage-option--active]="isStageActive(option.id)"
+                [attr.aria-pressed]="isStageActive(option.id)"
+                (click)="toggleStage(option.id)"
+              >
+                <span class="stage-option__check">
+                  @if (isStageActive(option.id)) {
+                    <svg lucideCheck size="12"></svg>
+                  }
+                </span>
+                {{ option.label }}
+                <strong>{{ filteredStageCounts()[option.id] }}</strong>
+              </button>
+            }
+          </div>
+        </fieldset>
+
+        <section class="source-audit" aria-labelledby="source-audit-title">
+          <h2 id="source-audit-title">Provenance des données</h2>
+          @for (source of sourceSummaries; track source.sourceSystem) {
+            <div>
+              <span>{{ source.sourceSystem }}</span>
+              <strong>{{ source.records }} fiches</strong>
+            </div>
+          }
+          <small>Identifiants sources conservés après normalisation.</small>
+        </section>
+      </div>
+    </aside>
+
+    @if (filtersOpen()) {
+      <button
+        class="map-filter-backdrop"
+        type="button"
+        aria-label="Fermer les filtres"
+        (click)="closeFilters()"
+      ></button>
+    }
+
+    <div class="map-stage">
+      <div #mapContainer class="map-canvas" aria-label="Carte régionale interactive des observations simulées"></div>
+
+      <div class="map-summary" aria-live="polite">
+        <span><svg lucideActivity size="15"></svg></span>
+        <strong>{{ filteredObservations().length }}</strong>
+        <small>points affichés sur {{ totalObservations }}</small>
+      </div>
+
+      <div class="map-actions" aria-label="Actions cartographiques">
+        <button type="button" title="Recentrer sur la CEEAC" aria-label="Recentrer sur la CEEAC" (click)="fitCeeac()">
+          <svg lucideMapPinned size="18"></svg>
+        </button>
+        <button type="button" title="Utiliser ma position" aria-label="Utiliser ma position" (click)="locateUser()">
+          <svg lucideLocateFixed size="18"></svg>
+        </button>
+      </div>
+
+      <div class="map-legend-panel" aria-label="Légende des secteurs">
+        <strong>Secteurs</strong>
+        <span><i class="legend-marker legend-marker--human"></i> Santé humaine</span>
+        <span><i class="legend-marker legend-marker--animal"></i> Santé animale</span>
+        <span><i class="legend-marker legend-marker--environment"></i> Environnement</span>
+        <small>La taille distingue observation, signal et alerte vérifiée.</small>
+      </div>
+
+      @if (selectedObservation(); as observation) {
+        <article class="selected-observation">
+          <header>
+            <span
+              class="selected-observation__stage"
+              [class]="'selected-observation__stage selected-observation__stage--' + observation.stage"
+            >
+              {{ stageLabel(observation.stage) }}
+            </span>
+            <button type="button" aria-label="Fermer le détail" (click)="closeDetails()">
+              <svg lucideX size="16"></svg>
+            </button>
+          </header>
+
+          <h2>{{ observation.title }}</h2>
+          <p>{{ observation.summary }}</p>
+
+          <div class="selected-observation__location">
+            <svg lucideMapPinned size="14"></svg>
+            {{ observation.adminArea }} · {{ observation.countryName }}
+          </div>
+
+          <div class="selected-observation__metrics">
+            @for (metric of observation.metrics; track metric.label) {
+              <span>
+                <small>{{ metric.label }}</small>
+                <strong>{{ metric.value }}{{ metric.unit ? ' ' + metric.unit : '' }}</strong>
+              </span>
+            }
+          </div>
+
+          <footer>
+            <span>
+              <small>Source</small>
+              <strong>{{ observation.sourceSystem }} · {{ observation.sourceRecordId }}</strong>
+            </span>
+            <span>
+              <small>Observation</small>
+              <strong>{{ formatDate(observation.observedAt) }}</strong>
+            </span>
+            <a [routerLink]="['/alertes', observation.id]">
+              Examiner
+              <svg lucideChevronRight size="14"></svg>
+            </a>
+          </footer>
+        </article>
+      }
+
+      <span class="map-watermark">Données simulées — Version démonstrateur</span>
+    </div>
+  </div>
+</section>

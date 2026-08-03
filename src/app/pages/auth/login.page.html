@@ -1,0 +1,92 @@
+<main class="auth-page">
+  <section class="auth-visual" aria-label="Présentation du Hub régional">
+    <div class="auth-visual__content">
+      <span class="auth-visual__eyebrow">Hub régional CEEAC</span>
+      <h1>Décider avec une vision One Health convergente.</h1>
+      <p>
+        Un espace sécurisé pour rapprocher les données humaines, animales et
+        environnementales autorisées par les États membres.
+      </p>
+      <div class="auth-visual__sectors" aria-label="Secteurs couverts">
+        <span>Santé humaine</span>
+        <span>Santé animale</span>
+        <span>Climat & environnement</span>
+      </div>
+    </div>
+    <p class="auth-visual__notice">Données simulées — Version démonstrateur</p>
+  </section>
+
+  <section class="auth-panel">
+    <div class="auth-card">
+      <div class="auth-brand">
+        <img src="assets/brand/one-health-icon.png" alt="Logo One Health Network" width="54" height="54">
+        <span><strong>One Health Network</strong><small>Convergence Hub</small></span>
+      </div>
+
+      <div class="auth-card__heading">
+        <span>Accès institutionnel</span>
+        <h2>Connexion au Dashboard</h2>
+        <p>Utilisez le compte autorisé par votre administrateur Hub.</p>
+      </div>
+
+      @if (errorMessage()) {
+        <p class="auth-error" role="alert">{{ errorMessage() }}</p>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+        <label class="field">
+          <span>Adresse e-mail</span>
+          <span class="field__control">
+            <svg lucideMail size="18"></svg>
+            <input
+              type="email"
+              formControlName="email"
+              autocomplete="email"
+              inputmode="email"
+              placeholder="nom@institution.org"
+            >
+          </span>
+          @if (form.controls.email.touched && form.controls.email.invalid) {
+            <small>Renseignez une adresse e-mail valide.</small>
+          }
+        </label>
+
+        <label class="field">
+          <span>Mot de passe</span>
+          <span class="field__control">
+            <svg lucideLockKeyhole size="18"></svg>
+            <input
+              [type]="passwordVisible() ? 'text' : 'password'"
+              formControlName="password"
+              autocomplete="current-password"
+              placeholder="Votre mot de passe"
+            >
+            <button
+              type="button"
+              class="password-toggle"
+              [attr.aria-label]="passwordVisible() ? 'Masquer le mot de passe' : 'Afficher le mot de passe'"
+              (click)="togglePassword()"
+            >
+              @if (passwordVisible()) {
+                <svg lucideEyeOff size="18"></svg>
+              } @else {
+                <svg lucideEye size="18"></svg>
+              }
+            </button>
+          </span>
+          @if (form.controls.password.touched && form.controls.password.invalid) {
+            <small>Le mot de passe est obligatoire.</small>
+          }
+        </label>
+
+        <button class="submit-button" type="submit" [disabled]="submitting()">
+          {{ submitting() ? 'Connexion en cours…' : 'Accéder au Hub' }}
+        </button>
+      </form>
+
+      <p class="session-note">
+        Votre jeton est conservé uniquement dans cet onglet et supprimé à sa fermeture.
+      </p>
+    </div>
+  </section>
+</main>

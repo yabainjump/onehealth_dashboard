@@ -1,0 +1,214 @@
+<section class="alerts-page">
+  <header class="alerts-page__header">
+    <div>
+      <p>Veille régionale</p>
+      <h1>Signaux et alertes One Health</h1>
+      <span>Suivi régional des données humaines, animales et environnementales normalisées.</span>
+    </div>
+
+    <div class="alerts-page__actions">
+      <button class="oh-button" type="button" (click)="exportCsv()">
+        <svg lucideDownload size="16"></svg>
+        Exporter CSV
+      </button>
+      <a class="oh-button oh-button--primary" routerLink="/carte">
+        <svg lucideMap size="16"></svg>
+        Ouvrir la carte
+      </a>
+    </div>
+  </header>
+
+  <div class="demo-notice" role="status">
+    <svg lucideShieldCheck size="17"></svg>
+    <span>
+      <strong>Données simulées.</strong> Seules les alertes marquées « vérifiées » ont terminé le
+      workflow humain fictif de cette démonstration.
+    </span>
+  </div>
+
+  <div class="alert-stats" aria-label="Répartition des niveaux de qualification">
+    <article class="alert-stat alert-stat--observation oh-card">
+      <span><svg lucideActivity size="18"></svg></span>
+      <div><strong>{{ summary.byStage.observation }}</strong><small>Observations sources</small></div>
+    </article>
+    <article class="alert-stat alert-stat--signal oh-card">
+      <span><svg lucideTriangleAlert size="18"></svg></span>
+      <div><strong>{{ summary.byStage.signal }}</strong><small>Signaux à vérifier</small></div>
+    </article>
+    <article class="alert-stat alert-stat--verified oh-card">
+      <span><svg lucideShieldCheck size="18"></svg></span>
+      <div><strong>{{ summary.byStage['verified-alert'] }}</strong><small>Alertes vérifiées</small></div>
+    </article>
+  </div>
+
+  <article class="alerts-table-card oh-card">
+    <header class="table-controls">
+      <nav class="view-tabs" aria-label="Organisation de la liste">
+        <button
+          type="button"
+          [class.view-tabs__item--active]="viewMode() === 'all'"
+          (click)="setViewMode('all')"
+        >
+          Toutes les données
+        </button>
+        <button
+          type="button"
+          [class.view-tabs__item--active]="viewMode() === 'priority'"
+          (click)="setViewMode('priority')"
+        >
+          À traiter
+          <span>{{ summary.byStage.signal + summary.byStage['verified-alert'] }}</span>
+        </button>
+        <button
+          type="button"
+          [class.view-tabs__item--active]="viewMode() === 'country'"
+          (click)="setViewMode('country')"
+        >
+          Par pays
+        </button>
+      </nav>
+
+      <label class="alert-search">
+        <svg lucideSearch size="16"></svg>
+        <span class="sr-only">Rechercher un signal ou une alerte</span>
+        <input
+          type="search"
+          maxlength="100"
+          placeholder="Identifiant, événement, pays…"
+          (input)="onSearch($event)"
+        >
+      </label>
+    </header>
+
+    <div class="filter-row">
+      <label>
+        <span>Pays</span>
+        <select (change)="onCountryChange($event)">
+          <option value="all">Tous les pays</option>
+          @for (country of countries; track country.code) {
+            <option [value]="country.code">{{ country.name }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        <span>Secteur</span>
+        <select (change)="onSectorChange($event)">
+          <option value="all">Tous les secteurs</option>
+          <option value="human">Santé humaine</option>
+          <option value="animal">Santé animale</option>
+          <option value="environment">Climat et environnement</option>
+        </select>
+      </label>
+      <label>
+        <span>Qualification</span>
+        <select (change)="onStageChange($event)">
+          <option value="all">Tous les niveaux</option>
+          <option value="observation">Observation source</option>
+          <option value="signal">Signal à vérifier</option>
+          <option value="verified-alert">Alerte vérifiée</option>
+        </select>
+      </label>
+      <strong>{{ filteredObservations().length }} résultats</strong>
+    </div>
+
+    @if (pagedObservations().length) {
+      <div class="alert-table" role="table" aria-label="Signaux et alertes One Health">
+        <div class="alert-table__head" role="row">
+          <span role="columnheader">Identifiant</span>
+          <span role="columnheader">Événement</span>
+          <span role="columnheader">Localisation</span>
+          <span role="columnheader">Secteur</span>
+          <span role="columnheader">Priorité et statut</span>
+          <span role="columnheader">Date</span>
+          <span role="columnheader" class="sr-only">Action</span>
+        </div>
+
+        @for (observation of pagedObservations(); track observation.id) {
+          <a class="alert-row" role="row" [routerLink]="['/alertes', observation.id]">
+            <span class="alert-row__id" role="cell">
+              <strong>{{ observation.id }}</strong>
+              <small>{{ observation.sourceRecordId }}</small>
+            </span>
+            <span class="alert-row__event" role="cell">
+              <strong>{{ observation.title }}</strong>
+              <small>{{ observation.category }}</small>
+            </span>
+            <span class="alert-row__location" role="cell">
+              <svg lucideMapPin size="14"></svg>
+              <span><strong>{{ observation.countryName }}</strong><small>{{ observation.adminArea }}</small></span>
+            </span>
+            <span class="alert-row__sector" role="cell">
+              <i [class]="'sector-icon sector-icon--' + observation.sector">
+                @switch (observation.sector) {
+                  @case ('human') { <svg lucideStethoscope size="15"></svg> }
+                  @case ('animal') { <svg lucidePawPrint size="15"></svg> }
+                  @case ('environment') { <svg lucideTrees size="15"></svg> }
+                }
+              </i>
+              <small>{{ sectorLabel(observation.sector) }}</small>
+            </span>
+            <span class="alert-row__status" role="cell">
+              <span [class]="'severity-badge severity-badge--' + observation.severity">
+                {{ severityLabel(observation) }}
+              </span>
+              <small [class]="'stage-label stage-label--' + observation.stage">
+                {{ stageLabel(observation.stage) }}
+              </small>
+            </span>
+            <span class="alert-row__date" role="cell">{{ formatDate(observation.observedAt) }}</span>
+            <span class="alert-row__action" role="cell"><svg lucideArrowRight size="16"></svg></span>
+          </a>
+        }
+      </div>
+
+      <div class="mobile-alert-list" aria-label="Signaux et alertes One Health">
+        @for (observation of pagedObservations(); track observation.id) {
+          <a class="mobile-alert" [routerLink]="['/alertes', observation.id]">
+            <header>
+              <span [class]="'severity-badge severity-badge--' + observation.severity">
+                {{ severityLabel(observation) }}
+              </span>
+              <small>{{ formatDate(observation.observedAt) }}</small>
+            </header>
+            <strong>{{ observation.title }}</strong>
+            <p><svg lucideMapPin size="13"></svg>{{ observation.adminArea }} · {{ observation.countryName }}</p>
+            <footer>
+              <span [class]="'stage-label stage-label--' + observation.stage">{{ stageLabel(observation.stage) }}</span>
+              <span>{{ observation.sourceSystem }} · {{ observation.sourceRecordId }}</span>
+              <svg lucideChevronRight size="16"></svg>
+            </footer>
+          </a>
+        }
+      </div>
+    } @else {
+      <div class="empty-state">
+        <svg lucideSearch size="24"></svg>
+        <strong>Aucun résultat</strong>
+        <span>Modifiez la recherche ou les filtres appliqués.</span>
+      </div>
+    }
+
+    <footer class="pagination">
+      <span>{{ resultRange() }}</span>
+      <div>
+        <button
+          type="button"
+          aria-label="Page précédente"
+          [disabled]="currentPage() <= 1"
+          (click)="previousPage()"
+        >
+          <svg lucideChevronLeft size="16"></svg>
+        </button>
+        <strong>Page {{ currentPage() }} / {{ totalPages() }}</strong>
+        <button
+          type="button"
+          aria-label="Page suivante"
+          [disabled]="currentPage() >= totalPages()"
+          (click)="nextPage()"
+        >
+          <svg lucideChevronRight size="16"></svg>
+        </button>
+      </div>
+    </footer>
+  </article>
+</section>

@@ -1,0 +1,225 @@
+<section class="dashboard">
+  <header class="page-header">
+    <div>
+      <p class="page-header__eyebrow">Vue régionale</p>
+      <h1>Tableau de bord stratégique</h1>
+      <p class="page-header__description">
+        Vue synthétique de la situation One Health dans les onze États membres de la CEEAC.
+      </p>
+    </div>
+    <div class="page-header__actions">
+      <button class="oh-button" type="button">
+        <svg lucideDownload size="16"></svg>
+        Exporter les données
+      </button>
+      <a class="oh-button oh-button--primary" routerLink="/rapports">
+        <svg lucideFileChartColumn size="16"></svg>
+        Générer une note
+      </a>
+    </div>
+  </header>
+
+  <div class="demo-notice" role="status">
+    <span class="demo-notice__icon"><svg lucideShieldCheck size="16"></svg></span>
+    <span>
+      <strong>Données simulées.</strong> Cette interface démontre le fonctionnement futur du Hub ;
+      elle ne présente aucune donnée sanitaire officielle.
+    </span>
+  </div>
+
+  <div class="period-switcher" aria-label="Période affichée">
+    <button
+      type="button"
+      [class.period-switcher__button--active]="selectedPeriod() === '7d'"
+      (click)="selectPeriod('7d')"
+    >
+      7 jours
+    </button>
+    <button
+      type="button"
+      [class.period-switcher__button--active]="selectedPeriod() === '30d'"
+      (click)="selectPeriod('30d')"
+    >
+      30 jours
+    </button>
+    <button
+      type="button"
+      [class.period-switcher__button--active]="selectedPeriod() === 'year'"
+      (click)="selectPeriod('year')"
+    >
+      Année
+    </button>
+  </div>
+
+  <div class="metrics" aria-label="Indicateurs clés">
+    <article class="metric-card oh-card">
+      <span class="metric-card__icon metric-card__icon--blue"><svg lucideGlobe2 size="18"></svg></span>
+      <p>États représentés</p>
+      <strong>{{ displayedSummary().countries }} <small>/ 11</small></strong>
+      <span class="metric-card__status metric-card__status--success">Couverture complète</span>
+    </article>
+    <article class="metric-card oh-card">
+      <span class="metric-card__icon metric-card__icon--violet"><svg lucideExternalLink size="18"></svg></span>
+      <p>Observations sources</p>
+      <strong>{{ displayedSummary().total }}</strong>
+      <span class="metric-card__status">{{ dataSummary.total }} fiches au total</span>
+    </article>
+    <article class="metric-card metric-card--danger oh-card">
+      <span class="metric-card__icon metric-card__icon--red"><svg lucideTriangleAlert size="18"></svg></span>
+      <p>Alertes prioritaires</p>
+      <strong>{{ displayedSummary().alerts }}</strong>
+      <span class="metric-card__status metric-card__status--danger">Validation humaine effectuée</span>
+    </article>
+    <article class="metric-card oh-card">
+      <span class="metric-card__icon metric-card__icon--orange"><svg lucideClipboardCheck size="18"></svg></span>
+      <p>Signaux à vérifier</p>
+      <strong>{{ displayedSummary().signals }}</strong>
+      <span class="metric-card__status">File régionale</span>
+    </article>
+    <article class="metric-card oh-card">
+      <span class="metric-card__icon metric-card__icon--green"><svg lucideCheckCircle2 size="18"></svg></span>
+      <p>Complétude</p>
+      <strong>{{ dataSummary.completeness }}%</strong>
+      <span class="metric-card__status metric-card__status--success">Schéma de démonstration complet</span>
+    </article>
+  </div>
+
+  <div class="overview-grid">
+    <article class="map-card oh-card">
+      <header class="card-header">
+        <div>
+          <span class="card-header__icon"><svg lucideGlobe2 size="18"></svg></span>
+          <div>
+            <h2>Cartographie des risques CEEAC</h2>
+            <p>Événements consolidés et signaux régionaux</p>
+          </div>
+        </div>
+        <a class="card-header__link" routerLink="/carte">
+          Ouvrir la carte
+          <svg lucideArrowRight size="15"></svg>
+        </a>
+      </header>
+
+      <div class="risk-map" aria-label="Aperçu cartographique des risques simulés">
+        <img src="assets/figma/risk-map.png" alt="Carte des États membres de la CEEAC" width="512" height="281">
+        <span class="map-marker map-marker--critical map-marker--cameroon" title="Signal critique au Cameroun"></span>
+        <span class="map-marker map-marker--high map-marker--gabon" title="Signal élevé au Gabon"></span>
+        <span class="map-marker map-marker--observation map-marker--drc" title="Observation en RDC"></span>
+
+        <div class="map-legend">
+          <strong>Niveaux de risque</strong>
+          <span><i class="legend-dot legend-dot--critical"></i> Critique</span>
+          <span><i class="legend-dot legend-dot--high"></i> Élevé</span>
+          <span><i class="legend-dot legend-dot--observation"></i> Observation</span>
+        </div>
+        <span class="map-demo-label">Données simulées</span>
+      </div>
+
+      <footer class="map-card__footer">
+        <span><strong>{{ dataSummary.byStage['verified-alert'] }}</strong> alertes vérifiées</span>
+        <span><strong>{{ dataSummary.byStage.signal }}</strong> signaux à vérifier</span>
+        <span><strong>{{ dataSummary.countries }}</strong> États représentés</span>
+      </footer>
+    </article>
+
+    <aside class="alerts-card oh-card">
+      <header class="card-header card-header--alerts">
+        <div>
+          <span class="card-header__icon card-header__icon--danger">
+            <svg lucideTriangleAlert size="18"></svg>
+          </span>
+          <div>
+            <h2>Alertes prioritaires</h2>
+            <p>Validation humaine requise</p>
+          </div>
+        </div>
+        <span class="count-badge">3</span>
+      </header>
+
+      <div class="alert-list">
+        @for (alert of priorityAlerts; track alert.title) {
+          <a class="alert-item" [routerLink]="['/alertes', alert.id]">
+            <span class="alert-item__level" [class]="'alert-item__level alert-item__level--' + alert.tone"></span>
+            <span class="alert-item__body">
+              <span class="alert-item__topline">
+                <strong>{{ alert.title }}</strong>
+                <small>{{ alert.age }}</small>
+              </span>
+              <span class="alert-item__location">{{ alert.location }}</span>
+              <span class="alert-item__summary">{{ alert.summary }}</span>
+              <span class="sector-tag" [class]="'sector-tag sector-tag--' + alert.tone">
+                {{ alert.sector }}
+              </span>
+            </span>
+          </a>
+        }
+      </div>
+
+      <a class="alerts-card__footer" routerLink="/alertes">
+        Voir tous les signaux et alertes
+        <svg lucideArrowRight size="15"></svg>
+      </a>
+    </aside>
+  </div>
+
+  <article class="decisions-card oh-card">
+    <header class="card-header">
+      <div>
+        <span class="card-header__icon"><svg lucideClipboardCheck size="18"></svg></span>
+        <div>
+          <h2>Actions nécessitant une décision</h2>
+          <p>Échéances prioritaires pour l’équipe régionale</p>
+        </div>
+      </div>
+    </header>
+
+    <div class="decision-table" role="table" aria-label="Actions nécessitant une décision">
+      <div class="decision-table__header" role="row">
+        <span role="columnheader">Dossier</span>
+        <span role="columnheader">Secteurs</span>
+        <span role="columnheader">Priorité</span>
+        <span role="columnheader">Date limite</span>
+        <span role="columnheader">Action</span>
+      </div>
+      @for (decision of decisions; track decision.label) {
+        <div class="decision-row" role="row">
+          <strong role="cell">{{ decision.label }}</strong>
+          <span class="decision-row__sectors" role="cell">
+            @for (sector of decision.sectors; track sector) {
+              <span class="mini-sector">{{ sector.charAt(0) }}</span>
+            }
+          </span>
+          <span role="cell">
+            <span class="priority-badge" [class.priority-badge--high]="decision.priority === 'Haute'">
+              {{ decision.priority }}
+            </span>
+          </span>
+          <span role="cell">{{ decision.deadline }}</span>
+          <span role="cell"><a class="table-action" routerLink="/alertes">Examiner</a></span>
+        </div>
+      }
+    </div>
+  </article>
+
+  <section class="sources" aria-labelledby="sources-title">
+    <div class="sources__intro">
+      <span><svg lucideSparkles size="17"></svg></span>
+      <div>
+        <h2 id="sources-title">Trois flux sectoriels normalisés</h2>
+        <p>Provenance conservée et données de démonstration clairement identifiées.</p>
+      </div>
+    </div>
+    <article class="source-card source-card--human">
+      <svg lucideStethoscope size="18"></svg>
+      <span><strong>DHIS2</strong><small>Santé humaine · {{ dataSummary.bySector.human }} données</small></span>
+    </article>
+    <article class="source-card source-card--animal">
+      <svg lucidePawPrint size="18"></svg>
+      <span><strong>ARIS – AU-IBAR</strong><small>Santé animale · {{ dataSummary.bySector.animal }} données</small></span>
+    </article>
+    <article class="source-card source-card--environment">
+      <svg lucideTrees size="18"></svg>
+      <span><strong>CAPC-AC / Météo</strong><small>Environnement · {{ dataSummary.bySector.environment }} données</small></span>
+    </article>
+  </section>
+</section>

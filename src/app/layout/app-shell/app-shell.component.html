@@ -1,0 +1,179 @@
+<div class="shell">
+  <aside class="sidebar" [class.sidebar--open]="menuOpen()" aria-label="Navigation principale">
+    <div class="brand">
+      <img
+        class="brand__logo"
+        src="assets/brand/one-health-icon.png"
+        alt="Logo One Health Network"
+        width="42"
+        height="42"
+      >
+      <span class="brand__copy">
+        <strong>One Health</strong>
+        <small>Convergence Hub</small>
+      </span>
+      <button class="sidebar__close" type="button" aria-label="Fermer le menu" (click)="closeMenu()">
+        <svg lucideX size="20"></svg>
+      </button>
+    </div>
+
+    <nav class="nav">
+      <a
+        routerLink="/dashboard"
+        routerLinkActive="nav__link--active"
+        class="nav__link"
+        (click)="closeMenu()"
+      >
+        <svg lucideLayoutDashboard size="18"></svg>
+        <span>Vue d’ensemble</span>
+      </a>
+      <a
+        routerLink="/carte"
+        routerLinkActive="nav__link--active"
+        class="nav__link"
+        (click)="closeMenu()"
+      >
+        <svg lucideMap size="18"></svg>
+        <span>Carte interactive</span>
+      </a>
+      <a
+        routerLink="/alertes"
+        routerLinkActive="nav__link--active"
+        class="nav__link"
+        (click)="closeMenu()"
+      >
+        <svg lucideTriangleAlert size="18"></svg>
+        <span>Alertes sanitaires</span>
+      </a>
+      <a
+        routerLink="/analyses"
+        routerLinkActive="nav__link--active"
+        class="nav__link"
+        (click)="closeMenu()"
+      >
+        <svg lucideFlaskConical size="18"></svg>
+        <span>Analyses sectorielles</span>
+      </a>
+      <a
+        routerLink="/rapports"
+        routerLinkActive="nav__link--active"
+        class="nav__link"
+        (click)="closeMenu()"
+      >
+        <svg lucideFileText size="18"></svg>
+        <span>Rapports</span>
+      </a>
+
+      <p class="nav__section">Pilotage</p>
+      <a
+        routerLink="/connecteurs"
+        routerLinkActive="nav__link--active"
+        class="nav__link"
+        (click)="closeMenu()"
+      >
+        <svg lucideDatabase size="18"></svg>
+        <span>Connecteurs</span>
+      </a>
+    </nav>
+
+    <div class="sidebar__bottom">
+      <a
+        class="sector-filter"
+        routerLink="/dashboard"
+        [queryParams]="{ filtres: 'secteurs' }"
+        (click)="closeMenu()"
+      >
+        <svg lucideSlidersHorizontal size="16"></svg>
+        <span>Filtrer par secteur</span>
+      </a>
+      <a class="nav__link nav__link--compact" href="#parametres">
+        <svg lucideSettings size="17"></svg>
+        <span>Paramètres</span>
+      </a>
+      <a class="nav__link nav__link--compact" href="#aide">
+        <svg lucideCircleHelp size="17"></svg>
+        <span>Aide</span>
+      </a>
+    </div>
+  </aside>
+
+  @if (menuOpen()) {
+    <button class="backdrop" type="button" aria-label="Fermer le menu" (click)="closeMenu()"></button>
+  }
+
+  <div class="workspace">
+    <header class="topbar">
+      <div class="topbar__brand">
+        <button class="menu-toggle" type="button" aria-label="Ouvrir le menu" (click)="toggleMenu()">
+          <svg lucideMenu size="21"></svg>
+        </button>
+        <span>One Health Convergence Hub</span>
+      </div>
+
+      <nav class="scope-switcher" aria-label="Portée des données">
+        <a class="scope-switcher__item scope-switcher__item--active" href="#regional">Régional</a>
+        <a class="scope-switcher__item" href="#national">État membre</a>
+      </nav>
+
+      <label class="global-search">
+        <svg lucideSearch size="17"></svg>
+        <span class="sr-only">Recherche globale</span>
+        <input type="search" placeholder="Rechercher dans le Hub…">
+      </label>
+
+      <div class="topbar__actions">
+        <button class="icon-button icon-button--notification" type="button" aria-label="Notifications">
+          <svg lucideBell size="18"></svg>
+          <span class="notification-dot" aria-hidden="true"></span>
+        </button>
+        <button class="icon-button apps-button" type="button" aria-label="Applications">
+          <svg lucideGrid3x3 size="18"></svg>
+        </button>
+        <div class="profile-menu">
+          <button
+            class="profile-button"
+            type="button"
+            aria-label="Menu du compte"
+            [attr.aria-expanded]="profileMenuOpen()"
+            (click)="toggleProfileMenu()"
+          >
+            <svg lucideCircleUserRound size="21"></svg>
+          </button>
+          @if (profileMenuOpen()) {
+            <div class="profile-popover">
+              <strong>{{ auth.currentUser()?.firstName }} {{ auth.currentUser()?.lastName }}</strong>
+              <small>{{ auth.currentUser()?.institution || auth.currentUser()?.email }}</small>
+              <span>
+                {{ auth.currentUser()?.role === 'admin' ? 'Administrateur' : (auth.currentUser()?.hubRoles?.[0] || 'Accès Hub') }}
+              </span>
+              <button type="button" (click)="logout()">
+                <svg lucideLogOut size="16"></svg>
+                Se déconnecter
+              </button>
+            </div>
+          }
+        </div>
+      </div>
+    </header>
+
+    <main class="content" id="contenu-principal">
+      <router-outlet />
+    </main>
+
+    <footer class="footer">
+      <span>© 2026 One Health Network</span>
+      <strong [class.footer__warning]="dataService.dataMode() === 'fallback'">
+        @if (dataService.dataMode() === 'fallback') {
+          API indisponible — Données fictives locales
+        } @else {
+          Données simulées — Hub régional
+        }
+      </strong>
+      <span class="footer__links">
+        <a href="#mentions">Mentions légales</a>
+        <a href="#support">Support</a>
+        <a href="#confidentialite">Confidentialité</a>
+      </span>
+    </footer>
+  </div>
+</div>

@@ -1,0 +1,11 @@
+{
+  "/api": {
+    "target": "https://backend.onehealthnetwork.yaba-in.com",
+    "secure": true,
+    "changeOrigin": true,
+    "headers": {
+      "Origin": "https://onehealthnetwork.yaba-in.com"
+    },
+    "logLevel": "info"
+  }
+}
