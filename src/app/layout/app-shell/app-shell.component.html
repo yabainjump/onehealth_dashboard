@@ -74,6 +74,15 @@
         <svg lucideDatabase size="18"></svg>
         <span>Connecteurs</span>
       </a>
+      <a
+        routerLink="/souverainete"
+        routerLinkActive="nav__link--active"
+        class="nav__link"
+        (click)="closeMenu()"
+      >
+        <svg lucideShieldCheck size="18"></svg>
+        <span>Registre de souveraineté</span>
+      </a>
       @if (auth.canManageHubUsers()) {
         <a
           routerLink="/administration"

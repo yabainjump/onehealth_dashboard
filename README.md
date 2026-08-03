@@ -18,6 +18,7 @@ Démonstrateur Angular du Hub décisionnel régional One Health pour la CEEAC. C
 - supervision des connecteurs DHIS2, ARIS 3 et CAPC-AC ;
 - bibliothèque de rapports avec notes pays, synthèses régionales, veilles sectorielles et exports ;
 - administration sécurisée des rôles Hub et des périmètres pays CEEAC ;
+- registre de souveraineté avec politiques de partage par État et audit des décisions ;
 - données de démonstration clairement identifiées comme fictives.
 
 Les principaux écrans du démonstrateur sont maintenant fonctionnels. Les rapports générés restent descriptifs et nécessitent une validation humaine avant diffusion.
@@ -56,6 +57,7 @@ La version de production est générée dans `dist/onehealth_dashboard/browser`.
 | `/rapports` | Bibliothèque, aperçu, impression et exports implémentés |
 | `/connecteurs` | Supervision et synchronisation contrôlée implémentées |
 | `/administration` | Gestion des rôles institutionnels et des pays autorisés |
+| `/souverainete` | Registre des politiques nationales de partage des données |
 
 ## Référence produit
 

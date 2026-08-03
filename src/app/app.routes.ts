@@ -66,6 +66,14 @@ export const routes: Routes = [
           import('./pages/connectors/connectors.page').then((module) => module.ConnectorsPage),
       },
       {
+        path: 'souverainete',
+        title: 'Registre de souveraineté | One Health Network Dashboard',
+        loadComponent: () =>
+          import('./pages/sovereignty/sovereignty.page').then(
+            (module) => module.SovereigntyPage,
+          ),
+      },
+      {
         path: 'administration',
         title: 'Administration Hub | One Health Network Dashboard',
         canActivate: [dashboardAdministratorGuard],

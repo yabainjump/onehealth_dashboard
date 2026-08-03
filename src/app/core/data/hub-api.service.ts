@@ -91,6 +91,48 @@ export interface HubConnectorSyncApi {
   readonly message: string;
 }
 
+export type HubSharingLevel =
+  | 'OWNER_ONLY'
+  | 'OWNER_AND_CEEAC'
+  | 'AUTHORIZED_COUNTRIES'
+  | 'REGIONAL_AUTHORIZED'
+  | 'PUBLIC_AGGREGATED';
+
+export type HubAggregationLevel = 'POINT' | 'ADMIN_1' | 'COUNTRY' | 'REGIONAL';
+
+export interface HubSharingPolicyApi {
+  readonly policyId: string;
+  readonly countryOwner: string;
+  readonly sharingLevel: HubSharingLevel;
+  readonly allowedRoles: readonly (
+    | 'hub_viewer'
+    | 'hub_analyst'
+    | 'hub_verifier'
+    | 'hub_admin'
+  )[];
+  readonly allowedCountries: readonly string[];
+  readonly aggregationLevel: HubAggregationLevel;
+  readonly retentionPeriodDays: number;
+  readonly containsPersonalData: boolean;
+  readonly updatedAt: string;
+  readonly simulated: boolean;
+}
+
+export interface HubSharingPolicyListApi {
+  readonly items: readonly HubSharingPolicyApi[];
+  readonly total: number;
+  readonly simulated: boolean;
+}
+
+export interface UpdateHubSharingPolicyInput {
+  readonly sharingLevel: HubSharingLevel;
+  readonly allowedRoles: HubSharingPolicyApi['allowedRoles'];
+  readonly allowedCountries: readonly string[];
+  readonly aggregationLevel: HubAggregationLevel;
+  readonly retentionPeriodDays: number;
+  readonly containsPersonalData: boolean;
+}
+
 interface HubObservationPage {
   readonly items: readonly OneHealthObservation[];
   readonly total: number;
@@ -165,6 +207,24 @@ export class HubApiService {
   synchronizeConnectors(): Promise<HubConnectorSyncApi> {
     return firstValueFrom(
       this.http.post<HubConnectorSyncApi>(`${this.baseUrl}/connectors/synchronize`, {}),
+    );
+  }
+
+  getSharingPolicies(): Promise<HubSharingPolicyListApi> {
+    return firstValueFrom(
+      this.http.get<HubSharingPolicyListApi>(`${this.baseUrl}/sharing-policies`),
+    );
+  }
+
+  updateSharingPolicy(
+    policyId: string,
+    input: UpdateHubSharingPolicyInput,
+  ): Promise<HubSharingPolicyApi> {
+    return firstValueFrom(
+      this.http.patch<HubSharingPolicyApi>(
+        `${this.baseUrl}/sharing-policies/${encodeURIComponent(policyId)}`,
+        input,
+      ),
     );
   }
 
