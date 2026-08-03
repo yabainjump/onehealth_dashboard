@@ -84,6 +84,8 @@ Un administrateur Hub peut lancer depuis `/dashboard` le scénario dynamique « 
 
 Le même scénario produit un événement consolidé reliant les quatre fiches. Le Dashboard affiche le nombre d'événements et le dossier explique précisément le rapprochement (secteurs, fenêtre temporelle, distance maximale, contexte transfrontalier et version de la règle). Les observations originales restent séparées et conservent leur provenance.
 
+Lancer le scénario restaure automatiquement le socle fictif de 165 observations avant d'ajouter ses quatre observations. Le total attendu après exécution est donc de 169 observations ; une relance conserve ce total grâce aux index et écritures idempotentes.
+
 Lorsque l'API Hub est disponible, les affectations, validations et rejets sont persistés dans MongoDB et audités avec l'identifiant de l'utilisateur. Une justification d'au moins dix caractères est obligatoire. Les commentaires internes restent locaux pour le moment.
 
 Si le backend est indisponible, le Dashboard peut utiliser le jeu fictif local pour préserver une démonstration. Ce mode n'est déclenché que pour une indisponibilité technique : une réponse `401` ou `403` ne provoque jamais de repli local. Le pied de page signale clairement le mode de secours.
