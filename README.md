@@ -14,10 +14,12 @@ Démonstrateur Angular du Hub décisionnel régional One Health pour la CEEAC. C
 - registre responsive des observations, signaux et alertes avec recherche, filtres, pagination et export CSV ;
 - fiche détaillée multisectorielle avec provenance, gouvernance et workflow humain persisté ;
 - couverture des onze États membres de la CEEAC avec traçabilité de l'identifiant source ;
-- routes préparées pour les analyses, les rapports et les connecteurs ;
+- espace d’analyse multisectorielle avec tendances, qualité et export CSV ;
+- supervision des connecteurs DHIS2, ARIS 3 et CAPC-AC ;
+- bibliothèque de rapports avec notes pays, synthèses régionales, veilles sectorielles et exports ;
 - données de démonstration clairement identifiées comme fictives.
 
-Les écrans Analyses, Rapports et Connecteurs sont encore des pages d'attente fonctionnelles. Ils seront implémentés progressivement à partir des maquettes Figma d'affinement.
+Les principaux écrans du démonstrateur sont maintenant fonctionnels. Les rapports générés restent descriptifs et nécessitent une validation humaine avant diffusion.
 
 ## Démarrage
 
@@ -49,9 +51,9 @@ La version de production est générée dans `dist/onehealth_dashboard/browser`.
 | `/carte` | Carte régionale interactive implémentée |
 | `/alertes` | Registre, filtres, pagination et export CSV implémentés |
 | `/alertes/:id` | Dossier multisectoriel et workflow humain simulé implémentés |
-| `/analyses` | Structure prête, graphiques à implémenter |
-| `/rapports` | Structure prête, bibliothèque à implémenter |
-| `/connecteurs` | Structure prête, supervision à implémenter |
+| `/analyses` | Analyse multisectorielle, qualité et export CSV implémentés |
+| `/rapports` | Bibliothèque, aperçu, impression et exports implémentés |
+| `/connecteurs` | Supervision et synchronisation contrôlée implémentées |
 
 ## Référence produit
 

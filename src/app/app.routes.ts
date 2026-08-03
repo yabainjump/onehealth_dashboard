@@ -55,15 +55,8 @@ export const routes: Routes = [
       {
         path: 'rapports',
         title: 'Rapports | One Health Network Dashboard',
-        data: {
-          eyebrow: 'Restitution institutionnelle',
-          title: 'Bibliothèque des rapports',
-          description: 'Notes de situation, analyses régionales et exports produits par le Hub.',
-        },
         loadComponent: () =>
-          import('./pages/module-preview/module-preview.page').then(
-            (module) => module.ModulePreviewPage,
-          ),
+          import('./pages/reports/reports.page').then((module) => module.ReportsPage),
       },
       {
         path: 'connecteurs',

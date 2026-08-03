@@ -1,0 +1,129 @@
+<section class="reports-page">
+  <header class="reports-hero">
+    <div>
+      <p>Restitution institutionnelle</p>
+      <h1>Bibliothèque des rapports</h1>
+      <span>Notes pays, situations régionales et veilles sectorielles produites à partir des données consolidées.</span>
+      <small>{{ dataModeLabel() }}</small>
+    </div>
+    <button class="oh-button oh-button--primary" type="button" (click)="exportCatalogue()">
+      <svg lucideDownload size="16"></svg>
+      Exporter le catalogue
+    </button>
+  </header>
+
+  <div class="governance-notice" role="status">
+    <svg lucideInfo size="17"></svg>
+    <span>
+      Les rapports sont <strong>générés automatiquement</strong>. Un expert mandaté doit les vérifier et les valider avant diffusion.
+    </span>
+  </div>
+
+  <div class="report-kpis">
+    <article class="oh-card"><span>Documents disponibles</span><strong>{{ summary().total }}</strong><small>3 formats institutionnels</small></article>
+    <article class="oh-card"><span>Pays couverts</span><strong>{{ summary().countries }}</strong><small>États membres documentés</small></article>
+    <article class="oh-card"><span>Rapports prioritaires</span><strong>{{ summary().priority }}</strong><small>Avec alerte vérifiée</small></article>
+    <article class="oh-card"><span>Alertes consolidées</span><strong>{{ summary().verifiedAlerts }}</strong><small>Maximum sur une période</small></article>
+  </div>
+
+  <div class="report-filters oh-card">
+    <strong><svg lucideFilter size="16"></svg> Rechercher</strong>
+    <label class="search-field">
+      <svg lucideSearch size="16"></svg>
+      <input type="search" placeholder="Titre, pays ou période…" [value]="searchTerm()" (input)="onSearch($event)">
+    </label>
+    <label>
+      <span>Type de rapport</span>
+      <select [value]="selectedScope()" (change)="onScopeChange($event)">
+        <option value="all">Tous les formats</option>
+        <option value="regional">Situation régionale</option>
+        <option value="country">Notes pays</option>
+        <option value="sector">Veilles sectorielles</option>
+      </select>
+    </label>
+    <label>
+      <span>Pays</span>
+      <select [value]="selectedCountry()" (change)="onCountryChange($event)">
+        <option value="all">Tous les pays</option>
+        @for (country of countries; track country.code) {
+          <option [value]="country.code">{{ country.name }}</option>
+        }
+      </select>
+    </label>
+    <button type="button" (click)="resetFilters()">Réinitialiser</button>
+  </div>
+
+  <div class="reports-layout">
+    <section class="report-list oh-card">
+      <header><div><h2>Rapports disponibles</h2><span>{{ filteredReports().length }} résultat(s)</span></div><svg lucideFileText size="20"></svg></header>
+      <div class="report-list__items">
+        @for (report of filteredReports(); track report.id) {
+          <button
+            type="button"
+            class="report-card"
+            [class.report-card--selected]="selectedReport()?.id === report.id"
+            [attr.aria-pressed]="selectedReport()?.id === report.id"
+            (click)="selectReport(report)"
+          >
+            <span [class]="'report-card__icon report-card__icon--' + report.scope"><svg lucideFileText size="18"></svg></span>
+            <span class="report-card__body">
+              <span class="report-card__meta"><i [class]="'risk-dot risk-dot--' + report.risk"></i>{{ scopeLabel[report.scope] }} · {{ report.periodLabel }}</span>
+              <strong>{{ report.title }}</strong>
+              <small>{{ report.countryName }} · {{ report.observationCount }} observations · {{ formatDate(report.generatedAt) }}</small>
+            </span>
+          </button>
+        } @empty {
+          <div class="empty-state"><svg lucideSearch size="24"></svg><strong>Aucun rapport trouvé</strong><span>Modifiez les critères de recherche.</span></div>
+        }
+      </div>
+    </section>
+
+    <aside class="report-detail oh-card">
+      @if (selectedReport(); as report) {
+        <header>
+          <div class="detail-badges"><span>{{ scopeLabel[report.scope] }}</span><span [class]="'risk-badge risk-badge--' + report.risk">{{ riskLabel[report.risk] }}</span></div>
+          <h2>{{ report.title }}</h2>
+          <p>{{ report.description }}</p>
+          <small>Période analysée : {{ formatDate(report.dateFrom) }} – {{ formatDate(report.dateTo) }}</small>
+        </header>
+
+        <div class="detail-metrics">
+          <span><strong>{{ report.observationCount }}</strong><small>Observations</small></span>
+          <span><strong>{{ report.signalCount }}</strong><small>Signaux</small></span>
+          <span><strong>{{ report.verifiedAlertCount }}</strong><small>Alertes vérifiées</small></span>
+          <span><strong>{{ report.priorityCount }}</strong><small>Prioritaires</small></span>
+        </div>
+
+        <section class="detail-section">
+          <h3>Couverture documentaire</h3>
+          <div class="coverage-row"><span>Périmètre</span><strong>{{ report.countryName }}</strong></div>
+          <div class="coverage-row"><span>Sources</span><strong>{{ report.sources.join(' · ') || 'Aucune' }}</strong></div>
+          <div class="sector-tags">
+            @for (sector of report.sectors; track sector) { <i [class]="'sector-tag sector-tag--' + sector">{{ sectorLabel[sector] }}</i> }
+          </div>
+        </section>
+
+        <section class="detail-section">
+          <h3>Constats descriptifs</h3>
+          <ul>@for (finding of report.findings; track finding) { <li>{{ finding }}</li> }</ul>
+        </section>
+
+        <section class="detail-section">
+          <h3>Actions proposées</h3>
+          <ol>@for (recommendation of report.recommendations; track recommendation) { <li>{{ recommendation }}</li> }</ol>
+        </section>
+
+        <div class="validation-notice"><svg lucideShieldCheck size="18"></svg><span><strong>Validation humaine obligatoire</strong>Rudolf et les automatismes du Hub ne peuvent pas valider ce document.</span></div>
+
+        @if (feedback()) { <p class="report-feedback" role="status">{{ feedback() }}</p> }
+
+        <footer>
+          <button class="oh-button" type="button" (click)="printReport()"><svg lucidePrinter size="16"></svg> Imprimer / PDF</button>
+          <button class="oh-button oh-button--primary" type="button" (click)="downloadReport()"><svg lucideDownload size="16"></svg> Télécharger HTML</button>
+        </footer>
+      } @else {
+        <div class="empty-state empty-state--detail"><svg lucideFileText size="28"></svg><strong>Sélectionnez un rapport</strong><span>Son aperçu apparaîtra dans cet espace.</span></div>
+      }
+    </aside>
+  </div>
+</section>
