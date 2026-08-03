@@ -215,7 +215,7 @@
 
 .metrics {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 14px;
 }
 
@@ -256,6 +256,10 @@
     &--orange {
       background: #fff3e8;
       color: var(--oh-warning);
+    }
+    &--cyan {
+      background: #e7f8f7;
+      color: #087d78;
     }
     &--green {
       background: #e8f6ef;

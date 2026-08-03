@@ -15,6 +15,7 @@ import {
   LucideExternalLink,
   LucideFileChartColumn,
   LucideGlobe2,
+  LucideNetwork,
   LucidePawPrint,
   LucideShieldCheck,
   LucideSparkles,
@@ -29,7 +30,12 @@ import { DEMO_REFERENCE_DATE } from '../../core/data/mock/ceeac-reference';
 import { HealthSector, MapPeriod } from '../../core/data/models/one-health-observation.model';
 import { RegionalMapPreviewComponent } from '../../shared/components/regional-map-preview/regional-map-preview.component';
 import { DashboardAuthService } from '../../core/auth/dashboard-auth.service';
-import { HubApiService, HubDecisionApi, HubScenarioApi } from '../../core/data/hub-api.service';
+import {
+  HubApiService,
+  HubDecisionApi,
+  HubEventApi,
+  HubScenarioApi,
+} from '../../core/data/hub-api.service';
 
 interface PriorityAlert {
   readonly id: string;
@@ -53,6 +59,7 @@ interface PriorityAlert {
     LucideExternalLink,
     LucideFileChartColumn,
     LucideGlobe2,
+    LucideNetwork,
     LucidePawPrint,
     LucideShieldCheck,
     LucideSparkles,
@@ -91,6 +98,7 @@ export class DashboardPage implements OnInit {
     this.dataService.dataMode() === 'api' ? 'Données API Hub' : 'Données de démonstration',
   );
   protected readonly decisions = signal<readonly HubDecisionApi[]>([]);
+  protected readonly events = signal<readonly HubEventApi[]>([]);
   protected readonly scenario = signal<HubScenarioApi | null>(null);
   protected readonly scenarioBusy = signal(false);
   protected readonly scenarioMessage = signal<string | null>(null);
@@ -113,7 +121,7 @@ export class DashboardPage implements OnInit {
   });
 
   async ngOnInit(): Promise<void> {
-    await this.loadDecisions();
+    await Promise.all([this.loadDecisions(), this.loadEvents()]);
     if (this.auth.canManageConnectors()) {
       try {
         this.scenario.set(await this.hubApi.getScenario());
@@ -130,9 +138,9 @@ export class DashboardPage implements OnInit {
     try {
       this.scenario.set(await this.hubApi.runScenario());
       await this.dataService.refreshFromHub();
-      await this.loadDecisions();
+      await Promise.all([this.loadDecisions(), this.loadEvents()]);
       this.scenarioMessage.set(
-        'Scénario terminé : quatre observations et un signal décisionnel sont disponibles.',
+        `Scénario terminé : quatre observations, un événement consolidé${this.scenario()?.eventCode ? ` (${this.scenario()!.eventCode})` : ''} et un signal décisionnel sont disponibles.`,
       );
     } catch (error: unknown) {
       this.scenarioMessage.set(this.scenarioErrorMessage(error));
@@ -212,6 +220,14 @@ export class DashboardPage implements OnInit {
           simulated: true,
         })),
       );
+    }
+  }
+
+  private async loadEvents(): Promise<void> {
+    try {
+      this.events.set((await this.hubApi.getEvents()).items);
+    } catch {
+      this.events.set([]);
     }
   }
 

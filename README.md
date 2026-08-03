@@ -24,6 +24,7 @@ Démonstrateur Angular du Hub décisionnel régional One Health pour la CEEAC. C
 - file de décisions chargée depuis l'API avec accès direct au dossier concerné ;
 - rapports par alerte persistants et versionnés, avec workflow brouillon, revue, validation et publication ;
 - piste d'audit visible dans chaque dossier (scénario, affectation, décision et rapport).
+- événements One Health consolidés sans fusion des sources, avec score spatio-temporel, règle versionnée et raisons consultables.
 
 Les principaux écrans du démonstrateur sont maintenant fonctionnels. Les rapports générés restent descriptifs et nécessitent une validation humaine avant diffusion.
 
@@ -80,6 +81,8 @@ Les jeux de données se trouvent dans `src/app/core/data/mock`. Ils reproduisent
 Le jeu normalisé contient exactement 150 observations sources, 12 signaux à vérifier et 3 alertes vérifiées. Cette classification est propre au démonstrateur et ne résulte d'aucune validation sanitaire réelle.
 
 Un administrateur Hub peut lancer depuis `/dashboard` le scénario dynamique « Convergence zoonotique Cameroun–Tchad ». Il ajoute ou actualise quatre fiches fictives sans duplication et produit un signal qui doit obligatoirement être affecté puis vérifié par un humain. Relancer le scénario réinitialise ce scénario de démonstration, mais ne crée jamais de doublon.
+
+Le même scénario produit un événement consolidé reliant les quatre fiches. Le Dashboard affiche le nombre d'événements et le dossier explique précisément le rapprochement (secteurs, fenêtre temporelle, distance maximale, contexte transfrontalier et version de la règle). Les observations originales restent séparées et conservent leur provenance.
 
 Lorsque l'API Hub est disponible, les affectations, validations et rejets sont persistés dans MongoDB et audités avec l'identifiant de l'utilisateur. Une justification d'au moins dix caractères est obligatoire. Les commentaires internes restent locaux pour le moment.
 

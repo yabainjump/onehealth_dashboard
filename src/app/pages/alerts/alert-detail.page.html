@@ -160,6 +160,10 @@
           </div>
         </article>
 
+        @if (consolidatedEvent(); as event) {
+          <app-consolidated-event-card [event]="event" />
+        }
+
         <article class="provenance-card oh-card">
           <div class="section-heading">
             <span><svg lucideDatabase size="18"></svg></span>

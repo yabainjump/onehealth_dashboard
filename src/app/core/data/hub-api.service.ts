@@ -24,6 +24,7 @@ export interface HubObservationDetailApi {
     readonly verificationNote: string;
   } | null;
   readonly audit: readonly HubAuditApi[];
+  readonly event: HubEventApi | null;
   readonly simulated: true;
 }
 
@@ -68,10 +69,47 @@ export interface HubScenarioApi {
   }[];
   readonly observationIds: readonly string[];
   readonly signalCode: string | null;
+  readonly eventCode: string | null;
   readonly initiatedBy: string | null;
   readonly startedAt: string | null;
   readonly completedAt: string | null;
   readonly simulated: true;
+}
+
+export interface HubEventObservationApi {
+  readonly id: string;
+  readonly title: string;
+  readonly sector: 'human' | 'animal' | 'environment';
+  readonly sourceSystem: 'DHIS2' | 'ARIS 3' | 'CAPC-AC';
+  readonly countryCode: string;
+  readonly countryName: string;
+  readonly adminArea: string;
+  readonly observedAt: string;
+  readonly severity: 'low' | 'medium' | 'high' | 'critical';
+  readonly simulated: boolean;
+}
+
+export interface HubEventApi {
+  readonly eventCode: string;
+  readonly title: string;
+  readonly status: 'CONSOLIDATED' | 'UNDER_REVIEW' | 'CLOSED';
+  readonly observationIds: readonly string[];
+  readonly countryCodes: readonly string[];
+  readonly sectors: readonly ('human' | 'animal' | 'environment')[];
+  readonly longitude: number;
+  readonly latitude: number;
+  readonly maxDistanceKm: number;
+  readonly timeWindowHours: number;
+  readonly correlationScore: number;
+  readonly correlationReasons: readonly string[];
+  readonly ruleVersion: string;
+  readonly scenarioId: string;
+  readonly firstObservedAt: string;
+  readonly lastObservedAt: string;
+  readonly consolidatedBy: string;
+  readonly consolidatedAt: string;
+  readonly simulated: boolean;
+  readonly observations?: readonly HubEventObservationApi[];
 }
 
 export type HubReportStatus = 'DRAFT' | 'IN_REVIEW' | 'VALIDATED' | 'PUBLISHED';
@@ -238,6 +276,18 @@ export class HubApiService {
       this.http.get<{ items: readonly HubDecisionApi[]; total: number }>(
         `${this.baseUrl}/decisions`,
       ),
+    );
+  }
+
+  getEvents(): Promise<{ readonly items: readonly HubEventApi[]; readonly total: number }> {
+    return firstValueFrom(
+      this.http.get<{ items: readonly HubEventApi[]; total: number }>(`${this.baseUrl}/events`),
+    );
+  }
+
+  consolidateEvent(observationIds: readonly string[]): Promise<HubEventApi> {
+    return firstValueFrom(
+      this.http.post<HubEventApi>(`${this.baseUrl}/events`, { observationIds }),
     );
   }
 

@@ -29,6 +29,7 @@ import {
   HubAlertReportApi,
   HubAuditApi,
   HubApiService,
+  HubEventApi,
   HubObservationDetailApi,
   HubReportStatus,
   HubSignalApi,
@@ -45,6 +46,7 @@ import {
   ObservationStage,
   OneHealthObservation,
 } from '../../core/data/models/one-health-observation.model';
+import { ConsolidatedEventCardComponent } from '../../shared/components/consolidated-event-card/consolidated-event-card.component';
 
 interface WorkflowStep {
   readonly title: string;
@@ -56,6 +58,7 @@ interface WorkflowStep {
   selector: 'app-alert-detail-page',
   imports: [
     RouterLink,
+    ConsolidatedEventCardComponent,
     LucideActivity,
     LucideArrowLeft,
     LucideArrowRight,
@@ -104,6 +107,7 @@ export class AlertDetailPage {
   protected readonly commentDraft = signal('');
   protected readonly comments = signal<readonly string[]>([]);
   protected readonly apiSignal = signal<HubSignalApi | null>(null);
+  protected readonly consolidatedEvent = signal<HubEventApi | null>(null);
   protected readonly apiRelatedObservations = signal<readonly OneHealthObservation[] | null>(null);
   protected readonly actionInProgress = signal(false);
   protected readonly decisionNote = signal('');
@@ -124,6 +128,7 @@ export class AlertDetailPage {
     this.workflowStage.set(observation?.stage ?? 'observation');
     this.expertAssigned.set(observation?.stage === 'verified-alert');
     this.apiSignal.set(null);
+    this.consolidatedEvent.set(null);
     this.apiRelatedObservations.set(null);
     this.actionMessage.set(null);
     this.commentPanelOpen.set(false);
@@ -404,6 +409,7 @@ export class AlertDetailPage {
       REPORT_VALIDATED: 'Rapport validé',
       REPORT_PUBLISHED: 'Rapport publié',
       SCENARIO_COMPLETED: 'Scénario dynamique terminé',
+      OBSERVATIONS_CONSOLIDATED: 'Observations regroupées dans un événement',
     };
     return labels[action] ?? action.replaceAll('_', ' ').toLowerCase();
   }
@@ -471,6 +477,7 @@ export class AlertDetailPage {
     this.apiSignal.set(detail.signal);
     this.apiRelatedObservations.set(detail.related);
     this.auditTrail.set(detail.audit);
+    this.consolidatedEvent.set(detail.event);
     this.expertAssigned.set(
       detail.observation.stage === 'verified-alert' || !!detail.signal?.assignedTo,
     );

@@ -1,0 +1,60 @@
+<article class="event-card oh-card">
+  <div class="section-heading event-card__heading">
+    <span><svg lucideNetwork size="18"></svg></span>
+    <div>
+      <h2>Événement One Health consolidé</h2>
+      <p>{{ event().eventCode }} · règle {{ event().ruleVersion }}</p>
+    </div>
+    <strong class="correlation-score">{{ scorePercent(event().correlationScore) }}%</strong>
+  </div>
+
+  <div class="event-card__content">
+    <h3>{{ event().title }}</h3>
+    <p class="event-card__notice">
+      Ce rapprochement relie les observations sans les fusionner. Il reste explicable et ne
+      constitue pas une validation sanitaire.
+    </p>
+    <dl class="event-metrics">
+      <div>
+        <dt>Sources reliées</dt>
+        <dd>{{ event().observationIds.length }}</dd>
+      </div>
+      <div>
+        <dt>Secteurs</dt>
+        <dd>{{ event().sectors.length }} / 3</dd>
+      </div>
+      <div>
+        <dt>Fenêtre</dt>
+        <dd>{{ event().timeWindowHours }} h</dd>
+      </div>
+      <div>
+        <dt>Distance max.</dt>
+        <dd>{{ event().maxDistanceKm }} km</dd>
+      </div>
+    </dl>
+    <div class="correlation-reasons">
+      <h4>Pourquoi ces données ont été rapprochées</h4>
+      <ul>
+        @for (reason of event().correlationReasons; track reason) {
+          <li>
+            <svg lucideCheck size="13"></svg><span>{{ reason }}</span>
+          </li>
+        }
+      </ul>
+    </div>
+    @if (event().observations?.length) {
+      <div class="event-sources">
+        @for (source of event().observations; track source.id) {
+          <a [routerLink]="['/alertes', source.id]">
+            <span [class]="'event-source-dot event-source-dot--' + source.sector"></span>
+            <span
+              ><strong>{{ source.title }}</strong
+              ><small>{{ source.sourceSystem }} · {{ source.countryName }}</small></span
+            >
+            <svg lucideArrowRight size="14"></svg>
+          </a>
+        }
+      </div>
+    }
+  </div>
+</article>
