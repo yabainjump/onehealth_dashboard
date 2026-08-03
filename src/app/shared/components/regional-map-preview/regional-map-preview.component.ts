@@ -48,6 +48,7 @@ export class RegionalMapPreviewComponent implements AfterViewInit, OnDestroy {
 
   private readonly periodEffect = effect(() => {
     const period = this.period();
+    this.dataService.revision();
     if (this.map) {
       this.renderMarkers(period);
     }
@@ -111,8 +112,7 @@ export class RegionalMapPreviewComponent implements AfterViewInit, OnDestroy {
 
   private markerOptions(observation: OneHealthObservation): L.CircleMarkerOptions {
     return {
-      radius:
-        observation.stage === 'verified-alert' ? 9 : observation.stage === 'signal' ? 7 : 5,
+      radius: observation.stage === 'verified-alert' ? 9 : observation.stage === 'signal' ? 7 : 5,
       color: '#ffffff',
       weight: observation.stage === 'verified-alert' ? 3 : 2,
       fillColor: SECTOR_COLORS[observation.sector],

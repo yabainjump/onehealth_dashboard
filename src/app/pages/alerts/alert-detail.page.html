@@ -24,7 +24,12 @@
         <button
           class="oh-button"
           type="button"
-          [disabled]="expertAssigned() || actionInProgress() || !auth.canVerify() || (dataService.dataMode() === 'api' && !apiSignal())"
+          [disabled]="
+            expertAssigned() ||
+            actionInProgress() ||
+            !auth.canVerify() ||
+            (dataService.dataMode() === 'api' && !apiSignal())
+          "
           (click)="assignExpert()"
         >
           @if (expertAssigned()) {
@@ -70,20 +75,37 @@
         <article class="summary-card oh-card">
           <div class="section-heading">
             <span><svg lucideListTree size="18"></svg></span>
-            <div><h2>Résumé de l’événement</h2><p>{{ item.category }}</p></div>
+            <div>
+              <h2>Résumé de l’événement</h2>
+              <p>{{ item.category }}</p>
+            </div>
           </div>
 
           <div class="summary-card__content">
             <div>
               <p>{{ item.summary }}</p>
               <dl>
-                <div><dt>Système source</dt><dd>{{ item.sourceSystem }}</dd></div>
-                <div><dt>Référence source</dt><dd>{{ item.sourceRecordId }}</dd></div>
-                <div><dt>Réception Hub</dt><dd>{{ formatDate(item.receivedAt, true) }}</dd></div>
+                <div>
+                  <dt>Système source</dt>
+                  <dd>{{ item.sourceSystem }}</dd>
+                </div>
+                <div>
+                  <dt>Référence source</dt>
+                  <dd>{{ item.sourceRecordId }}</dd>
+                </div>
+                <div>
+                  <dt>Réception Hub</dt>
+                  <dd>{{ formatDate(item.receivedAt, true) }}</dd>
+                </div>
               </dl>
             </div>
             <div class="summary-map">
-              <img src="assets/figma/risk-map.png" alt="Aperçu cartographique de la zone CEEAC" width="512" height="281">
+              <img
+                src="assets/figma/risk-map.png"
+                alt="Aperçu cartographique de la zone CEEAC"
+                width="512"
+                height="281"
+              />
               <span class="summary-map__marker"></span>
               <small>{{ item.latitude }}, {{ item.longitude }}</small>
             </div>
@@ -102,18 +124,31 @@
           <div class="sector-context-grid">
             @for (context of sectorContext(); track context.id) {
               <a class="sector-context" [routerLink]="['/alertes', context.id]">
-                <header [class]="'sector-context__header sector-context__header--' + context.sector">
+                <header
+                  [class]="'sector-context__header sector-context__header--' + context.sector"
+                >
                   @switch (context.sector) {
-                    @case ('human') { <svg lucideStethoscope size="17"></svg> }
-                    @case ('animal') { <svg lucidePawPrint size="17"></svg> }
-                    @case ('environment') { <svg lucideTrees size="17"></svg> }
+                    @case ('human') {
+                      <svg lucideStethoscope size="17"></svg>
+                    }
+                    @case ('animal') {
+                      <svg lucidePawPrint size="17"></svg>
+                    }
+                    @case ('environment') {
+                      <svg lucideTrees size="17"></svg>
+                    }
                   }
                   <strong>{{ sectorLabel(context.sector) }}</strong>
                 </header>
                 <h3>{{ context.title }}</h3>
                 <div>
                   @for (metric of context.metrics; track metric.label) {
-                    <span><small>{{ metric.label }}</small><strong>{{ metric.value }}{{ metric.unit ? ' ' + metric.unit : '' }}</strong></span>
+                    <span
+                      ><small>{{ metric.label }}</small
+                      ><strong
+                        >{{ metric.value }}{{ metric.unit ? ' ' + metric.unit : '' }}</strong
+                      ></span
+                    >
                   }
                 </div>
                 <footer>
@@ -128,39 +163,161 @@
         <article class="provenance-card oh-card">
           <div class="section-heading">
             <span><svg lucideDatabase size="18"></svg></span>
-            <div><h2>Provenance et traçabilité</h2><p>Identité source conservée sans duplication métier</p></div>
+            <div>
+              <h2>Provenance et traçabilité</h2>
+              <p>Identité source conservée sans duplication métier</p>
+            </div>
           </div>
 
           <div class="provenance-grid">
-            <div><small>Identifiant Hub</small><strong>{{ item.id }}</strong></div>
-            <div><small>Identifiant source</small><strong>{{ item.sourceRecordId }}</strong></div>
-            <div><small>Système</small><strong>{{ item.sourceSystem }}</strong></div>
-            <div><small>Pays propriétaire</small><strong>{{ item.countryName }}</strong></div>
-            <div><small>Date d’observation</small><strong>{{ formatDate(item.observedAt, true) }}</strong></div>
-            <div><small>Coordonnées</small><strong>{{ item.latitude }}, {{ item.longitude }}</strong></div>
+            <div>
+              <small>Identifiant Hub</small><strong>{{ item.id }}</strong>
+            </div>
+            <div>
+              <small>Identifiant source</small><strong>{{ item.sourceRecordId }}</strong>
+            </div>
+            <div>
+              <small>Système</small><strong>{{ item.sourceSystem }}</strong>
+            </div>
+            <div>
+              <small>Pays propriétaire</small><strong>{{ item.countryName }}</strong>
+            </div>
+            <div>
+              <small>Date d’observation</small
+              ><strong>{{ formatDate(item.observedAt, true) }}</strong>
+            </div>
+            <div>
+              <small>Coordonnées</small><strong>{{ item.latitude }}, {{ item.longitude }}</strong>
+            </div>
           </div>
         </article>
+
+        @if (workflowStage() === 'verified-alert' || reports().length) {
+          <article class="report-card oh-card">
+            <div class="section-heading report-card__heading">
+              <span><svg lucideFileText size="18"></svg></span>
+              <div>
+                <h2>Rapport opérationnel de l’alerte</h2>
+                <p>Versions persistantes et validation par rôle</p>
+              </div>
+              @if (auth.canAnalyze()) {
+                <button
+                  class="oh-button"
+                  type="button"
+                  [disabled]="reportBusy()"
+                  (click)="generateReport()"
+                >
+                  <svg lucideFileText size="15"></svg
+                  >{{ reportBusy() ? 'Traitement…' : 'Nouvelle version' }}
+                </button>
+              }
+            </div>
+
+            @if (latestReport(); as report) {
+              <div class="report-summary">
+                <div class="report-summary__meta">
+                  <span>Version {{ report.version }}</span>
+                  <span [class]="'report-status report-status--' + report.status.toLowerCase()">{{
+                    reportStatusLabel(report.status)
+                  }}</span>
+                  <small>{{ formatDate(report.generatedAt, true) }}</small>
+                </div>
+                <h3>{{ report.title }}</h3>
+                <p>{{ report.executiveSummary }}</p>
+                <div class="report-columns">
+                  <div>
+                    <h4>Constats</h4>
+                    <ul>
+                      @for (finding of report.findings; track finding) {
+                        <li>{{ finding }}</li>
+                      }
+                    </ul>
+                  </div>
+                  <div>
+                    <h4>Recommandations</h4>
+                    <ul>
+                      @for (recommendation of report.recommendations; track recommendation) {
+                        <li>{{ recommendation }}</li>
+                      }
+                    </ul>
+                  </div>
+                </div>
+                <div class="report-actions">
+                  <button class="oh-button" type="button" (click)="printReport(report)">
+                    <svg lucideDownload size="15"></svg>Imprimer / PDF
+                  </button>
+                  @if (canTransitionReport(report)) {
+                    <button
+                      class="oh-button oh-button--primary"
+                      type="button"
+                      [disabled]="reportBusy()"
+                      (click)="transitionReport(report)"
+                    >
+                      {{ reportActionLabel(report.status) }}
+                    </button>
+                  }
+                </div>
+              </div>
+              @if (reports().length > 1) {
+                <div class="report-versions">
+                  <strong>Historique des versions</strong>
+                  @for (version of reports(); track version.reportId) {
+                    <span
+                      >V{{ version.version }} · {{ reportStatusLabel(version.status) }} ·
+                      {{ formatDate(version.generatedAt) }}</span
+                    >
+                  }
+                </div>
+              }
+            } @else {
+              <div class="report-empty">
+                <p>Aucun rapport n’a encore été généré pour cette alerte vérifiée.</p>
+              </div>
+            }
+          </article>
+        }
       </main>
 
       <aside class="detail-sidebar">
         <article class="governance-card oh-card">
-          <div class="sidebar-heading"><svg lucideLockKeyhole size="17"></svg><h2>Gouvernance</h2></div>
+          <div class="sidebar-heading">
+            <svg lucideLockKeyhole size="17"></svg>
+            <h2>Gouvernance</h2>
+          </div>
           <dl>
-            <div><dt>Confidentialité</dt><dd><span>Restreint · démo</span></dd></div>
-            <div><dt>Source interopérable</dt><dd><strong>{{ item.sourceSystem }}</strong></dd></div>
-            <div><dt>Pays responsable</dt><dd><strong>{{ item.countryName }}</strong></dd></div>
+            <div>
+              <dt>Confidentialité</dt>
+              <dd><span>Restreint · démo</span></dd>
+            </div>
+            <div>
+              <dt>Source interopérable</dt>
+              <dd>
+                <strong>{{ item.sourceSystem }}</strong>
+              </dd>
+            </div>
+            <div>
+              <dt>Pays responsable</dt>
+              <dd>
+                <strong>{{ item.countryName }}</strong>
+              </dd>
+            </div>
           </dl>
           <div class="assigned-expert">
             <span><svg lucideUsers size="17"></svg></span>
             <div>
               <small>Expert responsable</small>
-              <strong>{{ expertAssigned() ? 'Expert régional de démonstration' : 'Non affecté' }}</strong>
+              <strong>{{
+                expertAssigned() ? 'Expert régional de démonstration' : 'Non affecté'
+              }}</strong>
             </div>
           </div>
         </article>
 
         <article class="workflow-card oh-card">
-          <div class="sidebar-heading"><svg lucideActivity size="17"></svg><h2>Workflow</h2></div>
+          <div class="sidebar-heading">
+            <svg lucideActivity size="17"></svg>
+            <h2>Workflow</h2>
+          </div>
           <div class="workflow-list">
             @for (step of workflow(); track step.title) {
               <div [class]="'workflow-step workflow-step--' + step.state">
@@ -173,7 +330,10 @@
                     <svg lucideClock3 size="14"></svg>
                   }
                 </span>
-                <div><strong>{{ step.title }}</strong><small>{{ step.detail }}</small></div>
+                <div>
+                  <strong>{{ step.title }}</strong
+                  ><small>{{ step.detail }}</small>
+                </div>
               </div>
             }
           </div>
@@ -193,7 +353,9 @@
               <button
                 class="reject-button"
                 type="button"
-                [disabled]="decisionNote().trim().length < 10 || !expertAssigned() || actionInProgress()"
+                [disabled]="
+                  decisionNote().trim().length < 10 || !expertAssigned() || actionInProgress()
+                "
                 (click)="rejectSignal()"
               >
                 Rejeter le signal avec cette justification
@@ -217,7 +379,10 @@
                 [value]="commentDraft()"
                 (input)="onCommentInput($event)"
               ></textarea>
-              <div><small>{{ commentDraft().length }} / 500</small><button type="button" (click)="addComment()">Enregistrer</button></div>
+              <div>
+                <small>{{ commentDraft().length }} / 500</small
+                ><button type="button" (click)="addComment()">Enregistrer</button>
+              </div>
             </div>
           }
 
@@ -230,14 +395,47 @@
           }
         </article>
 
-        <article class="audit-card" [class.audit-card--connected]="dataService.dataMode() === 'api'">
+        <article
+          class="audit-card"
+          [class.audit-card--connected]="dataService.dataMode() === 'api'"
+        >
           <svg lucideTriangleAlert size="16"></svg>
           @if (dataService.dataMode() === 'api') {
-            <p><strong>Workflow connecté.</strong> Les affectations et décisions sont enregistrées dans MongoDB avec leur auteur.</p>
+            <p>
+              <strong>Workflow connecté.</strong> Les affectations et décisions sont enregistrées
+              dans MongoDB avec leur auteur.
+            </p>
           } @else {
-            <p><strong>Mode de secours local.</strong> Les actions de cette page ne sont pas persistées.</p>
+            <p>
+              <strong>Mode de secours local.</strong> Les actions de cette page ne sont pas
+              persistées.
+            </p>
           }
         </article>
+
+        @if (auditTrail().length) {
+          <article class="audit-timeline oh-card">
+            <div class="sidebar-heading">
+              <svg lucideListTree size="17"></svg>
+              <h2>Piste d’audit</h2>
+            </div>
+            <div class="audit-timeline__list">
+              @for (entry of auditTrail(); track entry.entityId + entry.action + entry.createdAt) {
+                <div class="audit-event">
+                  <span></span>
+                  <div>
+                    <strong>{{ auditActionLabel(entry.action) }}</strong>
+                    <small
+                      >{{ entry.actorType === 'SYSTEM' ? 'Système' : 'Utilisateur' }} ·
+                      {{ formatDate(entry.createdAt, true) }}</small
+                    >
+                    <code>{{ entry.entityId }}</code>
+                  </div>
+                </div>
+              }
+            </div>
+          </article>
+        }
       </aside>
     </div>
   </section>
@@ -246,6 +444,8 @@
     <svg lucideTriangleAlert size="28"></svg>
     <h1>Donnée introuvable</h1>
     <p>L’identifiant demandé n’existe pas dans le jeu de démonstration.</p>
-    <a class="oh-button" routerLink="/alertes"><svg lucideArrowLeft size="16"></svg>Retour à la liste</a>
+    <a class="oh-button" routerLink="/alertes"
+      ><svg lucideArrowLeft size="16"></svg>Retour à la liste</a
+    >
   </section>
 }

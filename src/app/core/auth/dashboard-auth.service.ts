@@ -91,6 +91,18 @@ export class DashboardAuthService {
     );
   }
 
+  canAnalyze(user: DashboardUser | null = this.currentUser()): boolean {
+    return (
+      !!user &&
+      (user.role === 'admin' ||
+        user.hubRoles.some((role) => ['hub_admin', 'hub_verifier', 'hub_analyst'].includes(role)))
+    );
+  }
+
+  canPublish(user: DashboardUser | null = this.currentUser()): boolean {
+    return !!user && (user.role === 'admin' || user.hubRoles.includes('hub_admin'));
+  }
+
   canManageConnectors(user: DashboardUser | null = this.currentUser()): boolean {
     return !!user && (user.role === 'admin' || user.hubRoles.includes('hub_admin'));
   }

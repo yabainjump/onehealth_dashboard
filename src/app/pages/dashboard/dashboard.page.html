@@ -8,7 +8,7 @@
       </p>
     </div>
     <div class="page-header__actions">
-      <button class="oh-button" type="button">
+      <button class="oh-button" type="button" (click)="exportData()">
         <svg lucideDownload size="16"></svg>
         Exporter les données
       </button>
@@ -26,6 +26,53 @@
       elle ne présente aucune donnée sanitaire officielle.
     </span>
   </div>
+
+  @if (auth.canManageConnectors()) {
+    <article class="scenario-card oh-card" aria-labelledby="scenario-title">
+      <div class="scenario-card__intro">
+        <span class="scenario-card__icon"><svg lucideSparkles size="19"></svg></span>
+        <div>
+          <p>Moteur de scénario dynamique</p>
+          <h2 id="scenario-title">
+            {{ scenario()?.title || 'Convergence zoonotique Cameroun–Tchad' }}
+          </h2>
+          <span>{{
+            scenario()?.description ||
+              'Injecte des données multisectorielles fictives, les normalise puis produit un signal à vérifier.'
+          }}</span>
+        </div>
+      </div>
+      <div class="scenario-card__actions">
+        <span
+          class="scenario-status"
+          [class.scenario-status--done]="scenario()?.status === 'COMPLETED'"
+        >
+          {{ scenario()?.status || 'READY' }}
+        </span>
+        <button
+          class="oh-button oh-button--primary"
+          type="button"
+          [disabled]="scenarioBusy()"
+          (click)="runScenario()"
+        >
+          <svg lucideSparkles size="16"></svg>
+          {{ scenarioBusy() ? 'Exécution…' : 'Lancer le scénario' }}
+        </button>
+      </div>
+      @if (scenario()?.steps?.length) {
+        <ol class="scenario-steps">
+          @for (step of scenario()!.steps; track step.code) {
+            <li [class.scenario-steps__done]="step.status === 'COMPLETED'">
+              <svg lucideCheckCircle2 size="14"></svg><span>{{ step.label }}</span>
+            </li>
+          }
+        </ol>
+      }
+      @if (scenarioMessage()) {
+        <p class="scenario-card__message" role="status">{{ scenarioMessage() }}</p>
+      }
+    </article>
+  }
 
   <div class="period-switcher" aria-label="Période affichée">
     <button
@@ -53,34 +100,48 @@
 
   <div class="metrics" aria-label="Indicateurs clés">
     <article class="metric-card oh-card">
-      <span class="metric-card__icon metric-card__icon--blue"><svg lucideGlobe2 size="18"></svg></span>
+      <span class="metric-card__icon metric-card__icon--blue"
+        ><svg lucideGlobe2 size="18"></svg
+      ></span>
       <p>États représentés</p>
       <strong>{{ displayedSummary().countries }} <small>/ 11</small></strong>
       <span class="metric-card__status metric-card__status--success">Couverture complète</span>
     </article>
     <article class="metric-card oh-card">
-      <span class="metric-card__icon metric-card__icon--violet"><svg lucideExternalLink size="18"></svg></span>
+      <span class="metric-card__icon metric-card__icon--violet"
+        ><svg lucideExternalLink size="18"></svg
+      ></span>
       <p>Observations sources</p>
       <strong>{{ displayedSummary().total }}</strong>
-      <span class="metric-card__status">{{ dataSummary.total }} fiches au total</span>
+      <span class="metric-card__status">{{ dataSummary().total }} fiches au total</span>
     </article>
     <article class="metric-card metric-card--danger oh-card">
-      <span class="metric-card__icon metric-card__icon--red"><svg lucideTriangleAlert size="18"></svg></span>
+      <span class="metric-card__icon metric-card__icon--red"
+        ><svg lucideTriangleAlert size="18"></svg
+      ></span>
       <p>Alertes prioritaires</p>
       <strong>{{ displayedSummary().alerts }}</strong>
-      <span class="metric-card__status metric-card__status--danger">Validation humaine effectuée</span>
+      <span class="metric-card__status metric-card__status--danger"
+        >Validation humaine effectuée</span
+      >
     </article>
     <article class="metric-card oh-card">
-      <span class="metric-card__icon metric-card__icon--orange"><svg lucideClipboardCheck size="18"></svg></span>
+      <span class="metric-card__icon metric-card__icon--orange"
+        ><svg lucideClipboardCheck size="18"></svg
+      ></span>
       <p>Signaux à vérifier</p>
       <strong>{{ displayedSummary().signals }}</strong>
       <span class="metric-card__status">File régionale</span>
     </article>
     <article class="metric-card oh-card">
-      <span class="metric-card__icon metric-card__icon--green"><svg lucideCheckCircle2 size="18"></svg></span>
+      <span class="metric-card__icon metric-card__icon--green"
+        ><svg lucideCheckCircle2 size="18"></svg
+      ></span>
       <p>Complétude</p>
-      <strong>{{ dataSummary.completeness }}%</strong>
-      <span class="metric-card__status metric-card__status--success">Schéma de démonstration complet</span>
+      <strong>{{ dataSummary().completeness }}%</strong>
+      <span class="metric-card__status metric-card__status--success"
+        >Schéma de démonstration complet</span
+      >
     </article>
   </div>
 
@@ -112,9 +173,15 @@
       </div>
 
       <footer class="map-card__footer">
-        <span><strong>{{ displayedSummary().alerts }}</strong> alertes vérifiées</span>
-        <span><strong>{{ displayedSummary().signals }}</strong> signaux à vérifier</span>
-        <span><strong>{{ displayedSummary().countries }}</strong> États représentés</span>
+        <span
+          ><strong>{{ displayedSummary().alerts }}</strong> alertes vérifiées</span
+        >
+        <span
+          ><strong>{{ displayedSummary().signals }}</strong> signaux à vérifier</span
+        >
+        <span
+          ><strong>{{ displayedSummary().countries }}</strong> États représentés</span
+        >
       </footer>
     </article>
 
@@ -129,13 +196,16 @@
             <p>Validation humaine requise</p>
           </div>
         </div>
-        <span class="count-badge">3</span>
+        <span class="count-badge">{{ priorityAlerts().length }}</span>
       </header>
 
       <div class="alert-list">
-        @for (alert of priorityAlerts; track alert.title) {
+        @for (alert of priorityAlerts(); track alert.id) {
           <a class="alert-item" [routerLink]="['/alertes', alert.id]">
-            <span class="alert-item__level" [class]="'alert-item__level alert-item__level--' + alert.tone"></span>
+            <span
+              class="alert-item__level"
+              [class]="'alert-item__level alert-item__level--' + alert.tone"
+            ></span>
             <span class="alert-item__body">
               <span class="alert-item__topline">
                 <strong>{{ alert.title }}</strong>
@@ -177,22 +247,31 @@
         <span role="columnheader">Date limite</span>
         <span role="columnheader">Action</span>
       </div>
-      @for (decision of decisions; track decision.label) {
+      @for (decision of decisions(); track decision.signalCode) {
         <div class="decision-row" role="row">
-          <strong role="cell">{{ decision.label }}</strong>
+          <strong role="cell">{{ decision.title }}</strong>
           <span class="decision-row__sectors" role="cell">
-            @for (sector of decision.sectors; track sector) {
-              <span class="mini-sector">{{ sector.charAt(0) }}</span>
-            }
+            <span class="mini-sector">{{ sectorShort(decision.sector) }}</span>
           </span>
           <span role="cell">
-            <span class="priority-badge" [class.priority-badge--high]="decision.priority === 'Haute'">
-              {{ decision.priority }}
+            <span
+              class="priority-badge"
+              [class.priority-badge--high]="
+                decision.priority === 'critical' || decision.priority === 'high'
+              "
+            >
+              {{ priorityLabel(decision.priority) }}
             </span>
           </span>
-          <span role="cell">{{ decision.deadline }}</span>
-          <span role="cell"><a class="table-action" routerLink="/alertes">Examiner</a></span>
+          <span role="cell">{{ deadlineLabel(decision.dueAt) }}</span>
+          <span role="cell"
+            ><a class="table-action" [routerLink]="['/alertes', decision.observationId]"
+              >Examiner</a
+            ></span
+          >
         </div>
+      } @empty {
+        <p class="decision-table__empty">Aucune décision en attente dans votre périmètre.</p>
       }
     </div>
   </article>
@@ -207,15 +286,24 @@
     </div>
     <article class="source-card source-card--human">
       <svg lucideStethoscope size="18"></svg>
-      <span><strong>DHIS2</strong><small>Santé humaine · {{ dataSummary.bySector.human }} données</small></span>
+      <span
+        ><strong>DHIS2</strong
+        ><small>Santé humaine · {{ dataSummary().bySector.human }} données</small></span
+      >
     </article>
     <article class="source-card source-card--animal">
       <svg lucidePawPrint size="18"></svg>
-      <span><strong>ARIS – AU-IBAR</strong><small>Santé animale · {{ dataSummary.bySector.animal }} données</small></span>
+      <span
+        ><strong>ARIS – AU-IBAR</strong
+        ><small>Santé animale · {{ dataSummary().bySector.animal }} données</small></span
+      >
     </article>
     <article class="source-card source-card--environment">
       <svg lucideTrees size="18"></svg>
-      <span><strong>CAPC-AC / Météo</strong><small>Environnement · {{ dataSummary.bySector.environment }} données</small></span>
+      <span
+        ><strong>CAPC-AC / Météo</strong
+        ><small>Environnement · {{ dataSummary().bySector.environment }} données</small></span
+      >
     </article>
   </section>
 </section>

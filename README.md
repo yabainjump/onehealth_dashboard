@@ -20,6 +20,10 @@ Démonstrateur Angular du Hub décisionnel régional One Health pour la CEEAC. C
 - administration sécurisée des rôles Hub et des périmètres pays CEEAC ;
 - registre de souveraineté avec politiques de partage par État et audit des décisions ;
 - données de démonstration clairement identifiées comme fictives.
+- moteur de scénario dynamique administrateur, idempotent et traçable, reliant CAPC-AC, ARIS 3 et DHIS2 entre le Cameroun et le Tchad ;
+- file de décisions chargée depuis l'API avec accès direct au dossier concerné ;
+- rapports par alerte persistants et versionnés, avec workflow brouillon, revue, validation et publication ;
+- piste d'audit visible dans chaque dossier (scénario, affectation, décision et rapport).
 
 Les principaux écrans du démonstrateur sont maintenant fonctionnels. Les rapports générés restent descriptifs et nécessitent une validation humaine avant diffusion.
 
@@ -46,18 +50,18 @@ La version de production est générée dans `dist/onehealth_dashboard/browser`.
 
 ## Routes
 
-| Route | État |
-| --- | --- |
-| `/connexion` | Authentification JWT du Dashboard implémentée |
-| `/dashboard` | Première vue stratégique implémentée |
-| `/carte` | Carte régionale interactive implémentée |
-| `/alertes` | Registre, filtres, pagination et export CSV implémentés |
-| `/alertes/:id` | Dossier multisectoriel et workflow humain simulé implémentés |
-| `/analyses` | Analyse multisectorielle, qualité et export CSV implémentés |
-| `/rapports` | Bibliothèque, aperçu, impression et exports implémentés |
-| `/connecteurs` | Supervision et synchronisation contrôlée implémentées |
-| `/administration` | Gestion des rôles institutionnels et des pays autorisés |
-| `/souverainete` | Registre des politiques nationales de partage des données |
+| Route             | État                                                                            |
+| ----------------- | ------------------------------------------------------------------------------- |
+| `/connexion`      | Authentification JWT du Dashboard implémentée                                   |
+| `/dashboard`      | Première vue stratégique implémentée                                            |
+| `/carte`          | Carte régionale interactive implémentée                                         |
+| `/alertes`        | Registre, filtres, pagination et export CSV implémentés                         |
+| `/alertes/:id`    | Dossier multisectoriel, rapport versionné, workflow humain et audit persistants |
+| `/analyses`       | Analyse multisectorielle, qualité et export CSV implémentés                     |
+| `/rapports`       | Bibliothèque, aperçu, impression et exports implémentés                         |
+| `/connecteurs`    | Supervision et synchronisation contrôlée implémentées                           |
+| `/administration` | Gestion des rôles institutionnels et des pays autorisés                         |
+| `/souverainete`   | Registre des politiques nationales de partage des données                       |
 
 ## Référence produit
 
@@ -74,6 +78,8 @@ Les jeux de données se trouvent dans `src/app/core/data/mock`. Ils reproduisent
 - relevés climatiques et environnementaux CAPC-AC.
 
 Le jeu normalisé contient exactement 150 observations sources, 12 signaux à vérifier et 3 alertes vérifiées. Cette classification est propre au démonstrateur et ne résulte d'aucune validation sanitaire réelle.
+
+Un administrateur Hub peut lancer depuis `/dashboard` le scénario dynamique « Convergence zoonotique Cameroun–Tchad ». Il ajoute ou actualise quatre fiches fictives sans duplication et produit un signal qui doit obligatoirement être affecté puis vérifié par un humain. Relancer le scénario réinitialise ce scénario de démonstration, mais ne crée jamais de doublon.
 
 Lorsque l'API Hub est disponible, les affectations, validations et rejets sont persistés dans MongoDB et audités avec l'identifiant de l'utilisateur. Une justification d'au moins dix caractères est obligatoire. Les commentaires internes restent locaux pour le moment.
 
@@ -137,6 +143,6 @@ Le backend doit autoriser `https://onehealthdashboard.yaba-in.com` dans la varia
 `CORS_ORIGIN` de `$HOME/apps/onehealth_backend/.env`, sans supprimer l'origine de l'application
 communautaire. Le processus PM2 doit ensuite être redémarré avec `--update-env`.
 
-## Prochaine couche technique
+## Limite du démonstrateur
 
-Les prochaines couches sont la supervision des connecteurs simulés, les analyses sectorielles et la bibliothèque de rapports. Aucune donnée fictive ne doit être confondue avec une donnée sanitaire officielle.
+Le moteur prouve le parcours d'une convergence intersectorielle, mais il ne remplace pas encore un moteur statistique connecté aux API nationales réelles. Aucune donnée fictive ne doit être confondue avec une donnée sanitaire officielle et aucune alerte n'est validée automatiquement.

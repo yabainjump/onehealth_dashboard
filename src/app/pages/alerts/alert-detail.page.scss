@@ -85,16 +85,37 @@
     background: currentColor;
   }
 
-  &--critical { background: #fff0f1; color: var(--oh-danger); }
-  &--high { background: #fff3e8; color: var(--oh-warning); }
-  &--medium { background: #edf5ff; color: var(--oh-observation); }
-  &--low { background: #eef6f1; color: var(--oh-success); }
+  &--critical {
+    background: #fff0f1;
+    color: var(--oh-danger);
+  }
+  &--high {
+    background: #fff3e8;
+    color: var(--oh-warning);
+  }
+  &--medium {
+    background: #edf5ff;
+    color: var(--oh-observation);
+  }
+  &--low {
+    background: #eef6f1;
+    color: var(--oh-success);
+  }
 }
 
 .stage-badge {
-  &--observation { background: #e8f5fc; color: var(--oh-observation); }
-  &--signal { background: #fff3e8; color: #ad510c; }
-  &--verified-alert { background: #e8f6ef; color: var(--oh-success); }
+  &--observation {
+    background: #e8f5fc;
+    color: var(--oh-observation);
+  }
+  &--signal {
+    background: #fff3e8;
+    color: #ad510c;
+  }
+  &--verified-alert {
+    background: #e8f6ef;
+    color: var(--oh-success);
+  }
 }
 
 .human-control-notice,
@@ -295,12 +316,12 @@
     border-radius: 7px;
     background: #fff5f5;
     color: #9f2935;
-    font-size: .64rem;
+    font-size: 0.64rem;
     font-weight: 680;
     cursor: pointer;
 
     &:disabled {
-      opacity: .5;
+      opacity: 0.5;
       cursor: not-allowed;
     }
   }
@@ -321,7 +342,9 @@
   border: 1px solid var(--oh-border);
   border-radius: 9px;
   background: #fff;
-  transition: border-color 150ms ease, transform 150ms ease;
+  transition:
+    border-color 150ms ease,
+    transform 150ms ease;
 
   &:hover {
     border-color: #b6c5d7;
@@ -334,9 +357,15 @@
     gap: 7px;
     font-size: 0.6rem;
 
-    &--human { color: var(--oh-human); }
-    &--animal { color: var(--oh-animal); }
-    &--environment { color: var(--oh-observation); }
+    &--human {
+      color: var(--oh-human);
+    }
+    &--animal {
+      color: var(--oh-animal);
+    }
+    &--environment {
+      color: var(--oh-observation);
+    }
   }
 
   h3 {
@@ -538,8 +567,14 @@
     }
   }
 
-  &--done > span { background: #e8f6ef; color: var(--oh-success); }
-  &--active > span { background: #e7f0fd; color: var(--oh-primary-800); }
+  &--done > span {
+    background: #e8f6ef;
+    color: var(--oh-success);
+  }
+  &--active > span {
+    background: #e7f0fd;
+    color: var(--oh-primary-800);
+  }
 }
 
 .comment-button {
@@ -651,6 +686,150 @@
   color: #176b54;
 }
 
+.report-card {
+  padding: 0;
+  overflow: hidden;
+}
+.report-card__heading {
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--oh-border);
+}
+.report-card__heading .oh-button {
+  margin-left: auto;
+}
+.report-summary {
+  padding: 20px;
+}
+.report-summary__meta {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--oh-ink-600);
+  font-size: 0.7rem;
+}
+.report-summary h3 {
+  margin: 13px 0 7px;
+  font-size: 1rem;
+}
+.report-summary > p {
+  margin: 0;
+  color: var(--oh-ink-600);
+  font-size: 0.78rem;
+  line-height: 1.65;
+}
+.report-status {
+  padding: 4px 7px;
+  border-radius: 999px;
+  background: #edf1f6;
+  font-size: 0.58rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+.report-status--in_review {
+  background: #fff3dc;
+  color: #9a5c00;
+}
+.report-status--validated,
+.report-status--published {
+  background: #e4f6ed;
+  color: var(--oh-success);
+}
+.report-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 18px;
+}
+.report-columns h4 {
+  margin: 0 0 8px;
+  font-size: 0.75rem;
+}
+.report-columns ul {
+  margin: 0;
+  padding-left: 17px;
+  color: var(--oh-ink-600);
+  font-size: 0.7rem;
+  line-height: 1.55;
+}
+.report-columns li + li {
+  margin-top: 6px;
+}
+.report-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid var(--oh-border);
+}
+.report-versions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px 12px;
+  padding: 13px 20px;
+  border-top: 1px solid var(--oh-border);
+  background: #f8fafc;
+  color: var(--oh-ink-600);
+  font-size: 0.65rem;
+}
+.report-versions strong {
+  color: var(--oh-ink-800);
+}
+.report-empty {
+  padding: 24px;
+  color: var(--oh-ink-500);
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+.audit-timeline {
+  padding: 17px;
+}
+.audit-timeline__list {
+  display: grid;
+  gap: 0;
+  margin-top: 13px;
+}
+.audit-event {
+  display: grid;
+  grid-template-columns: 12px 1fr;
+  gap: 9px;
+  min-width: 0;
+  padding-bottom: 15px;
+}
+.audit-event > span {
+  width: 9px;
+  height: 9px;
+  margin-top: 4px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: var(--oh-primary-700);
+  box-shadow: 0 0 0 1px #a9c2df;
+}
+.audit-event > div {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+.audit-event strong {
+  color: var(--oh-ink-800);
+  font-size: 0.68rem;
+  line-height: 1.35;
+  text-transform: capitalize;
+}
+.audit-event small {
+  color: var(--oh-ink-500);
+  font-size: 0.59rem;
+}
+.audit-event code {
+  overflow: hidden;
+  color: var(--oh-primary-700);
+  font-size: 0.56rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .decision-form {
   display: grid;
   gap: 7px;
@@ -660,7 +839,7 @@
 
   label {
     color: var(--oh-ink-800);
-    font-size: .68rem;
+    font-size: 0.68rem;
     font-weight: 700;
   }
 
@@ -673,7 +852,7 @@
     outline: 0;
     color: var(--oh-ink-900);
     font: inherit;
-    font-size: .7rem;
+    font-size: 0.7rem;
     line-height: 1.45;
 
     &:focus {
@@ -684,7 +863,7 @@
 
   small {
     color: var(--oh-ink-500);
-    font-size: .6rem;
+    font-size: 0.6rem;
   }
 }
 
@@ -725,12 +904,27 @@
     grid-template-columns: 1fr 1fr;
   }
 
-  .audit-card {
+  .audit-card,
+  .audit-timeline {
     grid-column: 1 / -1;
   }
 }
 
 @media (max-width: 780px) {
+  .report-card__heading {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  .report-card__heading .oh-button {
+    width: 100%;
+    margin-left: 0;
+  }
+  .report-columns {
+    grid-template-columns: 1fr;
+  }
+  .report-actions {
+    flex-direction: column;
+  }
   .detail-header {
     align-items: stretch;
     flex-direction: column;

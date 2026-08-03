@@ -33,6 +33,7 @@ export class OneHealthDataService {
   private loadedScopeKey = '';
 
   readonly dataMode = signal<'initial' | 'api' | 'fallback'>('initial');
+  readonly revision = signal(0);
   readonly dataNotice = signal<string | null>(null);
   observations: readonly OneHealthObservation[] = MOCK_ONE_HEALTH_OBSERVATIONS;
 
@@ -97,9 +98,7 @@ export class OneHealthDataService {
           this.replaceObservations(MOCK_ONE_HEALTH_OBSERVATIONS);
           this.loadedScopeKey = scopeKey;
           this.dataMode.set('fallback');
-          this.dataNotice.set(
-            'API Hub indisponible — jeu local fictif utilisé temporairement.',
-          );
+          this.dataNotice.set('API Hub indisponible — jeu local fictif utilisé temporairement.');
         })
         .finally(() => {
           this.loadPromise = null;
@@ -114,6 +113,14 @@ export class OneHealthDataService {
         observation.id === updated.id ? updated : observation,
       ),
     );
+  }
+
+  async refreshFromHub(): Promise<void> {
+    const observations = await this.hubApi.getAllObservations();
+    if (!observations.length) throw new Error('Le Hub ne contient aucune observation.');
+    this.replaceObservations(observations);
+    this.dataMode.set('api');
+    this.dataNotice.set(null);
   }
 
   filter(filter: ObservationFilter): readonly OneHealthObservation[] {
@@ -148,7 +155,8 @@ export class OneHealthDataService {
           observation.id !== reference.id && observation.countryCode === reference.countryCode,
       )
       .sort((left, right) => {
-        const sectorPriority = Number(left.sector === reference.sector) - Number(right.sector === reference.sector);
+        const sectorPriority =
+          Number(left.sector === reference.sector) - Number(right.sector === reference.sector);
         return sectorPriority || right.observedAt.localeCompare(left.observedAt);
       })
       .slice(0, Math.max(0, limit));
@@ -179,10 +187,10 @@ export class OneHealthDataService {
       (observation) =>
         Boolean(
           observation.sourceRecordId &&
-            observation.countryCode &&
-            observation.adminArea &&
-            observation.observedAt &&
-            observation.title,
+          observation.countryCode &&
+          observation.adminArea &&
+          observation.observedAt &&
+          observation.title,
         ) &&
         Number.isFinite(observation.latitude) &&
         Number.isFinite(observation.longitude),
@@ -198,14 +206,10 @@ export class OneHealthDataService {
     this.verifiedAlerts = this.observations.filter(
       (observation) => observation.stage === 'verified-alert',
     );
-    this.signals = this.observations.filter(
-      (observation) => observation.stage === 'signal',
-    );
+    this.signals = this.observations.filter((observation) => observation.stage === 'signal');
     this.summary = {
       total: this.observations.length,
-      countries: new Set(
-        this.observations.map((observation) => observation.countryCode),
-      ).size,
+      countries: new Set(this.observations.map((observation) => observation.countryCode)).size,
       bySector: this.countBySector(),
       byStage: this.countByStage(),
       completeness: this.calculateCompleteness(),
@@ -219,5 +223,6 @@ export class OneHealthDataService {
         records: this.summary.bySector.environment,
       },
     ];
+    this.revision.update((value) => value + 1);
   }
 }

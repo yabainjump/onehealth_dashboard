@@ -23,8 +23,78 @@ export interface HubObservationDetailApi {
     readonly verifiedAt: string;
     readonly verificationNote: string;
   } | null;
-  readonly audit: readonly Record<string, unknown>[];
+  readonly audit: readonly HubAuditApi[];
   readonly simulated: true;
+}
+
+export interface HubAuditApi {
+  readonly entityType: 'observation' | 'signal' | 'alert' | 'scenario' | 'report' | string;
+  readonly entityId: string;
+  readonly action: string;
+  readonly actorId: string;
+  readonly actorType: 'USER' | 'SYSTEM';
+  readonly metadata: Readonly<Record<string, unknown>>;
+  readonly countryCode: string;
+  readonly createdAt: string;
+}
+
+export interface HubDecisionApi {
+  readonly signalCode: string;
+  readonly observationId: string;
+  readonly title: string;
+  readonly countryCode: string;
+  readonly countryName: string;
+  readonly adminArea: string;
+  readonly sector: 'human' | 'animal' | 'environment';
+  readonly priority: 'low' | 'medium' | 'high' | 'critical';
+  readonly confidenceScore: number;
+  readonly status: 'SIGNAL_DETECTED' | 'UNDER_VERIFICATION';
+  readonly assignedTo: string | null;
+  readonly detectedAt: string;
+  readonly dueAt: string;
+  readonly simulated: boolean;
+}
+
+export interface HubScenarioApi {
+  readonly scenarioCode: string;
+  readonly title: string;
+  readonly description: string;
+  readonly status: 'READY' | 'RUNNING' | 'COMPLETED' | 'FAILED';
+  readonly steps: readonly {
+    readonly code: string;
+    readonly label: string;
+    readonly status: 'PENDING' | 'COMPLETED' | 'FAILED';
+    readonly completedAt: string | null;
+  }[];
+  readonly observationIds: readonly string[];
+  readonly signalCode: string | null;
+  readonly initiatedBy: string | null;
+  readonly startedAt: string | null;
+  readonly completedAt: string | null;
+  readonly simulated: true;
+}
+
+export type HubReportStatus = 'DRAFT' | 'IN_REVIEW' | 'VALIDATED' | 'PUBLISHED';
+export interface HubAlertReportApi {
+  readonly reportId: string;
+  readonly alertCode: string;
+  readonly observationId: string;
+  readonly countryCode: string;
+  readonly version: number;
+  readonly status: HubReportStatus;
+  readonly title: string;
+  readonly executiveSummary: string;
+  readonly findings: readonly string[];
+  readonly recommendations: readonly string[];
+  readonly sources: readonly string[];
+  readonly sectors: readonly ('human' | 'animal' | 'environment')[];
+  readonly generatedBy: string;
+  readonly generatedAt: string;
+  readonly validatedBy: string | null;
+  readonly validatedAt: string | null;
+  readonly publishedBy: string | null;
+  readonly publishedAt: string | null;
+  readonly simulated: boolean;
 }
 
 export type HubConnectorStatus = 'operational' | 'degraded' | 'error' | 'suspended';
@@ -104,12 +174,7 @@ export interface HubSharingPolicyApi {
   readonly policyId: string;
   readonly countryOwner: string;
   readonly sharingLevel: HubSharingLevel;
-  readonly allowedRoles: readonly (
-    | 'hub_viewer'
-    | 'hub_analyst'
-    | 'hub_verifier'
-    | 'hub_admin'
-  )[];
+  readonly allowedRoles: readonly ('hub_viewer' | 'hub_analyst' | 'hub_verifier' | 'hub_admin')[];
   readonly allowedCountries: readonly string[];
   readonly aggregationLevel: HubAggregationLevel;
   readonly retentionPeriodDays: number;
@@ -164,6 +229,53 @@ export class HubApiService {
     return firstValueFrom(
       this.http.get<HubObservationDetailApi>(
         `${this.baseUrl}/observations/${encodeURIComponent(id)}`,
+      ),
+    );
+  }
+
+  getDecisions(): Promise<{ readonly items: readonly HubDecisionApi[]; readonly total: number }> {
+    return firstValueFrom(
+      this.http.get<{ items: readonly HubDecisionApi[]; total: number }>(
+        `${this.baseUrl}/decisions`,
+      ),
+    );
+  }
+
+  getScenario(): Promise<HubScenarioApi> {
+    return firstValueFrom(this.http.get<HubScenarioApi>(`${this.baseUrl}/demo/scenario`));
+  }
+
+  runScenario(): Promise<HubScenarioApi> {
+    return firstValueFrom(this.http.post<HubScenarioApi>(`${this.baseUrl}/demo/scenario/run`, {}));
+  }
+
+  getAlertReports(
+    observationId: string,
+  ): Promise<{ readonly items: readonly HubAlertReportApi[]; readonly total: number }> {
+    return firstValueFrom(
+      this.http.get<{ items: readonly HubAlertReportApi[]; total: number }>(
+        `${this.baseUrl}/alerts/${encodeURIComponent(observationId)}/reports`,
+      ),
+    );
+  }
+
+  generateAlertReport(observationId: string): Promise<HubAlertReportApi> {
+    return firstValueFrom(
+      this.http.post<HubAlertReportApi>(
+        `${this.baseUrl}/alerts/${encodeURIComponent(observationId)}/reports`,
+        {},
+      ),
+    );
+  }
+
+  updateReportStatus(
+    reportId: string,
+    status: Exclude<HubReportStatus, 'DRAFT'>,
+  ): Promise<HubAlertReportApi> {
+    return firstValueFrom(
+      this.http.patch<HubAlertReportApi>(
+        `${this.baseUrl}/reports/${encodeURIComponent(reportId)}/status`,
+        { status },
       ),
     );
   }
