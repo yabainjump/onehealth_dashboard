@@ -115,9 +115,18 @@
 
         <div class="validation-notice"><svg lucideShieldCheck size="18"></svg><span><strong>Validation humaine obligatoire</strong>Rudolf et les automatismes du Hub ne peuvent pas valider ce document.</span></div>
 
+        @if (aiDraft() || aiError()) {
+          <section class="rudolf-report-draft">
+            <h3><svg lucideSparkles size="17"></svg> Projet préparé par Rudolf</h3>
+            @if (aiDraft()) { <p>{{ aiDraft() }}</p> }
+            @if (aiError()) { <p class="rudolf-error">{{ aiError() }}</p> }
+          </section>
+        }
+
         @if (feedback()) { <p class="report-feedback" role="status">{{ feedback() }}</p> }
 
         <footer>
+          <button class="oh-button" type="button" [disabled]="aiBusy() || !auth.canAnalyze()" (click)="prepareRudolfDraft()"><svg lucideSparkles size="16"></svg> {{ aiBusy() ? 'Préparation…' : 'Préparer avec Rudolf' }}</button>
           <button class="oh-button" type="button" (click)="printReport()"><svg lucidePrinter size="16"></svg> Imprimer / PDF</button>
           <button class="oh-button oh-button--primary" type="button" (click)="downloadReport()"><svg lucideDownload size="16"></svg> Télécharger HTML</button>
         </footer>

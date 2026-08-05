@@ -21,6 +21,10 @@
       </div>
 
       <div class="detail-header__actions">
+        <button class="oh-button" type="button" [disabled]="aiBusy() || !auth.canAnalyze()" (click)="generateRudolfSummary()">
+          <svg lucideSparkles size="16"></svg>
+          {{ aiBusy() ? 'Rudolf analyse…' : 'Générer une synthèse avec Rudolf' }}
+        </button>
         <button
           class="oh-button"
           type="button"
@@ -59,6 +63,15 @@
         ne peut ni affecter un expert ni valider une alerte.
       </span>
     </div>
+
+    @if (aiDraft() || aiError()) {
+      <article class="rudolf-result oh-card" aria-live="polite">
+        <header><svg lucideSparkles size="18"></svg><strong>Synthèse Rudolf — brouillon</strong></header>
+        @if (aiDraft()) { <p>{{ aiDraft() }}</p> }
+        @if (aiError()) { <p class="rudolf-result__error">{{ aiError() }}</p> }
+        <small>Validation humaine obligatoire · Sources limitées à votre périmètre autorisé.</small>
+      </article>
+    }
 
     @if (actionMessage()) {
       <div class="action-message" role="status">

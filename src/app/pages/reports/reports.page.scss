@@ -73,3 +73,8 @@
   .detail-metrics { grid-template-columns: repeat(2, 1fr); span:nth-child(2) { border-right: 0; } span:nth-child(-n+2) { border-bottom: 1px solid var(--oh-border); } }
   .report-detail > footer { flex-direction: column; .oh-button { width: 100%; } }
 }
+
+.rudolf-report-draft { margin-top: 18px; padding: 16px; background: #f7f5ff; border: 1px solid #dcd5ff; border-radius: 10px; }
+.rudolf-report-draft h3 { display: flex; align-items: center; gap: 7px; color: #4637a8; }
+.rudolf-report-draft p { white-space: pre-wrap; line-height: 1.6; }
+.rudolf-error { color: #b42318; }

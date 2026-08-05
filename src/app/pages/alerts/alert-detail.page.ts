@@ -16,6 +16,7 @@ import {
   LucideMessageSquarePlus,
   LucidePawPrint,
   LucideShieldCheck,
+  LucideSparkles,
   LucideStethoscope,
   LucideTrees,
   LucideTriangleAlert,
@@ -47,6 +48,7 @@ import {
   OneHealthObservation,
 } from '../../core/data/models/one-health-observation.model';
 import { ConsolidatedEventCardComponent } from '../../shared/components/consolidated-event-card/consolidated-event-card.component';
+import { HubAiApiService } from '../../core/data/hub-ai-api.service';
 
 interface WorkflowStep {
   readonly title: string;
@@ -73,6 +75,7 @@ interface WorkflowStep {
     LucideMessageSquarePlus,
     LucidePawPrint,
     LucideShieldCheck,
+    LucideSparkles,
     LucideStethoscope,
     LucideTrees,
     LucideTriangleAlert,
@@ -87,6 +90,7 @@ interface WorkflowStep {
 export class AlertDetailPage {
   protected readonly dataService = inject(OneHealthDataService);
   private readonly hubApi = inject(HubApiService);
+  private readonly hubAi = inject(HubAiApiService);
   protected readonly auth = inject(DashboardAuthService);
   private readonly route = inject(ActivatedRoute);
 
@@ -115,6 +119,23 @@ export class AlertDetailPage {
   protected readonly reports = signal<readonly HubAlertReportApi[]>([]);
   protected readonly reportBusy = signal(false);
   protected readonly latestReport = computed(() => this.reports()[0] ?? null);
+  protected readonly aiBusy = signal(false);
+  protected readonly aiDraft = signal('');
+  protected readonly aiError = signal('');
+
+  protected async generateRudolfSummary(): Promise<void> {
+    const observation = this.observation();
+    if (!observation || this.aiBusy()) return;
+    this.aiBusy.set(true);
+    this.aiError.set('');
+    try {
+      this.aiDraft.set((await this.hubAi.alertSummary(observation.id)).content);
+    } catch {
+      this.aiError.set('La synthèse Rudolf n’a pas pu être générée. Vérifiez Groq et votre accès Hub.');
+    } finally {
+      this.aiBusy.set(false);
+    }
+  }
 
   constructor() {
     this.route.paramMap.pipe(takeUntilDestroyed()).subscribe((params) => {

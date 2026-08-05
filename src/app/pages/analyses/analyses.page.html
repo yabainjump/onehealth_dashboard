@@ -6,10 +6,10 @@
       <span>Analyse multisectorielle des signaux faibles et rapprochements épidémiologiques.</span>
       <small>Données simulées — Version démonstrateur</small>
     </div>
-    <button class="oh-button oh-button--primary" type="button" (click)="exportCsv()">
-      <svg lucideDownload size="16"></svg>
-      Exporter l’analyse
-    </button>
+    <div class="analysis-header__actions">
+      <button class="oh-button" type="button" [disabled]="aiBusy() || !auth.canAnalyze()" (click)="explainWithRudolf()"><svg lucideSparkles size="16"></svg>{{ aiBusy() ? 'Analyse…' : 'Expliquer avec Rudolf' }}</button>
+      <button class="oh-button oh-button--primary" type="button" (click)="exportCsv()"><svg lucideDownload size="16"></svg>Exporter l’analyse</button>
+    </div>
   </header>
 
   <div class="analysis-notice" role="status">
@@ -19,6 +19,15 @@
       causalité et doivent être interprétés par un expert One Health.
     </span>
   </div>
+
+  @if (aiExplanation() || aiError()) {
+    <article class="rudolf-analysis oh-card" aria-live="polite">
+      <h2><svg lucideSparkles size="18"></svg> Lecture multisectorielle de Rudolf</h2>
+      @if (aiExplanation()) { <p>{{ aiExplanation() }}</p> }
+      @if (aiError()) { <p class="rudolf-error">{{ aiError() }}</p> }
+      <small>Interprétation descriptive, sans preuve de causalité · Validation humaine obligatoire.</small>
+    </article>
+  }
 
   <div class="analysis-filters oh-card">
     <strong><svg lucideFilter size="16"></svg> Filtres actifs</strong>

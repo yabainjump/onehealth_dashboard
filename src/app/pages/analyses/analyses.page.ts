@@ -9,10 +9,13 @@ import {
   LucideInfo,
   LucidePawPrint,
   LucideShieldCheck,
+  LucideSparkles,
   LucideStethoscope,
   LucideTrees,
 } from '@lucide/angular';
 import { OneHealthDataService } from '../../core/data/one-health-data.service';
+import { HubAiApiService } from '../../core/data/hub-ai-api.service';
+import { DashboardAuthService } from '../../core/auth/dashboard-auth.service';
 import {
   HealthSector,
   ObservationSeverity,
@@ -51,6 +54,7 @@ const SEVERITY_ORDER: Readonly<Record<ObservationSeverity, number>> = {
     LucideInfo,
     LucidePawPrint,
     LucideShieldCheck,
+    LucideSparkles,
     LucideStethoscope,
     LucideTrees,
   ],
@@ -60,6 +64,29 @@ const SEVERITY_ORDER: Readonly<Record<ObservationSeverity, number>> = {
 })
 export class AnalysesPage {
   private readonly dataService = inject(OneHealthDataService);
+  private readonly hubAi = inject(HubAiApiService);
+  protected readonly auth = inject(DashboardAuthService);
+  protected readonly aiBusy = signal(false);
+  protected readonly aiExplanation = signal('');
+  protected readonly aiError = signal('');
+
+  protected async explainWithRudolf(): Promise<void> {
+    if (this.aiBusy()) return;
+    const sector = this.selectedSector();
+    this.aiBusy.set(true);
+    this.aiError.set('');
+    try {
+      this.aiExplanation.set((await this.hubAi.explainAnalysis({
+        ...(this.selectedCountry() !== 'all' ? { countryCode: this.selectedCountry() } : {}),
+        ...(sector !== 'all' ? { sector } : {}),
+        periodDays: this.selectedPeriod(),
+      })).content);
+    } catch {
+      this.aiError.set('Rudolf n’a pas pu expliquer cette analyse.');
+    } finally {
+      this.aiBusy.set(false);
+    }
+  }
 
   protected readonly selectedCountry = signal('all');
   protected readonly selectedSector = signal<AnalysisSector>('all');

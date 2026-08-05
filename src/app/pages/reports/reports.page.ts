@@ -7,8 +7,11 @@ import {
   LucidePrinter,
   LucideSearch,
   LucideShieldCheck,
+  LucideSparkles,
 } from '@lucide/angular';
 import { OneHealthDataService } from '../../core/data/one-health-data.service';
+import { HubAiApiService } from '../../core/data/hub-ai-api.service';
+import { DashboardAuthService } from '../../core/auth/dashboard-auth.service';
 import {
   HubReport,
   REPORT_RISK_LABELS,
@@ -32,6 +35,7 @@ type ReportScopeFilter = 'all' | ReportScope;
     LucidePrinter,
     LucideSearch,
     LucideShieldCheck,
+    LucideSparkles,
   ],
   templateUrl: './reports.page.html',
   styleUrl: './reports.page.scss',
@@ -39,6 +43,8 @@ type ReportScopeFilter = 'all' | ReportScope;
 })
 export class ReportsPage {
   private readonly dataService = inject(OneHealthDataService);
+  private readonly hubAi = inject(HubAiApiService);
+  protected readonly auth = inject(DashboardAuthService);
 
   protected readonly scopeLabel = REPORT_SCOPE_LABELS;
   protected readonly riskLabel = REPORT_RISK_LABELS;
@@ -49,6 +55,27 @@ export class ReportsPage {
   protected readonly selectedCountry = signal('all');
   protected readonly selectedReport = signal<HubReport | null>(this.reports[0] ?? null);
   protected readonly feedback = signal('');
+  protected readonly aiBusy = signal(false);
+  protected readonly aiDraft = signal('');
+  protected readonly aiError = signal('');
+
+  protected async prepareRudolfDraft(): Promise<void> {
+    const report = this.selectedReport();
+    if (!report || this.aiBusy()) return;
+    this.aiBusy.set(true);
+    this.aiError.set('');
+    try {
+      this.aiDraft.set((await this.hubAi.reportDraft({
+        ...(report.countryCode ? { countryCode: report.countryCode } : {}),
+        ...(report.sector ? { sector: report.sector } : {}),
+        periodDays: report.periodDays,
+      })).content);
+    } catch {
+      this.aiError.set('Rudolf n’a pas pu préparer ce projet de rapport.');
+    } finally {
+      this.aiBusy.set(false);
+    }
+  }
 
   protected readonly countries = [
     ...new Map(
@@ -113,6 +140,8 @@ export class ReportsPage {
   protected selectReport(report: HubReport): void {
     this.selectedReport.set(report);
     this.feedback.set('');
+    this.aiDraft.set('');
+    this.aiError.set('');
   }
 
   protected formatDate(value: string): string {

@@ -138,6 +138,11 @@
       </label>
 
       <div class="topbar__actions">
+        @if (auth.canAnalyze()) {
+          <button class="rudolf-trigger" type="button" (click)="toggleAssistant()" [attr.aria-expanded]="assistantOpen()">
+            <svg lucideSparkles size="17"></svg><span>Rudolf</span>
+          </button>
+        }
         <button class="icon-button icon-button--notification" type="button" aria-label="Notifications">
           <svg lucideBell size="18"></svg>
           <span class="notification-dot" aria-hidden="true"></span>
@@ -175,6 +180,26 @@
     <main class="content" id="contenu-principal">
       <router-outlet />
     </main>
+
+    @if (assistantOpen()) {
+      <button class="assistant-backdrop" type="button" aria-label="Fermer Rudolf" (click)="toggleAssistant()"></button>
+      <aside class="rudolf-drawer" aria-label="Assistant Rudolf du Hub">
+        <header>
+          <div><svg lucideSparkles size="20"></svg><span><strong>Rudolf</strong><small>Assistant analytique du Hub</small></span></div>
+          <button type="button" aria-label="Fermer" (click)="toggleAssistant()"><svg lucideX size="18"></svg></button>
+        </header>
+        <div class="rudolf-drawer__notice">Réponses fondées uniquement sur les données de votre périmètre. Rudolf ne valide aucune décision.</div>
+        <div class="rudolf-drawer__conversation">
+          @if (assistantAnswer()) { <p class="rudolf-answer">{{ assistantAnswer() }}</p> }
+          @else { <p class="rudolf-empty">Demandez une synthèse régionale, les signaux prioritaires ou les rapprochements multisectoriels.</p> }
+          @if (assistantError()) { <p class="rudolf-error">{{ assistantError() }}</p> }
+        </div>
+        <form (submit)="$event.preventDefault(); askRudolf()">
+          <textarea maxlength="1500" rows="4" placeholder="Posez une question sur les données autorisées…" [value]="assistantQuestion()" (input)="onAssistantInput($event)"></textarea>
+          <div><small>{{ assistantQuestion().length }} / 1500</small><button type="submit" [disabled]="!assistantQuestion().trim() || assistantBusy()"><svg lucideSend size="16"></svg>{{ assistantBusy() ? 'Analyse…' : 'Envoyer' }}</button></div>
+        </form>
+      </aside>
+    }
 
     <footer class="footer">
       <span>© 2026 One Health Network</span>

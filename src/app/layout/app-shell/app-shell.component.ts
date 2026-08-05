@@ -14,13 +14,16 @@ import {
   LucideMenu,
   LucideSearch,
   LucideSettings,
+  LucideSend,
   LucideShieldCheck,
+  LucideSparkles,
   LucideSlidersHorizontal,
   LucideTriangleAlert,
   LucideX,
 } from '@lucide/angular';
 import { DashboardAuthService } from '../../core/auth/dashboard-auth.service';
 import { OneHealthDataService } from '../../core/data/one-health-data.service';
+import { HubAiApiService } from '../../core/data/hub-ai-api.service';
 
 @Component({
   selector: 'app-shell',
@@ -41,7 +44,9 @@ import { OneHealthDataService } from '../../core/data/one-health-data.service';
     LucideMenu,
     LucideSearch,
     LucideSettings,
+    LucideSend,
     LucideShieldCheck,
+    LucideSparkles,
     LucideSlidersHorizontal,
     LucideTriangleAlert,
     LucideX,
@@ -54,8 +59,37 @@ export class AppShellComponent {
   protected readonly auth = inject(DashboardAuthService);
   protected readonly dataService = inject(OneHealthDataService);
   private readonly router = inject(Router);
+  private readonly hubAi = inject(HubAiApiService);
   protected readonly menuOpen = signal(false);
   protected readonly profileMenuOpen = signal(false);
+  protected readonly assistantOpen = signal(false);
+  protected readonly assistantQuestion = signal('');
+  protected readonly assistantAnswer = signal('');
+  protected readonly assistantError = signal('');
+  protected readonly assistantBusy = signal(false);
+
+  protected toggleAssistant(): void {
+    this.assistantOpen.update((open) => !open);
+  }
+
+  protected onAssistantInput(event: Event): void {
+    this.assistantQuestion.set((event.target as HTMLTextAreaElement).value.slice(0, 1500));
+  }
+
+  protected async askRudolf(): Promise<void> {
+    const question = this.assistantQuestion().trim();
+    if (!question || this.assistantBusy()) return;
+    this.assistantBusy.set(true);
+    this.assistantError.set('');
+    try {
+      this.assistantAnswer.set((await this.hubAi.ask(question)).content);
+      this.assistantQuestion.set('');
+    } catch {
+      this.assistantError.set('Rudolf est indisponible ou votre rôle ne permet pas cette analyse.');
+    } finally {
+      this.assistantBusy.set(false);
+    }
+  }
 
   protected toggleMenu(): void {
     this.menuOpen.update((isOpen) => !isOpen);

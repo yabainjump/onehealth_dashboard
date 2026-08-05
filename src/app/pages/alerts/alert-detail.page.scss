@@ -988,3 +988,9 @@
     grid-template-columns: 1fr;
   }
 }
+
+.rudolf-result { margin: 16px 0; padding: 18px; border-left: 4px solid #6d5bd0; }
+.rudolf-result header { display: flex; align-items: center; gap: 8px; color: #4637a8; }
+.rudolf-result p { white-space: pre-wrap; line-height: 1.6; }
+.rudolf-result small { color: #667085; }
+.rudolf-result__error { color: #b42318; }
