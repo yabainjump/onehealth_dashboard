@@ -67,7 +67,7 @@
     @if (aiDraft() || aiError()) {
       <article class="rudolf-result oh-card" aria-live="polite">
         <header><svg lucideSparkles size="18"></svg><strong>Synthèse Rudolf — brouillon</strong></header>
-        @if (aiDraft()) { <p>{{ aiDraft() }}</p> }
+        @if (aiDraft()) { <div class="rudolf-prose" [class.rudolf-prose--writing]="aiBusy()" [innerHTML]="aiDraft() | rudolfMarkdown"></div> }
         @if (aiError()) { <p class="rudolf-result__error">{{ aiError() }}</p> }
         <small>Validation humaine obligatoire · Sources limitées à votre périmètre autorisé.</small>
       </article>

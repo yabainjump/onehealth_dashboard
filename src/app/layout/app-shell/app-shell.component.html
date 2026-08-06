@@ -190,7 +190,7 @@
         </header>
         <div class="rudolf-drawer__notice">Réponses fondées uniquement sur les données de votre périmètre. Rudolf ne valide aucune décision.</div>
         <div class="rudolf-drawer__conversation">
-          @if (assistantAnswer()) { <p class="rudolf-answer">{{ assistantAnswer() }}</p> }
+          @if (assistantAnswer()) { <div class="rudolf-answer rudolf-prose" [class.rudolf-prose--writing]="assistantBusy()" [innerHTML]="assistantAnswer() | rudolfMarkdown"></div> }
           @else { <p class="rudolf-empty">Demandez une synthèse régionale, les signaux prioritaires ou les rapprochements multisectoriels.</p> }
           @if (assistantError()) { <p class="rudolf-error">{{ assistantError() }}</p> }
         </div>

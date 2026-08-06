@@ -23,7 +23,7 @@
   @if (aiExplanation() || aiError()) {
     <article class="rudolf-analysis oh-card" aria-live="polite">
       <h2><svg lucideSparkles size="18"></svg> Lecture multisectorielle de Rudolf</h2>
-      @if (aiExplanation()) { <p>{{ aiExplanation() }}</p> }
+      @if (aiExplanation()) { <div class="rudolf-prose" [class.rudolf-prose--writing]="aiBusy()" [innerHTML]="aiExplanation() | rudolfMarkdown"></div> }
       @if (aiError()) { <p class="rudolf-error">{{ aiError() }}</p> }
       <small>Interprétation descriptive, sans preuve de causalité · Validation humaine obligatoire.</small>
     </article>

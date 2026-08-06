@@ -49,6 +49,8 @@ import {
 } from '../../core/data/models/one-health-observation.model';
 import { ConsolidatedEventCardComponent } from '../../shared/components/consolidated-event-card/consolidated-event-card.component';
 import { HubAiApiService } from '../../core/data/hub-ai-api.service';
+import { RudolfMarkdownPipe } from '../../shared/pipes/rudolf-markdown.pipe';
+import { revealRudolfText } from '../../shared/utils/reveal-rudolf-text';
 
 interface WorkflowStep {
   readonly title: string;
@@ -76,6 +78,7 @@ interface WorkflowStep {
     LucidePawPrint,
     LucideShieldCheck,
     LucideSparkles,
+    RudolfMarkdownPipe,
     LucideStethoscope,
     LucideTrees,
     LucideTriangleAlert,
@@ -128,8 +131,10 @@ export class AlertDetailPage {
     if (!observation || this.aiBusy()) return;
     this.aiBusy.set(true);
     this.aiError.set('');
+    this.aiDraft.set('');
     try {
-      this.aiDraft.set((await this.hubAi.alertSummary(observation.id)).content);
+      const response = await this.hubAi.alertSummary(observation.id);
+      await revealRudolfText(response.content, (text) => this.aiDraft.set(text));
     } catch {
       this.aiError.set('La synthèse Rudolf n’a pas pu être générée. Vérifiez Groq et votre accès Hub.');
     } finally {

@@ -16,6 +16,8 @@ import {
 import { OneHealthDataService } from '../../core/data/one-health-data.service';
 import { HubAiApiService } from '../../core/data/hub-ai-api.service';
 import { DashboardAuthService } from '../../core/auth/dashboard-auth.service';
+import { RudolfMarkdownPipe } from '../../shared/pipes/rudolf-markdown.pipe';
+import { revealRudolfText } from '../../shared/utils/reveal-rudolf-text';
 import {
   HealthSector,
   ObservationSeverity,
@@ -55,6 +57,7 @@ const SEVERITY_ORDER: Readonly<Record<ObservationSeverity, number>> = {
     LucidePawPrint,
     LucideShieldCheck,
     LucideSparkles,
+    RudolfMarkdownPipe,
     LucideStethoscope,
     LucideTrees,
   ],
@@ -75,12 +78,14 @@ export class AnalysesPage {
     const sector = this.selectedSector();
     this.aiBusy.set(true);
     this.aiError.set('');
+    this.aiExplanation.set('');
     try {
-      this.aiExplanation.set((await this.hubAi.explainAnalysis({
+      const response = await this.hubAi.explainAnalysis({
         ...(this.selectedCountry() !== 'all' ? { countryCode: this.selectedCountry() } : {}),
         ...(sector !== 'all' ? { sector } : {}),
         periodDays: this.selectedPeriod(),
-      })).content);
+      });
+      await revealRudolfText(response.content, (text) => this.aiExplanation.set(text));
     } catch {
       this.aiError.set('Rudolf n’a pas pu expliquer cette analyse.');
     } finally {

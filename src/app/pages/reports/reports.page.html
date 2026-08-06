@@ -118,7 +118,7 @@
         @if (aiDraft() || aiError()) {
           <section class="rudolf-report-draft">
             <h3><svg lucideSparkles size="17"></svg> Projet préparé par Rudolf</h3>
-            @if (aiDraft()) { <p>{{ aiDraft() }}</p> }
+            @if (aiDraft()) { <div class="rudolf-prose" [class.rudolf-prose--writing]="aiBusy()" [innerHTML]="aiDraft() | rudolfMarkdown"></div> }
             @if (aiError()) { <p class="rudolf-error">{{ aiError() }}</p> }
           </section>
         }

@@ -12,6 +12,8 @@ import {
 import { OneHealthDataService } from '../../core/data/one-health-data.service';
 import { HubAiApiService } from '../../core/data/hub-ai-api.service';
 import { DashboardAuthService } from '../../core/auth/dashboard-auth.service';
+import { RudolfMarkdownPipe } from '../../shared/pipes/rudolf-markdown.pipe';
+import { revealRudolfText } from '../../shared/utils/reveal-rudolf-text';
 import {
   HubReport,
   REPORT_RISK_LABELS,
@@ -36,6 +38,7 @@ type ReportScopeFilter = 'all' | ReportScope;
     LucideSearch,
     LucideShieldCheck,
     LucideSparkles,
+    RudolfMarkdownPipe,
   ],
   templateUrl: './reports.page.html',
   styleUrl: './reports.page.scss',
@@ -64,12 +67,14 @@ export class ReportsPage {
     if (!report || this.aiBusy()) return;
     this.aiBusy.set(true);
     this.aiError.set('');
+    this.aiDraft.set('');
     try {
-      this.aiDraft.set((await this.hubAi.reportDraft({
+      const response = await this.hubAi.reportDraft({
         ...(report.countryCode ? { countryCode: report.countryCode } : {}),
         ...(report.sector ? { sector: report.sector } : {}),
         periodDays: report.periodDays,
-      })).content);
+      });
+      await revealRudolfText(response.content, (text) => this.aiDraft.set(text));
     } catch {
       this.aiError.set('Rudolf n’a pas pu préparer ce projet de rapport.');
     } finally {

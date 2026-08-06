@@ -24,6 +24,8 @@ import {
 import { DashboardAuthService } from '../../core/auth/dashboard-auth.service';
 import { OneHealthDataService } from '../../core/data/one-health-data.service';
 import { HubAiApiService } from '../../core/data/hub-ai-api.service';
+import { RudolfMarkdownPipe } from '../../shared/pipes/rudolf-markdown.pipe';
+import { revealRudolfText } from '../../shared/utils/reveal-rudolf-text';
 
 @Component({
   selector: 'app-shell',
@@ -47,6 +49,7 @@ import { HubAiApiService } from '../../core/data/hub-ai-api.service';
     LucideSend,
     LucideShieldCheck,
     LucideSparkles,
+    RudolfMarkdownPipe,
     LucideSlidersHorizontal,
     LucideTriangleAlert,
     LucideX,
@@ -81,8 +84,10 @@ export class AppShellComponent {
     if (!question || this.assistantBusy()) return;
     this.assistantBusy.set(true);
     this.assistantError.set('');
+    this.assistantAnswer.set('');
     try {
-      this.assistantAnswer.set((await this.hubAi.ask(question)).content);
+      const response = await this.hubAi.ask(question);
+      await revealRudolfText(response.content, (text) => this.assistantAnswer.set(text));
       this.assistantQuestion.set('');
     } catch {
       this.assistantError.set('Rudolf est indisponible ou votre rôle ne permet pas cette analyse.');

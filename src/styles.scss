@@ -152,3 +152,19 @@ select:focus-visible {
     animation-iteration-count: 1 !important;
   }
 }
+
+/* Réponses structurées de Rudolf — Markdown limité et assaini par Angular. */
+.rudolf-prose { color: #243247; font-size: 14px; line-height: 1.68; }
+.rudolf-prose h3, .rudolf-prose h4, .rudolf-prose h5 { margin: 18px 0 7px; color: #17233a; line-height: 1.3; }
+.rudolf-prose h3:first-child, .rudolf-prose h4:first-child { margin-top: 0; }
+.rudolf-prose h3 { font-size: 17px; }
+.rudolf-prose h4, .rudolf-prose h5 { font-size: 15px; }
+.rudolf-prose p { margin: 7px 0; }
+.rudolf-prose ul, .rudolf-prose ol { margin: 8px 0; padding-left: 22px; }
+.rudolf-prose li { margin: 5px 0; padding-left: 3px; }
+.rudolf-prose strong { color: #14233a; font-weight: 750; }
+.rudolf-prose code { padding: 2px 5px; border-radius: 5px; background: #edf1f7; font-size: .92em; }
+.rudolf-prose blockquote { margin: 10px 0; padding: 8px 12px; border-left: 3px solid #7463d4; background: #f7f5ff; }
+.rudolf-prose--writing > :last-child::after { content: ''; display: inline-block; width: 2px; height: 1.05em; margin-left: 4px; vertical-align: text-bottom; background: #5b4bc4; animation: rudolf-blink .8s steps(1) infinite; }
+@keyframes rudolf-blink { 50% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .rudolf-prose--writing > :last-child::after { animation: none; } }
