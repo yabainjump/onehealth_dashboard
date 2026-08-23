@@ -1,0 +1,80 @@
+<section class="help-page">
+  <header class="help-hero">
+    <div class="help-hero__badge"><svg lucideLifeBuoy size="18"></svg></div>
+    <p>Centre d’aide du Hub</p>
+    <h1>Comment pouvons-nous vous aider ?</h1>
+    <span>Guides courts, règles de gouvernance et réponses adaptées à votre utilisation du Hub.</span>
+    <label class="help-search">
+      <svg lucideSearch size="19"></svg>
+      <span class="sr-only">Rechercher dans l’aide</span>
+      <input type="search" placeholder="Rechercher une question ou une fonctionnalité…" [value]="search()" (input)="onSearch($event)">
+    </label>
+  </header>
+
+  <div class="context-card">
+    <span class="context-card__icon"><svg lucideShieldCheck size="18"></svg></span>
+    <div><small>Votre niveau d’accès</small><strong>{{ roleLabel() }}</strong></div>
+    <p>Les actions et données visibles dans les guides restent soumises à votre rôle et à votre périmètre pays.</p>
+  </div>
+
+  <section class="quick-start" aria-labelledby="quick-start-title">
+    <div class="section-title"><p>Parcours essentiels</p><h2 id="quick-start-title">Commencer rapidement</h2></div>
+    <div class="guide-grid">
+      <a class="guide-card" routerLink="/dashboard">
+        <span class="guide-card__icon guide-card__icon--blue"><svg lucideDatabase size="20"></svg></span>
+        <small>Étape 1</small><strong>Lire la situation régionale</strong>
+        <p>Comprendre les volumes, la couverture et les rapprochements multisectoriels.</p>
+        <span class="guide-card__link">Ouvrir la vue <svg lucideArrowRight size="14"></svg></span>
+      </a>
+      <a class="guide-card" routerLink="/carte">
+        <span class="guide-card__icon guide-card__icon--green"><svg lucideMap size="20"></svg></span>
+        <small>Étape 2</small><strong>Explorer la carte</strong>
+        <p>Localiser les observations et filtrer la lecture par secteur, période ou statut.</p>
+        <span class="guide-card__link">Explorer <svg lucideArrowRight size="14"></svg></span>
+      </a>
+      <a class="guide-card" routerLink="/alertes">
+        <span class="guide-card__icon guide-card__icon--red"><svg lucideTriangleAlert size="20"></svg></span>
+        <small>Étape 3</small><strong>Examiner un signal</strong>
+        <p>Consulter les preuves et documenter une décision lorsque votre rôle le permet.</p>
+        <span class="guide-card__link">Voir la file <svg lucideArrowRight size="14"></svg></span>
+      </a>
+      <a class="guide-card" routerLink="/rapports">
+        <span class="guide-card__icon guide-card__icon--violet"><svg lucideFileText size="20"></svg></span>
+        <small>Étape 4</small><strong>Préparer un rapport</strong>
+        <p>Créer un projet, le relire puis produire une note à partir du périmètre sélectionné.</p>
+        <span class="guide-card__link">Préparer une note <svg lucideArrowRight size="14"></svg></span>
+      </a>
+    </div>
+  </section>
+
+  <div class="help-layout">
+    <section class="faq-panel oh-card" aria-labelledby="faq-title">
+      <header><div><p>Base de connaissances</p><h2 id="faq-title">Questions fréquentes</h2></div><span>{{ questions().length }} réponses</span></header>
+      <div class="faq-list">
+        @for (item of questions(); track item.question) {
+          <details>
+            <summary><span><small>{{ item.category }}</small>{{ item.question }}</span><svg lucideCircleHelp size="18"></svg></summary>
+            <p>{{ item.answer }}</p>
+          </details>
+        } @empty {
+          <div class="empty-result"><svg lucideSearch size="22"></svg><strong>Aucun résultat</strong><span>Essayez avec « alerte », « pays », « rôle » ou « Rudolf ».</span></div>
+        }
+      </div>
+    </section>
+
+    <aside class="help-aside">
+      <article class="principle-card">
+        <svg lucideLockKeyhole size="20"></svg><h2>À retenir</h2>
+        <ul><li>La souveraineté détermine les données visibles.</li><li>Rudolf assiste, mais ne valide jamais.</li><li>Toute décision sensible reste humaine et traçable.</li></ul>
+      </article>
+      <article class="support-card oh-card">
+        <span><svg lucideBookOpen size="19"></svg></span><h2>Besoin d’un accès différent ?</h2>
+        <p>Contactez l’administrateur Hub de votre institution en précisant le rôle et les États membres nécessaires.</p>
+        <a routerLink="/profil">Vérifier mon profil <svg lucideArrowRight size="14"></svg></a>
+      </article>
+      @if (auth.canAnalyze()) {
+        <article class="rudolf-card"><svg lucideSparkles size="19"></svg><div><strong>Rudolf est disponible</strong><p>Utilisez le bouton Rudolf dans l’en-tête pour interroger les données autorisées.</p></div></article>
+      }
+    </aside>
+  </div>
+</section>

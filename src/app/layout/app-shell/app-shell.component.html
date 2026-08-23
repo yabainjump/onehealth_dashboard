@@ -28,6 +28,15 @@
         <span>Vue d’ensemble</span>
       </a>
       <a
+        routerLink="/etat-membre"
+        routerLinkActive="nav__link--active"
+        class="nav__link"
+        (click)="closeMenu()"
+      >
+        <svg lucideLandmark size="18"></svg>
+        <span>États membres</span>
+      </a>
+      <a
         routerLink="/carte"
         routerLinkActive="nav__link--active"
         class="nav__link"
@@ -106,7 +115,7 @@
         <svg lucideSlidersHorizontal size="16"></svg>
         <span>Filtrer par secteur</span>
       </a>
-      <a class="nav__link nav__link--compact" href="#aide">
+      <a class="nav__link nav__link--compact" routerLink="/aide" routerLinkActive="nav__link--active" (click)="closeMenu()">
         <svg lucideCircleHelp size="17"></svg>
         <span>Aide</span>
       </a>
@@ -127,8 +136,8 @@
       </div>
 
       <nav class="scope-switcher" aria-label="Portée des données">
-        <a class="scope-switcher__item scope-switcher__item--active" href="#regional">Régional</a>
-        <a class="scope-switcher__item" href="#national">État membre</a>
+        <a class="scope-switcher__item" routerLink="/dashboard" routerLinkActive="scope-switcher__item--active" [routerLinkActiveOptions]="{ exact: true }">Régional</a>
+        <a class="scope-switcher__item" routerLink="/etat-membre" routerLinkActive="scope-switcher__item--active">État membre</a>
       </nav>
 
       <label class="global-search">
@@ -158,15 +167,17 @@
             [attr.aria-expanded]="profileMenuOpen()"
             (click)="toggleProfileMenu()"
           >
-            <svg lucideCircleUserRound size="21"></svg>
+            <span>{{ userInitials() }}</span>
           </button>
           @if (profileMenuOpen()) {
             <div class="profile-popover">
               <strong>{{ auth.currentUser()?.firstName }} {{ auth.currentUser()?.lastName }}</strong>
               <small>{{ auth.currentUser()?.institution || auth.currentUser()?.email }}</small>
-              <span>
-                {{ auth.currentUser()?.role === 'admin' ? 'Administrateur' : (auth.currentUser()?.hubRoles?.[0] || 'Accès Hub') }}
-              </span>
+              <span>{{ accountRoleLabel() }}</span>
+              <a routerLink="/profil" (click)="closeProfileMenu()">
+                <svg lucideCircleUserRound size="16"></svg>
+                Voir mon profil
+              </a>
               <button type="button" (click)="logout()">
                 <svg lucideLogOut size="16"></svg>
                 Se déconnecter
@@ -212,7 +223,7 @@
       </strong>
       <span class="footer__links">
         <a href="#mentions">Mentions légales</a>
-        <a href="#support">Support</a>
+        <a routerLink="/aide">Support</a>
         <a href="#confidentialite">Confidentialité</a>
       </span>
     </footer>

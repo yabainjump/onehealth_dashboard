@@ -30,6 +30,14 @@ export const routes: Routes = [
           import('./pages/dashboard/dashboard.page').then((module) => module.DashboardPage),
       },
       {
+        path: 'etat-membre',
+        title: 'État membre | One Health Network Dashboard',
+        loadComponent: () =>
+          import('./pages/member-state/member-state.page').then(
+            (module) => module.MemberStatePage,
+          ),
+      },
+      {
         path: 'carte',
         title: 'Carte régionale | One Health Network Dashboard',
         loadComponent: () =>
@@ -81,6 +89,18 @@ export const routes: Routes = [
           import('./pages/administration/administration.page').then(
             (module) => module.AdministrationPage,
           ),
+      },
+      {
+        path: 'aide',
+        title: 'Centre d’aide | One Health Network Dashboard',
+        loadComponent: () =>
+          import('./pages/help/help.page').then((module) => module.HelpPage),
+      },
+      {
+        path: 'profil',
+        title: 'Mon profil | One Health Network Dashboard',
+        loadComponent: () =>
+          import('./pages/profile/profile.page').then((module) => module.ProfilePage),
       },
     ],
   },

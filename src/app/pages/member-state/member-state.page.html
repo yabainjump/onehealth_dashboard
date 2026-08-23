@@ -1,0 +1,108 @@
+<section class="member-state">
+  <header class="state-hero">
+    <div class="state-hero__copy">
+      <p class="eyebrow"><svg lucideBuilding2 size="15"></svg> Vue nationale</p>
+      <h1>Situation One Health par État membre</h1>
+      <p>
+        Une lecture opérationnelle des observations, signaux et alertes accessibles dans votre
+        périmètre de souveraineté.
+      </p>
+    </div>
+    <label class="country-picker">
+      <span>État membre affiché</span>
+      <select [value]="selectedCountry().code || ''" (change)="selectCountry($event)">
+        @for (country of countries(); track country.code) {
+          <option [value]="country.code">{{ country.name }}</option>
+        }
+      </select>
+    </label>
+  </header>
+
+  <div class="simulation-notice" role="status">
+    <svg lucideDatabase size="17"></svg>
+    <span><strong>Démonstration.</strong> Les indicateurs ci-dessous utilisent les données simulées autorisées pour ce compte.</span>
+  </div>
+
+  @if (selectedCountry(); as country) {
+    <div class="country-heading">
+      <span class="country-heading__flag">{{ country.code }}</span>
+      <div>
+        <h2>{{ country.name }}</h2>
+        <p>
+          {{ summary().territories }} territoires couverts · dernière observation
+          {{ formatDate(summary().latest) }}
+        </p>
+      </div>
+      <a routerLink="/carte">Voir sur la carte <svg lucideArrowRight size="15"></svg></a>
+    </div>
+
+    <div class="kpi-grid" aria-label="Indicateurs nationaux">
+      <article class="kpi-card">
+        <span class="kpi-card__icon kpi-card__icon--blue"><svg lucideActivity size="19"></svg></span>
+        <p>Observations</p><strong>{{ summary().total }}</strong><small>fiches consolidées</small>
+      </article>
+      <article class="kpi-card">
+        <span class="kpi-card__icon kpi-card__icon--amber"><svg lucideClock3 size="19"></svg></span>
+        <p>À vérifier</p><strong>{{ summary().signals }}</strong><small>signaux en attente</small>
+      </article>
+      <article class="kpi-card">
+        <span class="kpi-card__icon kpi-card__icon--red"><svg lucideTriangleAlert size="19"></svg></span>
+        <p>Alertes vérifiées</p><strong>{{ summary().alerts }}</strong><small>validation humaine</small>
+      </article>
+      <article class="kpi-card">
+        <span class="kpi-card__icon kpi-card__icon--green"><svg lucideCheckCircle2 size="19"></svg></span>
+        <p>Qualité des données</p><strong>{{ summary().completeness }}%</strong><small>{{ summary().sources }} sources actives</small>
+      </article>
+    </div>
+
+    <div class="state-grid">
+      <article class="sector-panel oh-card">
+        <header>
+          <div><span>Lecture multisectorielle</span><h2>Répartition des données</h2></div>
+          <small>{{ summary().total }} observations</small>
+        </header>
+        <div class="sector-list">
+          @for (item of sectors(); track item.sector) {
+            <div class="sector-row sector-row--{{ item.sector }}">
+              <span class="sector-row__icon">
+                @switch (item.sector) {
+                  @case ('human') { <svg lucideHeartPulse size="19"></svg> }
+                  @case ('animal') { <svg lucidePawPrint size="19"></svg> }
+                  @default { <svg lucideTrees size="19"></svg> }
+                }
+              </span>
+              <div class="sector-row__body">
+                <div><strong>{{ item.label }}</strong><span>{{ item.records }} fiches</span></div>
+                <div class="progress"><i [style.width.%]="item.percent"></i></div>
+                <small>{{ item.percent }}% du volume · {{ item.signals }} signaux ou alertes</small>
+              </div>
+            </div>
+          }
+        </div>
+      </article>
+
+      <article class="priority-panel oh-card">
+        <header>
+          <div><span>File opérationnelle</span><h2>Situations prioritaires</h2></div>
+          <a routerLink="/alertes">Tout voir <svg lucideArrowRight size="14"></svg></a>
+        </header>
+        <div class="priority-list">
+          @for (item of priorityItems(); track item.id) {
+            <a class="priority-item" [routerLink]="['/alertes', item.id]">
+              <i class="priority-item__level priority-item__level--{{ item.severity }}"></i>
+              <span class="priority-item__content">
+                <strong>{{ item.title }}</strong>
+                <small><svg lucideMapPin size="12"></svg>{{ item.adminArea }} · {{ item.sourceSystem }}</small>
+              </span>
+              <span class="priority-item__status">{{ stageLabel(item) }}</span>
+            </a>
+          } @empty {
+            <div class="empty-state"><svg lucideCheckCircle2 size="24"></svg><strong>Aucune situation prioritaire</strong><span>Les observations restent disponibles pour le suivi.</span></div>
+          }
+        </div>
+      </article>
+    </div>
+  } @else {
+    <div class="no-data"><svg lucideDatabase size="26"></svg><h2>Aucune donnée nationale accessible</h2><p>Votre compte ne dispose actuellement d’aucune observation dans son périmètre.</p></div>
+  }
+</section>

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import {
   LucideBell,
@@ -9,6 +9,7 @@ import {
   LucideFlaskConical,
   LucideGrid3x3,
   LucideLayoutDashboard,
+  LucideLandmark,
   LucideLogOut,
   LucideMap,
   LucideMenu,
@@ -41,6 +42,7 @@ import { revealRudolfText } from '../../shared/utils/reveal-rudolf-text';
     LucideFlaskConical,
     LucideGrid3x3,
     LucideLayoutDashboard,
+    LucideLandmark,
     LucideLogOut,
     LucideMap,
     LucideMenu,
@@ -70,6 +72,13 @@ export class AppShellComponent {
   protected readonly assistantAnswer = signal('');
   protected readonly assistantError = signal('');
   protected readonly assistantBusy = signal(false);
+  protected readonly userInitials = computed(() => {
+    const user = this.auth.currentUser();
+    return (
+      `${user?.firstName?.charAt(0) || ''}${user?.lastName?.charAt(0) || ''}`.toUpperCase() ||
+      'OH'
+    );
+  });
 
   protected toggleAssistant(): void {
     this.assistantOpen.update((open) => !open);
@@ -106,6 +115,19 @@ export class AppShellComponent {
 
   protected toggleProfileMenu(): void {
     this.profileMenuOpen.update((open) => !open);
+  }
+
+  protected closeProfileMenu(): void {
+    this.profileMenuOpen.set(false);
+  }
+
+  protected accountRoleLabel(): string {
+    const user = this.auth.currentUser();
+    if (user?.role === 'admin') return 'Super administrateur';
+    if (user?.hubRoles.includes('hub_admin')) return 'Administrateur Hub';
+    if (user?.hubRoles.includes('hub_verifier')) return 'Vérificateur';
+    if (user?.hubRoles.includes('hub_analyst')) return 'Analyste';
+    return 'Lecteur autorisé';
   }
 
   protected async logout(): Promise<void> {

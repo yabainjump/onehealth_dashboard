@@ -2,7 +2,11 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { DashboardUser, LoginResponse } from './dashboard-user.model';
+import {
+  DashboardProfileUpdate,
+  DashboardUser,
+  LoginResponse,
+} from './dashboard-user.model';
 import { DashboardSessionService } from './dashboard-session.service';
 
 export class DashboardLoginError extends Error {
@@ -109,6 +113,29 @@ export class DashboardAuthService {
 
   canManageHubUsers(user: DashboardUser | null = this.currentUser()): boolean {
     return !!user && user.role === 'admin';
+  }
+
+  async updateProfile(update: DashboardProfileUpdate): Promise<DashboardUser> {
+    try {
+      const user = await firstValueFrom(
+        this.http.patch<DashboardUser>(`${environment.apiBaseUrl}/users/me`, update),
+      );
+      this.currentUser.set(user);
+      return user;
+    } catch (error: unknown) {
+      if (error instanceof HttpErrorResponse) {
+        const message =
+          error.status === 409
+            ? "Ce nom d'utilisateur est déjà utilisé."
+            : error.status === 400
+              ? 'Certaines informations du profil sont invalides.'
+              : error.status === 0
+                ? 'Le serveur One Health est momentanément inaccessible.'
+                : 'La mise à jour du profil a échoué.';
+        throw new DashboardLoginError(error.status, message);
+      }
+      throw error;
+    }
   }
 
   async logout(): Promise<void> {

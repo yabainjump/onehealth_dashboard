@@ -304,28 +304,46 @@
     font-weight: 700;
   }
 
+  a,
   button {
     min-height: 38px;
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-top: 14px;
+    margin-top: 8px;
     padding: 0 10px;
     border: 0;
-    border-top: 1px solid var(--oh-border);
+    border-radius: 7px;
     background: transparent;
-    color: #9f2935;
+    color: var(--oh-primary-900);
     font-size: .72rem;
     font-weight: 650;
     cursor: pointer;
+
+    &:hover {
+      background: var(--oh-primary-50);
+    }
+  }
+
+  button {
+    margin-top: 5px;
+    border-top: 1px solid var(--oh-border);
+    border-radius: 0;
+    color: #9f2935;
   }
 }
 
 .profile-button {
   margin-left: 3px;
   border: 1px solid #d0dbea;
-  background: #edf4ff;
+  background: linear-gradient(135deg, #e7f1ff, #e0f1eb);
   color: var(--oh-primary-900);
+
+  > span {
+    font-size: .62rem;
+    font-weight: 800;
+    letter-spacing: .03em;
+  }
 }
 
 .notification-dot {

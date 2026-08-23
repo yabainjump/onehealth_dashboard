@@ -1,0 +1,91 @@
+<section class="profile-page">
+  <header class="profile-heading">
+    <div><p>Compte & préférences</p><h1>Mon profil</h1><span>Gérez votre identité professionnelle. Les droits Hub restent contrôlés par l’administration.</span></div>
+    <a class="oh-button" routerLink="/aide"><svg lucideShieldCheck size="16"></svg>Comprendre mes droits</a>
+  </header>
+
+  @if (auth.currentUser(); as user) {
+    <div class="profile-layout">
+      <aside class="identity-column">
+        <article class="identity-card oh-card">
+          <div class="identity-card__cover"></div>
+          <div class="identity-card__avatar">
+            @if (photoUrl() && avatarAvailable()) {
+              <img [src]="photoUrl()" alt="Photo de profil" (error)="onAvatarError()">
+            } @else { <span>{{ initials() }}</span> }
+          </div>
+          <div class="identity-card__body">
+            <div class="identity-card__name">
+              <h2>{{ user.firstName }} {{ user.lastName }}</h2>
+              @if (user.isCertified) { <svg lucideBadgeCheck size="17" aria-label="Profil certifié"></svg> }
+            </div>
+            <p>&#64;{{ user.username }}</p>
+            <span class="role-badge">{{ roleLabel() }}</span>
+            <div class="identity-meta">
+              <span><svg lucideBriefcase size="15"></svg>{{ user.institution || 'Institution non renseignée' }}</span>
+              <span><svg lucideMapPin size="15"></svg>{{ user.city || user.country || 'Localisation non renseignée' }}</span>
+              <span><svg lucideMail size="15"></svg>{{ user.email }}</span>
+            </div>
+          </div>
+          <footer>Membre depuis {{ joinedAt() }}</footer>
+        </article>
+
+        <article class="access-card oh-card">
+          <header><span><svg lucideLockKeyhole size="18"></svg></span><div><small>Lecture seule</small><h2>Droits du Hub</h2></div></header>
+          <div class="access-block"><strong>Rôles attribués</strong><div class="chip-list">
+            @for (role of hubRoleLabels(); track role) { <span>{{ role }}</span> }
+            @empty { <span>Accès général</span> }
+          </div></div>
+          <div class="access-block"><strong>Périmètre pays</strong><div class="chip-list chip-list--country">
+            @for (country of countryScopes(); track country) { <span>{{ country }}</span> }
+            @empty { <span>Aucun pays attribué</span> }
+          </div></div>
+          <p><svg lucideLandmark size="14"></svg>Ces autorisations sont modifiables uniquement par un administrateur habilité.</p>
+        </article>
+      </aside>
+
+      <form class="profile-form oh-card" [formGroup]="profileForm" (ngSubmit)="saveProfile()">
+        <header><div><p>Informations personnelles</p><h2>Identité professionnelle</h2></div><svg lucideUserRound size="21"></svg></header>
+
+        <div class="form-section">
+          <div class="form-grid">
+            <label><span>Prénom <i>*</i></span><input type="text" formControlName="firstName" autocomplete="given-name" maxlength="100"></label>
+            <label><span>Nom <i>*</i></span><input type="text" formControlName="lastName" autocomplete="family-name" maxlength="100"></label>
+            <label><span>Nom d’utilisateur <i>*</i></span><div class="prefixed-input"><b>&#64;</b><input type="text" formControlName="username" autocomplete="username" maxlength="40"></div></label>
+            <label><span>E-mail du compte</span><input type="email" [value]="user.email" disabled></label>
+          </div>
+          @if ((profileForm.controls.firstName.touched && profileForm.controls.firstName.invalid) || (profileForm.controls.lastName.touched && profileForm.controls.lastName.invalid) || (profileForm.controls.username.touched && profileForm.controls.username.invalid)) {
+            <p class="field-error">Le prénom, le nom et un identifiant de 3 à 40 caractères sont obligatoires.</p>
+          }
+        </div>
+
+        <div class="form-section">
+          <div class="form-section__title"><span><svg lucideBriefcase size="17"></svg></span><div><h3>Activité professionnelle</h3><p>Informations utilisées pour contextualiser votre travail dans le Hub.</p></div></div>
+          <div class="form-grid">
+            <label class="form-grid__wide"><span>Institution <i>*</i></span><input type="text" formControlName="institution" autocomplete="organization" maxlength="150"></label>
+            <label><span>Fonction ou spécialité</span><input type="text" formControlName="typeMedecin" maxlength="120" placeholder="Ex. Épidémiologiste"></label>
+            <label><span>Téléphone</span><input type="tel" formControlName="phone" autocomplete="tel" maxlength="25" placeholder="+237 6…"></label>
+            <label><span>Pays</span><input type="text" formControlName="country" list="ceeac-country-list" autocomplete="country-name" maxlength="100"><datalist id="ceeac-country-list">@for (country of countryNames; track country) { <option [value]="country"></option> }</datalist></label>
+            <label><span>Ville</span><input type="text" formControlName="city" autocomplete="address-level2" maxlength="100"></label>
+          </div>
+          @if (profileForm.controls.institution.touched && profileForm.controls.institution.invalid) { <p class="field-error">L’institution est obligatoire.</p> }
+          @if (profileForm.controls.phone.touched && profileForm.controls.phone.invalid) { <p class="field-error">Saisissez un numéro de téléphone valide.</p> }
+        </div>
+
+        <div class="form-section">
+          <label class="bio-field"><span>Présentation</span><textarea formControlName="bio" rows="4" maxlength="250" placeholder="Décrivez brièvement votre rôle dans l’écosystème One Health."></textarea><small>{{ profileForm.controls.bio.value.length }} / 250</small></label>
+        </div>
+
+        <div class="certification-note" [class.certification-note--certified]="user.isCertified"><svg lucideCheckCircle2 size="17"></svg><div><strong>{{ certificationLabel() }}</strong><span>Le statut de certification ne peut pas être modifié depuis cette page.</span></div></div>
+
+        @if (successMessage()) { <p class="form-message form-message--success" role="status"><svg lucideCheckCircle2 size="16"></svg>{{ successMessage() }}</p> }
+        @if (errorMessage()) { <p class="form-message form-message--error" role="alert">{{ errorMessage() }}</p> }
+
+        <footer class="form-actions">
+          <button class="oh-button" type="button" [disabled]="saving() || !profileForm.dirty" (click)="resetForm()">Annuler</button>
+          <button class="oh-button oh-button--primary" type="submit" [disabled]="saving() || profileForm.invalid || !profileForm.dirty"><svg lucideSave size="16"></svg>{{ saving() ? 'Enregistrement…' : 'Enregistrer les modifications' }}</button>
+        </footer>
+      </form>
+    </div>
+  }
+</section>
