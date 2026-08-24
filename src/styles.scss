@@ -48,8 +48,11 @@ body {
 
 body {
   min-height: 100vh;
+  min-height: 100dvh;
   color: var(--oh-ink-950);
   -webkit-font-smoothing: antialiased;
+  text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
 }
 
 button,
@@ -76,6 +79,20 @@ a {
 img,
 svg {
   display: block;
+}
+
+/* Aucun média ni champ de saisie ne doit élargir son conteneur sur petit écran. */
+img,
+video,
+canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+input,
+select,
+textarea {
+  max-width: 100%;
 }
 
 button:focus-visible,
@@ -140,6 +157,37 @@ select:focus-visible {
   border-radius: var(--oh-radius-md);
   background: var(--oh-surface);
   box-shadow: var(--oh-shadow-sm);
+}
+
+/*
+ * Zones défilables horizontalement (tableaux denses, onglets, graphiques).
+ * Le défilement doit rester perceptible : sur mobile la barre native est
+ * masquée tant qu'on ne touche pas, la barre fine ci-dessous sert d'indice.
+ */
+.oh-scroll-x {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #b9c5d5 transparent;
+  -webkit-overflow-scrolling: touch;
+}
+
+.oh-scroll-x::-webkit-scrollbar {
+  height: 8px;
+}
+
+.oh-scroll-x::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: #b9c5d5;
+  background-clip: content-box;
+}
+
+/* Sur écran tactile, les cibles doivent rester atteignables au doigt. */
+@media (pointer: coarse) {
+  .oh-button {
+    min-height: 44px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

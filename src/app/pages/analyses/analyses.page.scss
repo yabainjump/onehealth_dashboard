@@ -9,6 +9,7 @@
 
 .analysis-header {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-end;
   justify-content: space-between;
   gap: 28px;
@@ -533,6 +534,9 @@
 
 .signals-table {
   overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #b9c5d5 transparent;
 
   &__head,
   .signal-row {
@@ -698,7 +702,7 @@
   }
 }
 
-@media (max-width: 1050px) {
+@container workspace (max-width: 726px) {
   .analysis-filters {
     grid-template-columns: repeat(3, minmax(0, 1fr));
 
@@ -717,7 +721,7 @@
   }
 }
 
-@media (max-width: 850px) {
+@container workspace (max-width: 814px) {
   .analysis-grid {
     grid-template-columns: 1fr;
   }
@@ -728,7 +732,7 @@
   }
 }
 
-@media (max-width: 700px) {
+@container workspace (max-width: 664px) {
   .analysis-header {
     align-items: stretch;
     flex-direction: column;
@@ -768,6 +772,9 @@
     min-height: 270px;
     padding-inline: 8px;
     overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
+    scrollbar-color: #b9c5d5 transparent;
   }
 
   .analysis-chart {

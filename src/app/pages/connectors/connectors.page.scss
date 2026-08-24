@@ -10,6 +10,7 @@
 .connectors-header {
   min-height: 116px;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 28px;
@@ -326,6 +327,9 @@
 
 .connector-table {
   overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #b9c5d5 transparent;
 
   &__head,
   .connector-row {
@@ -597,7 +601,7 @@
   }
 }
 
-@media (max-width: 1040px) {
+@container workspace (max-width: 716px) {
   .connectors-header {
     align-items: flex-start;
     flex-direction: column;
@@ -620,7 +624,7 @@
   }
 }
 
-@media (max-width: 760px) {
+@container workspace (max-width: 724px) {
   .connectors-header {
     padding: 18px;
 
@@ -746,7 +750,7 @@
   }
 }
 
-@media (max-width: 540px) {
+@container workspace (max-width: 504px) {
   .connectors-header__actions {
     grid-template-columns: 1fr;
   }

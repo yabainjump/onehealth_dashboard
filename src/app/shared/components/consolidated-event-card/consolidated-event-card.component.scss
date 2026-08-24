@@ -129,7 +129,7 @@
 .event-source-dot--environment {
   background: var(--oh-environment);
 }
-@media (max-width: 780px) {
+@container workspace (max-width: 744px) {
   .event-metrics {
     grid-template-columns: repeat(2, 1fr);
   }

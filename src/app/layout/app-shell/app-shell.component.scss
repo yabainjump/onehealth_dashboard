@@ -1,10 +1,12 @@
 :host {
   display: block;
   min-height: 100vh;
+  min-height: 100dvh;
 }
 
 .shell {
   min-height: 100vh;
+  min-height: 100dvh;
   display: grid;
   grid-template-columns: 248px minmax(0, 1fr);
 }
@@ -14,19 +16,32 @@
   top: 0;
   z-index: 30;
   height: 100vh;
+  /* 100dvh suit la barre d'adresse mobile ; sans cela le bas du menu passe dessous. */
+  height: 100dvh;
   display: flex;
   flex-direction: column;
-  padding: 18px 14px 16px;
+  /* Un écran court ou en paysage ne montre pas tous les liens sans défilement. */
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 18px 14px calc(16px + env(safe-area-inset-bottom));
+  padding-left: max(14px, env(safe-area-inset-left));
   border-right: 1px solid var(--oh-border);
   background: var(--oh-surface);
+  scrollbar-width: thin;
+  scrollbar-color: #c8d2df transparent;
 }
 
 .brand {
+  position: sticky;
+  top: 0;
+  z-index: 2;
   min-height: 54px;
   display: flex;
+  flex: 0 0 auto;
   align-items: center;
   gap: 11px;
   padding: 0 7px 0 5px;
+  background: var(--oh-surface);
 
   &__logo {
     width: 42px;
@@ -69,6 +84,7 @@
 
 .nav {
   display: grid;
+  flex: 0 0 auto;
   gap: 5px;
   margin-top: 30px;
 
@@ -119,8 +135,10 @@
 
 .sidebar__bottom {
   display: grid;
+  flex: 0 0 auto;
   gap: 4px;
   margin-top: auto;
+  padding-top: 18px;
 }
 
 .sector-filter {
@@ -145,24 +163,29 @@
 .workspace {
   min-width: 0;
   min-height: 100vh;
+  min-height: 100dvh;
   display: grid;
-  grid-template-rows: 64px minmax(calc(100vh - 110px), auto) 46px;
+  /* Pistes intrinsèques : plus de calcul en vh, le contenu ne peut plus dépasser. */
+  grid-template-rows: auto minmax(0, 1fr) auto;
 }
 
 .topbar {
   position: sticky;
   top: 0;
   z-index: 20;
+  min-height: 64px;
   display: grid;
-  grid-template-columns: minmax(250px, 1fr) auto minmax(200px, 320px) auto;
+  grid-template-columns: minmax(0, 1fr) auto minmax(180px, 320px) auto;
   align-items: center;
   gap: 22px;
   padding: 0 26px;
+  padding-right: max(26px, env(safe-area-inset-right));
   border-bottom: 1px solid var(--oh-border);
   background: rgb(255 255 255 / 96%);
   backdrop-filter: blur(12px);
 
   &__brand {
+    min-width: 0;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -170,10 +193,17 @@
     font-size: 1.125rem;
     font-weight: 750;
     letter-spacing: -0.02em;
+
+    span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
   }
 
   &__actions {
     display: flex;
+    flex: 0 0 auto;
     align-items: center;
     gap: 5px;
   }
@@ -359,15 +389,27 @@
 
 .content {
   min-width: 0;
+  /*
+   * Conteneur de requêtes : les pages se réorganisent selon la largeur réelle
+   * dont elles disposent, et non selon celle de la fenêtre. Sans cela, une
+   * fenêtre de 1024 px laisse 740 px de contenu tout en déclenchant les règles
+   * « grand écran », ce qui tronquait tableaux et barres d'actions.
+   */
+  container-type: inline-size;
+  container-name: workspace;
   padding: 36px 38px 48px;
+  padding-left: max(38px, env(safe-area-inset-left));
+  padding-right: max(38px, env(safe-area-inset-right));
 }
 
 .footer {
+  min-height: 46px;
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   gap: 20px;
-  padding: 0 28px;
+  padding: 8px 28px;
+  padding-bottom: calc(8px + env(safe-area-inset-bottom));
   border-top: 1px solid var(--oh-border);
   background: var(--oh-surface);
   color: var(--oh-ink-600);
@@ -393,9 +435,22 @@
   display: none;
 }
 
+@media (max-width: 1280px) {
+  /* Rendre au contenu la place que la barre latérale ne mérite plus. */
+  .shell {
+    grid-template-columns: 216px minmax(0, 1fr);
+  }
+
+  .content {
+    padding: 30px 26px 42px;
+    padding-left: max(26px, env(safe-area-inset-left));
+    padding-right: max(26px, env(safe-area-inset-right));
+  }
+}
+
 @media (max-width: 1120px) {
   .topbar {
-    grid-template-columns: minmax(230px, 1fr) auto auto;
+    grid-template-columns: minmax(0, 1fr) auto auto;
   }
 
   .global-search {
@@ -445,24 +500,14 @@
     backdrop-filter: blur(2px);
   }
 
-  .workspace {
-    grid-template-rows: 60px minmax(calc(100vh - 102px), auto) 42px;
-  }
-
   .topbar {
     grid-template-columns: minmax(0, 1fr) auto;
     min-height: 60px;
     padding: 0 16px;
+    padding-right: max(16px, env(safe-area-inset-right));
 
     &__brand {
-      min-width: 0;
       font-size: 1rem;
-
-      span {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
     }
   }
 
@@ -473,11 +518,14 @@
 
   .content {
     padding: 26px 18px 38px;
+    padding-left: max(18px, env(safe-area-inset-left));
+    padding-right: max(18px, env(safe-area-inset-right));
   }
 
   .footer {
     grid-template-columns: 1fr;
-    padding: 0 16px;
+    padding: 10px 16px;
+    padding-bottom: calc(10px + env(safe-area-inset-bottom));
     text-align: center;
 
     > span:first-child {
@@ -487,35 +535,63 @@
 }
 
 @media (max-width: 480px) {
-  .topbar__brand span {
-    max-width: 210px;
-  }
-
   .topbar__actions .icon-button--notification {
     display: none;
   }
 
   .content {
     padding-inline: 14px;
+    padding-left: max(14px, env(safe-area-inset-left));
+    padding-right: max(14px, env(safe-area-inset-right));
+  }
+}
+
+/* Doigt : les icônes de 36 px sont sous le seuil confortable de 44 px. */
+@media (pointer: coarse) {
+  .icon-button,
+  .profile-button,
+  .menu-toggle,
+  .sidebar__close {
+    width: 42px;
+    height: 42px;
+  }
+
+  .nav__link {
+    min-height: 46px;
+  }
+
+  .nav__link--compact,
+  .sector-filter {
+    min-height: 42px;
   }
 }
 
 .rudolf-trigger { display: inline-flex; align-items: center; gap: 7px; border: 1px solid #d5cff8; background: #f7f5ff; color: #4637a8; border-radius: 9px; padding: 9px 12px; font-weight: 700; cursor: pointer; }
 .assistant-backdrop { position: fixed; inset: 0; z-index: 60; border: 0; background: rgb(15 23 42 / .35); }
 .rudolf-drawer { position: fixed; z-index: 61; top: 0; right: 0; width: min(430px, 100vw); height: 100dvh; background: #fff; box-shadow: -16px 0 40px rgb(15 23 42 / .18); display: flex; flex-direction: column; }
-.rudolf-drawer > header { display: flex; align-items: center; justify-content: space-between; padding: 18px; border-bottom: 1px solid #e4e7ec; }
+.rudolf-drawer > header { flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px; padding-right: max(18px, env(safe-area-inset-right)); border-bottom: 1px solid #e4e7ec; }
+.rudolf-drawer > header > div { min-width: 0; }
+.rudolf-drawer > header strong, .rudolf-drawer > header small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .rudolf-drawer > header div, .rudolf-drawer > header span { display: flex; align-items: center; gap: 9px; }
 .rudolf-drawer > header span { align-items: flex-start; flex-direction: column; gap: 1px; }
 .rudolf-drawer > header small { color: #667085; font-weight: 400; }
 .rudolf-drawer > header button { border: 0; background: transparent; cursor: pointer; }
 .rudolf-drawer__notice { margin: 14px; padding: 11px; background: #fff8e8; border-radius: 8px; color: #805b10; font-size: 12px; }
-.rudolf-drawer__conversation { flex: 1; overflow: auto; padding: 8px 18px 18px; }
+.rudolf-drawer__conversation { flex: 1 1 auto; min-height: 0; overflow: auto; overscroll-behavior: contain; padding: 8px 18px 18px; }
 .rudolf-answer { white-space: pre-wrap; line-height: 1.65; background: #f7f5ff; border-radius: 12px; padding: 14px; }
 .rudolf-empty { color: #667085; text-align: center; margin-top: 30%; }
 .rudolf-error { color: #b42318; }
-.rudolf-drawer form { padding: 14px; border-top: 1px solid #e4e7ec; }
+.rudolf-drawer form { flex: 0 0 auto; padding: 14px; padding-bottom: calc(14px + env(safe-area-inset-bottom)); border-top: 1px solid #e4e7ec; }
 .rudolf-drawer textarea { width: 100%; resize: none; box-sizing: border-box; border: 1px solid #d0d5dd; border-radius: 10px; padding: 11px; font: inherit; }
 .rudolf-drawer form div { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; }
 .rudolf-drawer form button { display: inline-flex; gap: 7px; align-items: center; border: 0; border-radius: 8px; padding: 9px 13px; background: #4637a8; color: #fff; font-weight: 700; }
 .rudolf-drawer form button:disabled { opacity: .55; }
 @media (max-width: 700px) { .rudolf-trigger span { display: none; } }
+
+/* Paysage téléphone : la zone de saisie confisquait toute la hauteur du tiroir. */
+@media (max-height: 560px) {
+  .rudolf-drawer__notice { margin: 10px 14px; padding: 8px 10px; font-size: 11px; }
+  .rudolf-drawer > header { padding: 12px 14px; }
+  .rudolf-drawer textarea { height: 62px; }
+  .rudolf-empty { margin-top: 8%; }
+}

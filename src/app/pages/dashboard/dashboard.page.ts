@@ -170,7 +170,7 @@ export class DashboardPage implements OnInit {
       ]),
     ];
     const csv = rows
-      .map((row) => row.map((value) => `"${String(value).replaceAll('"', '""')}"`).join(';'))
+      .map((row) => row.map((value) => this.escapeCsvCell(String(value))).join(';'))
       .join('\n');
     const url = URL.createObjectURL(new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8' }));
     const link = document.createElement('a');
@@ -178,6 +178,16 @@ export class DashboardPage implements OnInit {
     link.download = `one-health-ceeac-${this.selectedPeriod()}.csv`;
     link.click();
     URL.revokeObjectURL(url);
+  }
+
+  /** Une cellule commençant par `=`, `+`, `-` ou `@` serait interprétée comme formule. */
+  private escapeCsvCell(value: string): string {
+    let safeValue = value;
+    if (/^[=+\-@]/.test(safeValue)) {
+      safeValue = `'${safeValue}`;
+    }
+
+    return `"${safeValue.replaceAll('"', '""')}"`;
   }
 
   protected selectPeriod(period: MapPeriod): void {

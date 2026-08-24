@@ -9,6 +9,7 @@
 
 .page-header {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-end;
   justify-content: space-between;
   gap: 28px;
@@ -40,6 +41,7 @@
 
   &__actions {
     display: flex;
+    flex-wrap: wrap;
     gap: 10px;
   }
 }
@@ -122,6 +124,7 @@
 
   &__actions {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 10px;
   }
@@ -767,7 +770,7 @@
   }
 }
 
-@media (max-width: 1180px) {
+@container workspace (max-width: 856px) {
   .metrics {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
@@ -785,7 +788,7 @@
   }
 }
 
-@media (max-width: 900px) {
+@container workspace (max-width: 864px) {
   .scenario-steps {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -799,15 +802,19 @@
 
   .decision-table {
     overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
+    scrollbar-color: #b9c5d5 transparent;
 
+    /* Assez large pour rester lisible, assez étroit pour tenir sur une tablette. */
     &__header,
     .decision-row {
-      min-width: 820px;
+      min-width: 690px;
     }
   }
 }
 
-@media (max-width: 680px) {
+@container workspace (max-width: 644px) {
   .scenario-card {
     grid-template-columns: 1fr;
   }
@@ -907,7 +914,7 @@
   }
 }
 
-@media (max-width: 420px) {
+@container workspace (max-width: 384px) {
   .page-header__actions {
     grid-template-columns: 1fr;
   }
