@@ -4,8 +4,8 @@
       <span class="auth-visual__eyebrow">Hub régional CEEAC</span>
       <h1>Décider avec une vision One Health convergente.</h1>
       <p>
-        Un espace sécurisé pour rapprocher les données humaines, animales et
-        environnementales autorisées par les États membres.
+        Un espace sécurisé pour rapprocher les données humaines, animales et environnementales
+        autorisées par les États membres.
       </p>
       <div class="auth-visual__sectors" aria-label="Secteurs couverts">
         <span>Santé humaine</span>
@@ -19,7 +19,12 @@
   <section class="auth-panel">
     <div class="auth-card">
       <div class="auth-brand">
-        <img src="assets/brand/one-health-icon.png" alt="Logo One Health Network" width="54" height="54">
+        <img
+          src="assets/brand/one-health-icon.png"
+          alt="Logo One Health Network"
+          width="54"
+          height="54"
+        />
         <span><strong>One Health Network</strong><small>Convergence Hub</small></span>
       </div>
 
@@ -44,7 +49,7 @@
               autocomplete="email"
               inputmode="email"
               placeholder="nom@institution.org"
-            >
+            />
           </span>
           @if (form.controls.email.touched && form.controls.email.invalid) {
             <small>Renseignez une adresse e-mail valide.</small>
@@ -60,11 +65,13 @@
               formControlName="password"
               autocomplete="current-password"
               placeholder="Votre mot de passe"
-            >
+            />
             <button
               type="button"
               class="password-toggle"
-              [attr.aria-label]="passwordVisible() ? 'Masquer le mot de passe' : 'Afficher le mot de passe'"
+              [attr.aria-label]="
+                passwordVisible() ? 'Masquer le mot de passe' : 'Afficher le mot de passe'
+              "
               (click)="togglePassword()"
             >
               @if (passwordVisible()) {
@@ -80,7 +87,11 @@
         </label>
 
         <button class="submit-button" type="submit" [disabled]="submitting()">
-          {{ submitting() ? 'Connexion en cours…' : 'Accéder au Hub' }}
+          @if (submitting()) {
+            <app-brand-loader mode="inline" message="Connexion en cours…" detail="" />
+          } @else {
+            Accéder au Hub
+          }
         </button>
       </form>
 

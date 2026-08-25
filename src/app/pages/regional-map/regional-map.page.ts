@@ -33,6 +33,7 @@ import {
 import * as L from 'leaflet';
 
 import { HubApiService, HubEventApi } from '../../core/data/hub-api.service';
+import { DEMO_REFERENCE_DATE } from '../../core/data/mock/ceeac-reference';
 import { OneHealthDataService } from '../../core/data/one-health-data.service';
 import {
   HealthSector,
@@ -42,6 +43,7 @@ import {
 } from '../../core/data/models/one-health-observation.model';
 import {
   buildMapTimeline,
+  filterObservationsByDateRange,
   filterObservationsAt,
   observationsForEvent,
 } from './regional-map.presenter';
@@ -63,6 +65,12 @@ const SECTOR_COLORS: Readonly<Record<HealthSector, string>> = {
   animal: '#ef7b18',
   environment: '#2187c9',
 };
+
+const formatDateInput = (date: Date): string => date.toISOString().slice(0, 10);
+const DEFAULT_CUSTOM_DATE_TO = formatDateInput(DEMO_REFERENCE_DATE);
+const DEFAULT_CUSTOM_DATE_FROM = formatDateInput(
+  new Date(DEMO_REFERENCE_DATE.getTime() - 29 * 24 * 60 * 60 * 1000),
+);
 
 @Component({
   selector: 'app-regional-map-page',
@@ -102,6 +110,9 @@ export class RegionalMapPage implements AfterViewInit, OnDestroy {
   private timelineTimer?: number;
 
   protected readonly period = signal<MapPeriod>('30d');
+  protected readonly customPeriodActive = signal(false);
+  protected readonly customDateFrom = signal(DEFAULT_CUSTOM_DATE_FROM);
+  protected readonly customDateTo = signal(DEFAULT_CUSTOM_DATE_TO);
   protected readonly activeSectors = signal<ReadonlySet<HealthSector>>(
     new Set(['human', 'animal', 'environment']),
   );
@@ -144,13 +155,39 @@ export class RegionalMapPage implements AfterViewInit, OnDestroy {
     { id: 'verified-alert', label: 'Alertes vérifiées' },
   ];
 
-  private readonly periodObservations = computed(() => {
+  protected readonly customDateError = computed(() => {
+    if (!this.customPeriodActive()) {
+      return '';
+    }
+
+    const from = this.customDateFrom();
+    const to = this.customDateTo();
+    if (!from || !to) {
+      return 'Sélectionnez une date de début et une date de fin.';
+    }
+    return from > to ? 'La date de début doit précéder la date de fin.' : '';
+  });
+
+  private readonly dateFilteredObservations = computed(() => {
     this.dataService.revision();
-    return this.dataService.filter({
-      period: this.period(),
-      sectors: this.activeSectors(),
-      stages: this.activeStages(),
-    });
+    const sectors = this.activeSectors();
+
+    if (this.customPeriodActive()) {
+      if (this.customDateError()) {
+        return [];
+      }
+      return filterObservationsByDateRange(this.dataService.observations, {
+        from: this.customDateFrom(),
+        to: this.customDateTo(),
+      }).filter((observation) => sectors.has(observation.sector));
+    }
+
+    return this.dataService.filter({ period: this.period(), sectors });
+  });
+
+  private readonly periodObservations = computed(() => {
+    const stages = this.activeStages();
+    return this.dateFilteredObservations().filter((observation) => stages.has(observation.stage));
   });
 
   protected readonly timeline = computed(() =>
@@ -182,10 +219,7 @@ export class RegionalMapPage implements AfterViewInit, OnDestroy {
       signal: 0,
       'verified-alert': 0,
     };
-    const observations = this.dataService.filter({
-      period: this.period(),
-      sectors: this.activeSectors(),
-    });
+    const observations = this.dateFilteredObservations();
 
     for (const observation of observations) {
       counts[observation.stage] += 1;
@@ -209,7 +243,25 @@ export class RegionalMapPage implements AfterViewInit, OnDestroy {
 
   protected selectPeriod(period: MapPeriod): void {
     this.stopTimelinePlayback();
+    this.customPeriodActive.set(false);
     this.period.set(period);
+    this.timelinePercent.set(100);
+  }
+
+  protected selectCustomPeriod(): void {
+    this.stopTimelinePlayback();
+    this.customPeriodActive.set(true);
+    this.timelinePercent.set(100);
+  }
+
+  protected onCustomDateInput(boundary: 'from' | 'to', event: Event): void {
+    this.stopTimelinePlayback();
+    const value = (event.target as HTMLInputElement).value;
+    if (boundary === 'from') {
+      this.customDateFrom.set(value);
+    } else {
+      this.customDateTo.set(value);
+    }
     this.timelinePercent.set(100);
   }
 
@@ -239,6 +291,9 @@ export class RegionalMapPage implements AfterViewInit, OnDestroy {
 
   protected resetFilters(): void {
     this.period.set('30d');
+    this.customPeriodActive.set(false);
+    this.customDateFrom.set(DEFAULT_CUSTOM_DATE_FROM);
+    this.customDateTo.set(DEFAULT_CUSTOM_DATE_TO);
     this.activeSectors.set(new Set(['human', 'animal', 'environment']));
     this.activeStages.set(new Set(['observation', 'signal', 'verified-alert']));
     this.timelinePercent.set(100);
@@ -364,7 +419,6 @@ export class RegionalMapPage implements AfterViewInit, OnDestroy {
     L.control.zoom({ position: 'topright' }).addTo(this.map);
     this.correlationLayer = L.layerGroup().addTo(this.map);
     this.markersLayer = L.layerGroup().addTo(this.map);
-    this.map.on('zoomend', () => this.renderMarkers());
     this.fitCeeac();
     this.refreshMapLayers();
   }
@@ -386,22 +440,13 @@ export class RegionalMapPage implements AfterViewInit, OnDestroy {
 
     this.markersLayer.clearLayers();
 
-    const zoom = Math.round(this.map.getZoom());
-    const groups = this.groupObservations(this.filteredObservations(), zoom);
-
-    for (const observations of groups) {
-      if (observations.length > 1 && zoom < 8) {
-        this.renderCluster(observations, zoom);
-        continue;
-      }
-
-      const observation = observations[0];
+    for (const observation of this.filteredObservations()) {
       const radius =
-        observation.stage === 'verified-alert' ? 9 : observation.stage === 'signal' ? 7 : 5;
+        observation.stage === 'verified-alert' ? 8 : observation.stage === 'signal' ? 6 : 4;
 
       if (observation.stage !== 'observation') {
         L.circleMarker([observation.latitude, observation.longitude], {
-          radius: radius + 4,
+          radius: radius + 3,
           className: `observation-pulse observation-pulse--${observation.stage}`,
           color: SECTOR_COLORS[observation.sector],
           fill: false,
@@ -432,57 +477,6 @@ export class RegionalMapPage implements AfterViewInit, OnDestroy {
       });
       marker.addTo(this.markersLayer);
     }
-  }
-
-  private groupObservations(
-    observations: readonly OneHealthObservation[],
-    zoom: number,
-  ): readonly (readonly OneHealthObservation[])[] {
-    if (!this.map || zoom >= 8) {
-      return observations.map((observation) => [observation]);
-    }
-
-    const cellSize = 46;
-    const buckets = new Map<string, OneHealthObservation[]>();
-    for (const observation of observations) {
-      const point = this.map.project([observation.latitude, observation.longitude], zoom);
-      const key = `${Math.floor(point.x / cellSize)}:${Math.floor(point.y / cellSize)}`;
-      const bucket = buckets.get(key) ?? [];
-      bucket.push(observation);
-      buckets.set(key, bucket);
-    }
-
-    return [...buckets.values()];
-  }
-
-  private renderCluster(observations: readonly OneHealthObservation[], zoom: number): void {
-    if (!this.map || !this.markersLayer) {
-      return;
-    }
-
-    const latitude =
-      observations.reduce((sum, item) => sum + item.latitude, 0) / observations.length;
-    const longitude =
-      observations.reduce((sum, item) => sum + item.longitude, 0) / observations.length;
-    const radius = Math.min(22, 11 + Math.log2(observations.length) * 2.1);
-    const cluster = L.circleMarker([latitude, longitude], {
-      radius,
-      className: 'observation-cluster-point',
-      color: '#ffffff',
-      fillColor: '#137a7c',
-      fillOpacity: 0.94,
-      opacity: 1,
-      weight: 3,
-    });
-    const count = document.createElement('strong');
-    count.textContent = String(observations.length);
-    cluster.bindTooltip(count, {
-      className: 'observation-cluster-label',
-      direction: 'center',
-      permanent: true,
-    });
-    cluster.on('click', () => this.map?.setView([latitude, longitude], Math.min(8, zoom + 2)));
-    cluster.addTo(this.markersLayer);
   }
 
   private renderCorrelations(): void {

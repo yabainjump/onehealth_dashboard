@@ -45,26 +45,59 @@
           <div class="period-control">
             <button
               type="button"
-              [class.period-control__item--active]="period() === '7d'"
+              [class.period-control__item--active]="!customPeriodActive() && period() === '7d'"
               (click)="selectPeriod('7d')"
             >
               7 jours
             </button>
             <button
               type="button"
-              [class.period-control__item--active]="period() === '30d'"
+              [class.period-control__item--active]="!customPeriodActive() && period() === '30d'"
               (click)="selectPeriod('30d')"
             >
               30 jours
             </button>
             <button
               type="button"
-              [class.period-control__item--active]="period() === 'year'"
+              [class.period-control__item--active]="!customPeriodActive() && period() === 'year'"
               (click)="selectPeriod('year')"
             >
               Année
             </button>
+            <button
+              type="button"
+              [class.period-control__item--active]="customPeriodActive()"
+              (click)="selectCustomPeriod()"
+            >
+              Personnalisée
+            </button>
           </div>
+
+          @if (customPeriodActive()) {
+            <div class="custom-date-range">
+              <label>
+                <span>Du</span>
+                <input
+                  type="date"
+                  [value]="customDateFrom()"
+                  [max]="customDateTo()"
+                  (input)="onCustomDateInput('from', $event)"
+                />
+              </label>
+              <label>
+                <span>Au</span>
+                <input
+                  type="date"
+                  [value]="customDateTo()"
+                  [min]="customDateFrom()"
+                  (input)="onCustomDateInput('to', $event)"
+                />
+              </label>
+            </div>
+            @if (customDateError()) {
+              <small class="custom-date-error" role="alert">{{ customDateError() }}</small>
+            }
+          }
         </fieldset>
 
         <fieldset class="filter-group">

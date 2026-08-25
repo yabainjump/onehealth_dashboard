@@ -3,10 +3,18 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ActivatedRoute, Router } from '@angular/router';
 import { LucideEye, LucideEyeOff, LucideLockKeyhole, LucideMail } from '@lucide/angular';
 import { DashboardAuthService } from '../../core/auth/dashboard-auth.service';
+import { BrandLoaderComponent } from '../../shared/components/brand-loader/brand-loader.component';
 
 @Component({
   selector: 'app-login-page',
-  imports: [ReactiveFormsModule, LucideEye, LucideEyeOff, LucideLockKeyhole, LucideMail],
+  imports: [
+    ReactiveFormsModule,
+    BrandLoaderComponent,
+    LucideEye,
+    LucideEyeOff,
+    LucideLockKeyhole,
+    LucideMail,
+  ],
   templateUrl: './login.page.html',
   styleUrl: './login.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -53,14 +61,13 @@ export class LoginPage {
       }
 
       const requestedUrl = this.route.snapshot.queryParamMap.get('retour') ?? '';
-      const safeUrl = requestedUrl.startsWith('/') && !requestedUrl.startsWith('//')
-        ? requestedUrl
-        : '/dashboard';
+      const safeUrl =
+        requestedUrl.startsWith('/') && !requestedUrl.startsWith('//')
+          ? requestedUrl
+          : '/dashboard';
       await this.router.navigateByUrl(safeUrl);
     } catch (error: unknown) {
-      this.errorMessage.set(
-        error instanceof Error ? error.message : 'La connexion a échoué.',
-      );
+      this.errorMessage.set(error instanceof Error ? error.message : 'La connexion a échoué.');
     } finally {
       this.submitting.set(false);
     }

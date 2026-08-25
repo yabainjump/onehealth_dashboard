@@ -1,1 +1,11 @@
 <router-outlet />
+
+@if (navigationPending()) {
+  <div class="route-loader" aria-label="Chargement de la page">
+    <app-brand-loader
+      mode="page"
+      message="One Health Convergence Hub"
+      detail="Chargement sécurisé de votre espace…"
+    />
+  </div>
+}

@@ -7,6 +7,28 @@ export interface MapTimelineState {
   readonly cutoffMs: number;
 }
 
+export interface MapDateRange {
+  readonly from: string;
+  readonly to: string;
+}
+
+export function filterObservationsByDateRange(
+  observations: readonly OneHealthObservation[],
+  range: MapDateRange,
+): readonly OneHealthObservation[] {
+  const fromMs = Date.parse(`${range.from}T00:00:00.000Z`);
+  const toMs = Date.parse(`${range.to}T23:59:59.999Z`);
+
+  if (!Number.isFinite(fromMs) || !Number.isFinite(toMs) || fromMs > toMs) {
+    return [];
+  }
+
+  return observations.filter((observation) => {
+    const observedAt = Date.parse(observation.observedAt);
+    return Number.isFinite(observedAt) && observedAt >= fromMs && observedAt <= toMs;
+  });
+}
+
 export function buildMapTimeline(
   observations: readonly OneHealthObservation[],
   requestedPercent: number,

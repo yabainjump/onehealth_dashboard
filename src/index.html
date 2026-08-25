@@ -1,18 +1,40 @@
 <!doctype html>
 <html lang="fr">
-<head>
-  <meta charset="utf-8">
-  <title>One Health Network Dashboard</title>
-  <base href="/">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0f4b95">
-  <meta
-    name="description"
-    content="Démonstrateur du Hub régional One Health pour les États membres de la CEEAC."
-  >
-  <link rel="icon" type="image/png" href="assets/brand/one-health-icon.png">
-</head>
-<body>
-  <app-root></app-root>
-</body>
+  <head>
+    <meta charset="utf-8" />
+    <title>One Health Network Dashboard</title>
+    <base href="/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0f4b95" />
+    <meta
+      name="description"
+      content="Démonstrateur du Hub régional One Health pour les États membres de la CEEAC."
+    />
+    <link rel="icon" type="image/png" href="assets/brand/one-health-icon.png" />
+    <link rel="preload" as="image" href="assets/brand/one-health-icon.png" fetchpriority="high" />
+  </head>
+  <body>
+    <app-root>
+      <div
+        class="ohn-initial-loader"
+        role="status"
+        aria-label="Chargement de One Health Convergence Hub"
+      >
+        <span class="ohn-initial-loader__visual" aria-hidden="true">
+          <i></i>
+          <i></i>
+          <img
+            src="assets/brand/one-health-icon.png"
+            alt=""
+            width="70"
+            height="70"
+            fetchpriority="high"
+          />
+        </span>
+        <strong>One Health Convergence Hub</strong>
+        <small>Chargement sécurisé de votre espace…</small>
+        <span class="ohn-initial-loader__progress" aria-hidden="true"><i></i></span>
+      </div>
+    </app-root>
+  </body>
 </html>

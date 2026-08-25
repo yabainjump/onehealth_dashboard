@@ -3,7 +3,10 @@
     <div>
       <p><svg lucideShieldCheck size="16"></svg> Gouvernance et souveraineté</p>
       <h1>Administration des accès Hub</h1>
-      <span>Attribuez les responsabilités institutionnelles et limitez les données visibles par pays.</span>
+      <span
+        >Attribuez les responsabilités institutionnelles et limitez les données visibles par
+        pays.</span
+      >
     </div>
     <button class="oh-button" type="button" [disabled]="loading()" (click)="loadUsers(true)">
       <svg lucideRefreshCw size="16" [class.is-spinning]="loading()"></svg>
@@ -13,54 +16,113 @@
 
   <div class="security-notice" role="status">
     <svg lucideCircleAlert size="17"></svg>
-    <span><strong>Principe du moindre privilège.</strong> Les rôles nationaux exigent au moins un pays ; le rôle Administrateur Hub donne un accès régional sans restriction.</span>
+    <span
+      ><strong>Principe du moindre privilège.</strong> Les rôles nationaux exigent au moins un pays
+      ; le rôle Administrateur Hub donne un accès régional sans restriction.</span
+    >
   </div>
 
   <div class="admin-kpis">
-    <article class="oh-card"><span>Utilisateurs</span><strong>{{ total() }}</strong><small>Comptes trouvés</small></article>
-    <article class="oh-card"><span>Accès attribués</span><strong>{{ pageSummary().assigned }}</strong><small>Sur la page actuelle</small></article>
-    <article class="oh-card"><span>Administrateurs</span><strong>{{ pageSummary().admins }}</strong><small>Globaux ou Hub</small></article>
-    <article class="oh-card"><span>Pays représentés</span><strong>{{ pageSummary().countries }}</strong><small>Dans les périmètres visibles</small></article>
+    <article class="oh-card">
+      <span>Utilisateurs</span><strong>{{ total() }}</strong
+      ><small>Comptes trouvés</small>
+    </article>
+    <article class="oh-card">
+      <span>Accès attribués</span><strong>{{ pageSummary().assigned }}</strong
+      ><small>Sur la page actuelle</small>
+    </article>
+    <article class="oh-card">
+      <span>Administrateurs</span><strong>{{ pageSummary().admins }}</strong
+      ><small>Globaux ou Hub</small>
+    </article>
+    <article class="oh-card">
+      <span>Pays représentés</span><strong>{{ pageSummary().countries }}</strong
+      ><small>Dans les périmètres visibles</small>
+    </article>
   </div>
 
-  @if (error()) { <div class="page-message page-message--error" role="alert">{{ error() }}</div> }
-  @if (feedback()) { <div class="page-message page-message--success" role="status">{{ feedback() }}</div> }
+  @if (error()) {
+    <div class="page-message page-message--error" role="alert">{{ error() }}</div>
+  }
+  @if (feedback()) {
+    <div class="page-message page-message--success" role="status">{{ feedback() }}</div>
+  }
 
   <div class="admin-layout">
     <section class="users-panel oh-card">
       <header>
-        <div><h2>Utilisateurs</h2><span>{{ resultRange() }}</span></div>
+        <div>
+          <h2>Utilisateurs</h2>
+          <span>{{ resultRange() }}</span>
+        </div>
         <form class="user-search" (submit)="search($event)">
           <svg lucideSearch size="15"></svg>
-          <input type="search" maxlength="100" placeholder="Nom, e-mail, institution…" [value]="searchDraft()" (input)="onSearchInput($event)">
+          <input
+            type="search"
+            maxlength="100"
+            placeholder="Nom, e-mail, institution…"
+            [value]="searchDraft()"
+            (input)="onSearchInput($event)"
+          />
           <button type="submit">Rechercher</button>
         </form>
       </header>
 
       @if (activeSearch()) {
-        <div class="active-search"><span>Recherche : <strong>{{ activeSearch() }}</strong></span><button type="button" (click)="clearSearch()">Effacer</button></div>
+        <div class="active-search">
+          <span
+            >Recherche : <strong>{{ activeSearch() }}</strong></span
+          ><button type="button" (click)="clearSearch()">Effacer</button>
+        </div>
       }
 
       @if (loading()) {
-        <div class="loading-state"><svg lucideRefreshCw size="22" class="is-spinning"></svg><strong>Chargement des comptes…</strong></div>
+        <app-brand-loader
+          message="Chargement des comptes…"
+          detail="Application des rôles et périmètres autorisés"
+        />
       } @else {
         <div class="user-list">
           @for (user of users(); track user.id) {
-            <button type="button" class="user-row" [class.user-row--selected]="selectedUser()?.id === user.id" (click)="selectUser(user)">
+            <button
+              type="button"
+              class="user-row"
+              [class.user-row--selected]="selectedUser()?.id === user.id"
+              (click)="selectUser(user)"
+            >
               <i>{{ initials(user) }}</i>
-              <span><strong>{{ displayName(user) }}</strong><small>{{ user.email || user.username }} · {{ user.institution || 'Institution non renseignée' }}</small></span>
-              <b [class.user-role--none]="user.hubRoles.length === 0 && user.role !== 'admin'">{{ roleSummary(user) }}</b>
+              <span
+                ><strong>{{ displayName(user) }}</strong
+                ><small
+                  >{{ user.email || user.username }} ·
+                  {{ user.institution || 'Institution non renseignée' }}</small
+                ></span
+              >
+              <b [class.user-role--none]="user.hubRoles.length === 0 && user.role !== 'admin'">{{
+                roleSummary(user)
+              }}</b>
             </button>
           } @empty {
-            <div class="empty-state"><svg lucideCircleUserRound size="26"></svg><strong>Aucun utilisateur trouvé</strong><span>Modifiez la recherche ou actualisez la liste.</span></div>
+            <div class="empty-state">
+              <svg lucideCircleUserRound size="26"></svg><strong>Aucun utilisateur trouvé</strong
+              ><span>Modifiez la recherche ou actualisez la liste.</span>
+            </div>
           }
         </div>
       }
 
       <footer>
-        <button type="button" [disabled]="currentPage() <= 1 || loading()" (click)="previousPage()"><svg lucideChevronLeft size="15"></svg> Précédent</button>
+        <button type="button" [disabled]="currentPage() <= 1 || loading()" (click)="previousPage()">
+          <svg lucideChevronLeft size="15"></svg> Précédent
+        </button>
         <span>Page {{ currentPage() }} sur {{ totalPages() }}</span>
-        <button type="button" [disabled]="currentPage() >= totalPages() || loading()" (click)="nextPage()">Suivant <svg lucideChevronRight size="15"></svg></button>
+        <button
+          type="button"
+          [disabled]="currentPage() >= totalPages() || loading()"
+          (click)="nextPage()"
+        >
+          Suivant <svg lucideChevronRight size="15"></svg>
+        </button>
       </footer>
     </section>
 
@@ -68,28 +130,67 @@
       @if (selectedUser(); as user) {
         <header>
           <i>{{ initials(user) }}</i>
-          <div><span>Configurer l’accès</span><h2>{{ displayName(user) }}</h2><small>{{ user.email }} · {{ user.role === 'admin' ? 'Administrateur global' : 'Utilisateur' }}</small></div>
+          <div>
+            <span>Configurer l’accès</span>
+            <h2>{{ displayName(user) }}</h2>
+            <small
+              >{{ user.email }} ·
+              {{ user.role === 'admin' ? 'Administrateur global' : 'Utilisateur' }}</small
+            >
+          </div>
         </header>
 
         <section class="access-section">
-          <div class="section-heading"><h3>Rôles institutionnels</h3><span>Sélection multiple autorisée</span></div>
+          <div class="section-heading">
+            <h3>Rôles institutionnels</h3>
+            <span>Sélection multiple autorisée</span>
+          </div>
           <div class="role-options">
             @for (role of roleOptions; track role.value) {
               <label [class.role-option--active]="hasRole(role.value)">
-                <input type="checkbox" [checked]="hasRole(role.value)" (change)="toggleRole(role.value, $event)">
-                <span><strong>{{ role.label }}</strong><small>{{ role.description }}</small></span>
+                <input
+                  type="checkbox"
+                  [checked]="hasRole(role.value)"
+                  (change)="toggleRole(role.value, $event)"
+                />
+                <span
+                  ><strong>{{ role.label }}</strong
+                  ><small>{{ role.description }}</small></span
+                >
               </label>
             }
           </div>
         </section>
 
         <section class="access-section">
-          <div class="section-heading"><div><h3>Périmètre des pays</h3><span>{{ isGlobalDraft() ? 'Accès aux 11 États membres' : draftCountries().length + ' pays sélectionné(s)' }}</span></div><div class="section-actions"><button type="button" [disabled]="isGlobalDraft()" (click)="selectAllCountries()">Tout</button><button type="button" [disabled]="isGlobalDraft()" (click)="clearCountries()">Aucun</button></div></div>
+          <div class="section-heading">
+            <div>
+              <h3>Périmètre des pays</h3>
+              <span>{{
+                isGlobalDraft()
+                  ? 'Accès aux 11 États membres'
+                  : draftCountries().length + ' pays sélectionné(s)'
+              }}</span>
+            </div>
+            <div class="section-actions">
+              <button type="button" [disabled]="isGlobalDraft()" (click)="selectAllCountries()">
+                Tout</button
+              ><button type="button" [disabled]="isGlobalDraft()" (click)="clearCountries()">
+                Aucun
+              </button>
+            </div>
+          </div>
           <div class="country-grid" [class.country-grid--disabled]="isGlobalDraft()">
             @for (country of countries; track country.code) {
               <label [class.country-option--active]="isGlobalDraft() || hasCountry(country.code)">
-                <input type="checkbox" [disabled]="isGlobalDraft()" [checked]="isGlobalDraft() || hasCountry(country.code)" (change)="toggleCountry(country.code, $event)">
-                <i>{{ country.code }}</i><span>{{ country.name }}</span>
+                <input
+                  type="checkbox"
+                  [disabled]="isGlobalDraft()"
+                  [checked]="isGlobalDraft() || hasCountry(country.code)"
+                  (change)="toggleCountry(country.code, $event)"
+                />
+                <i>{{ country.code }}</i
+                ><span>{{ country.name }}</span>
               </label>
             }
           </div>
@@ -97,10 +198,20 @@
 
         <footer>
           <span>Les modifications prennent effet à la prochaine requête authentifiée.</span>
-          <button class="oh-button oh-button--primary" type="button" [disabled]="saving()" (click)="saveAccess()">{{ saving() ? 'Enregistrement…' : 'Enregistrer les accès' }}</button>
+          <button
+            class="oh-button oh-button--primary"
+            type="button"
+            [disabled]="saving()"
+            (click)="saveAccess()"
+          >
+            {{ saving() ? 'Enregistrement…' : 'Enregistrer les accès' }}
+          </button>
         </footer>
       } @else {
-        <div class="empty-state empty-state--access"><svg lucideShieldCheck size="28"></svg><strong>Sélectionnez un utilisateur</strong><span>Ses rôles et son périmètre apparaîtront ici.</span></div>
+        <div class="empty-state empty-state--access">
+          <svg lucideShieldCheck size="28"></svg><strong>Sélectionnez un utilisateur</strong
+          ><span>Ses rôles et son périmètre apparaîtront ici.</span>
+        </div>
       }
     </aside>
   </div>

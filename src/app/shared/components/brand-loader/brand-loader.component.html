@@ -1,0 +1,23 @@
+<div
+  class="brand-loader"
+  [class.brand-loader--page]="mode() === 'page'"
+  [class.brand-loader--inline]="mode() === 'inline'"
+  role="status"
+  aria-live="polite"
+  aria-busy="true"
+>
+  <span class="brand-loader__visual" aria-hidden="true">
+    <span></span>
+    <span></span>
+    <img src="assets/brand/one-health-icon.png" alt="" width="64" height="64" decoding="async" />
+  </span>
+  @if (message()) {
+    <strong>{{ message() }}</strong>
+  }
+  @if (detail() && mode() !== 'inline') {
+    <small>{{ detail() }}</small>
+  }
+  @if (mode() !== 'inline') {
+    <span class="brand-loader__progress" aria-hidden="true"><i></i></span>
+  }
+</div>

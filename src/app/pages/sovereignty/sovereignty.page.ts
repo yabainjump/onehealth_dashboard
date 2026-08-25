@@ -1,5 +1,12 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import {
   LucideCircleAlert,
   LucideDatabase,
@@ -16,6 +23,7 @@ import {
   HubSharingPolicyApi,
 } from '../../core/data/hub-api.service';
 import { CEEAC_COUNTRIES } from '../../core/data/mock/ceeac-reference';
+import { BrandLoaderComponent } from '../../shared/components/brand-loader/brand-loader.component';
 import {
   AGGREGATION_LABELS,
   SHARING_LEVEL_LABELS,
@@ -30,6 +38,7 @@ type SharingFilter = 'all' | HubSharingLevel;
 @Component({
   selector: 'app-sovereignty-page',
   imports: [
+    BrandLoaderComponent,
     LucideCircleAlert,
     LucideDatabase,
     LucideRefreshCw,
@@ -160,9 +169,7 @@ export class SovereigntyPage implements OnInit {
   }
 
   protected onDraftAggregation(event: Event): void {
-    this.draftAggregation.set(
-      (event.target as HTMLSelectElement).value as HubAggregationLevel,
-    );
+    this.draftAggregation.set((event.target as HTMLSelectElement).value as HubAggregationLevel);
     this.applyNormalization();
   }
 
@@ -216,7 +223,9 @@ export class SovereigntyPage implements OnInit {
         policies.map((item) => (item.policyId === updated.policyId ? updated : item)),
       );
       this.selectPolicy(updated);
-      this.feedback.set(`La politique de ${this.countryName(updated.countryOwner)} est enregistrée et auditée.`);
+      this.feedback.set(
+        `La politique de ${this.countryName(updated.countryOwner)} est enregistrée et auditée.`,
+      );
     } catch (error: unknown) {
       this.error.set(
         error instanceof HttpErrorResponse && error.status === 403

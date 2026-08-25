@@ -1,5 +1,12 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import {
   LucideChevronLeft,
   LucideChevronRight,
@@ -10,11 +17,9 @@ import {
   LucideShieldCheck,
 } from '@lucide/angular';
 import { HubRole } from '../../core/auth/dashboard-user.model';
-import {
-  HubAdminApiService,
-  HubManagedUser,
-} from '../../core/data/hub-admin-api.service';
+import { HubAdminApiService, HubManagedUser } from '../../core/data/hub-admin-api.service';
 import { CEEAC_COUNTRIES } from '../../core/data/mock/ceeac-reference';
+import { BrandLoaderComponent } from '../../shared/components/brand-loader/brand-loader.component';
 import { normalizeHubAccess, validateHubAccess } from './hub-access-presenter';
 
 interface RoleOption {
@@ -26,6 +31,7 @@ interface RoleOption {
 @Component({
   selector: 'app-administration-page',
   imports: [
+    BrandLoaderComponent,
     LucideChevronLeft,
     LucideChevronRight,
     LucideCircleAlert,
@@ -210,7 +216,9 @@ export class AdministrationPage implements OnInit {
         users.map((candidate) => (candidate.id === updated.id ? updated : candidate)),
       );
       this.selectUser(updated);
-      this.feedback.set(`Les autorisations de ${updated.firstName} ${updated.lastName} sont enregistrées.`);
+      this.feedback.set(
+        `Les autorisations de ${updated.firstName} ${updated.lastName} sont enregistrées.`,
+      );
     } catch (error: unknown) {
       this.error.set(this.errorMessage(error, 'La mise à jour des autorisations a échoué.'));
     } finally {

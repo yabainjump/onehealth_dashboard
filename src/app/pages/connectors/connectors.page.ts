@@ -19,6 +19,7 @@ import {
   LucideTrees,
 } from '@lucide/angular';
 import { DashboardAuthService } from '../../core/auth/dashboard-auth.service';
+import { BrandLoaderComponent } from '../../shared/components/brand-loader/brand-loader.component';
 import {
   HubApiService,
   HubConnectorApi,
@@ -40,6 +41,7 @@ type ConnectorStatusFilter = 'all' | HubConnectorStatus;
 @Component({
   selector: 'app-connectors-page',
   imports: [
+    BrandLoaderComponent,
     LucideChevronLeft,
     LucideChevronRight,
     LucideCircleAlert,

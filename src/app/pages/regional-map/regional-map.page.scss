@@ -149,7 +149,7 @@
 
 .period-control {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 3px;
   padding: 3px;
   border-radius: 8px;
@@ -446,6 +446,43 @@
       color: #5542b6;
     }
   }
+}
+
+.custom-date-range {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+
+  label {
+    min-width: 0;
+    display: grid;
+    gap: 4px;
+  }
+
+  span {
+    color: var(--oh-ink-500);
+    font-size: 0.5rem;
+    font-weight: 720;
+    text-transform: uppercase;
+  }
+
+  input {
+    min-width: 0;
+    width: 100%;
+    height: 35px;
+    padding: 0 6px;
+    border: 1px solid var(--oh-border-strong);
+    border-radius: 7px;
+    background: #fff;
+    color: var(--oh-ink-800);
+    font-size: 0.5625rem;
+  }
+}
+
+.custom-date-error {
+  color: var(--oh-danger);
+  font-size: 0.525rem;
+  line-height: 1.4;
 }
 
 .map-timeline {
@@ -773,22 +810,6 @@
     &--verified-alert { animation-duration: 2.1s; }
   }
 
-  .observation-cluster-point {
-    cursor: zoom-in;
-    filter: drop-shadow(0 4px 5px rgb(14 57 74 / 32%));
-  }
-
-  .observation-cluster-label {
-    padding: 0;
-    border: 0;
-    background: transparent;
-    color: #fff;
-    font-size: 0.6875rem;
-    font-weight: 800;
-    box-shadow: none;
-
-    &::before { display: none; }
-  }
 }
 
 @keyframes map-marker-pulse {

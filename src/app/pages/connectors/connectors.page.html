@@ -166,10 +166,10 @@
     </div>
 
     @if (loading()) {
-      <div class="loading-state" role="status">
-        <svg lucideRefreshCw size="22" class="is-spinning"></svg>
-        <strong>Chargement de la supervision…</strong>
-      </div>
+      <app-brand-loader
+        message="Chargement de la supervision…"
+        detail="Lecture de l’état des connecteurs sectoriels"
+      />
     } @else if (error()) {
       <div class="error-state" role="alert">
         <svg lucideCircleAlert size="23"></svg>

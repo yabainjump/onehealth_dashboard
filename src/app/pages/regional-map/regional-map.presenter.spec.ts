@@ -2,6 +2,7 @@ import { HubEventApi } from '../../core/data/hub-api.service';
 import { OneHealthObservation } from '../../core/data/models/one-health-observation.model';
 import {
   buildMapTimeline,
+  filterObservationsByDateRange,
   filterObservationsAt,
   observationsForEvent,
 } from './regional-map.presenter';
@@ -49,6 +50,24 @@ describe('regional map presenter', () => {
       'first',
       'middle',
     ]);
+  });
+
+  it('filters an inclusive custom date range', () => {
+    expect(
+      filterObservationsByDateRange(observations, {
+        from: '2026-01-02',
+        to: '2026-01-03',
+      }).map(({ id }) => id),
+    ).toEqual(['middle', 'last']);
+  });
+
+  it('rejects an inverted custom date range', () => {
+    expect(
+      filterObservationsByDateRange(observations, {
+        from: '2026-01-03',
+        to: '2026-01-01',
+      }),
+    ).toEqual([]);
   });
 
   it('draws correlations only from observation ids consolidated by the Hub', () => {

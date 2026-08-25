@@ -3,7 +3,10 @@
     <div>
       <p><svg lucideShieldCheck size="16"></svg> Souveraineté des États</p>
       <h1>Registre des politiques de partage</h1>
-      <span>Chaque État membre conserve la maîtrise du périmètre, du niveau de détail et de la durée de conservation de ses données.</span>
+      <span
+        >Chaque État membre conserve la maîtrise du périmètre, du niveau de détail et de la durée de
+        conservation de ses données.</span
+      >
     </div>
     <button class="oh-button" type="button" [disabled]="loading()" (click)="load()">
       <svg lucideRefreshCw size="16" [class.is-spinning]="loading()"></svg>
@@ -11,48 +14,111 @@
     </button>
   </header>
 
-  <div class="sovereignty-notice" [class.sovereignty-notice--warning]="fallbackMode()" role="status">
+  <div
+    class="sovereignty-notice"
+    [class.sovereignty-notice--warning]="fallbackMode()"
+    role="status"
+  >
     <svg lucideCircleAlert size="17"></svg>
     <span>
       @if (fallbackMode()) {
-        <strong>Lecture seule de démonstration.</strong> Le backend déployé ne fournit pas encore le registre.
+        <strong>Lecture seule de démonstration.</strong> Le backend déployé ne fournit pas encore le
+        registre.
       } @else {
-        <strong>Décision humaine et traçable.</strong> Toute modification est réservée aux administrateurs Hub et inscrite dans le journal d’audit.
+        <strong>Décision humaine et traçable.</strong> Toute modification est réservée aux
+        administrateurs Hub et inscrite dans le journal d’audit.
       }
     </span>
   </div>
 
   <div class="sovereignty-kpis">
-    <article class="oh-card"><span>Politiques visibles</span><strong>{{ summary().total }}</strong><small>Selon votre périmètre</small></article>
-    <article class="oh-card"><span>Partage régional</span><strong>{{ summary().regional }}</strong><small>États autorisant la région</small></article>
-    <article class="oh-card"><span>Accès propriétaire</span><strong>{{ summary().restricted }}</strong><small>Politiques restreintes</small></article>
-    <article class="oh-card"><span>Données personnelles</span><strong>{{ summary().personal }}</strong><small>Politiques déclarées sensibles</small></article>
+    <article class="oh-card">
+      <span>Politiques visibles</span><strong>{{ summary().total }}</strong
+      ><small>Selon votre périmètre</small>
+    </article>
+    <article class="oh-card">
+      <span>Partage régional</span><strong>{{ summary().regional }}</strong
+      ><small>États autorisant la région</small>
+    </article>
+    <article class="oh-card">
+      <span>Accès propriétaire</span><strong>{{ summary().restricted }}</strong
+      ><small>Politiques restreintes</small>
+    </article>
+    <article class="oh-card">
+      <span>Données personnelles</span><strong>{{ summary().personal }}</strong
+      ><small>Politiques déclarées sensibles</small>
+    </article>
   </div>
 
-  @if (error()) { <div class="page-feedback page-feedback--error" role="alert">{{ error() }}</div> }
-  @if (feedback()) { <div class="page-feedback" role="status">{{ feedback() }}</div> }
+  @if (error()) {
+    <div class="page-feedback page-feedback--error" role="alert">{{ error() }}</div>
+  }
+  @if (feedback()) {
+    <div class="page-feedback" role="status">{{ feedback() }}</div>
+  }
 
   <div class="registry-filters oh-card">
-    <label class="policy-search"><svg lucideSearch size="16"></svg><input type="search" maxlength="80" placeholder="Pays ou identifiant de politique…" (input)="onSearch($event)"></label>
-    <label><span>Niveau de partage</span><select [value]="selectedLevel()" (change)="onLevelFilter($event)"><option value="all">Tous les niveaux</option><option value="OWNER_ONLY">État propriétaire uniquement</option><option value="OWNER_AND_CEEAC">État et CEEAC</option><option value="AUTHORIZED_COUNTRIES">Pays autorisés</option><option value="REGIONAL_AUTHORIZED">Partage régional</option><option value="PUBLIC_AGGREGATED">Public agrégé</option></select></label>
+    <label class="policy-search"
+      ><svg lucideSearch size="16"></svg
+      ><input
+        type="search"
+        maxlength="80"
+        placeholder="Pays ou identifiant de politique…"
+        (input)="onSearch($event)"
+    /></label>
+    <label
+      ><span>Niveau de partage</span
+      ><select [value]="selectedLevel()" (change)="onLevelFilter($event)">
+        <option value="all">Tous les niveaux</option>
+        <option value="OWNER_ONLY">État propriétaire uniquement</option>
+        <option value="OWNER_AND_CEEAC">État et CEEAC</option>
+        <option value="AUTHORIZED_COUNTRIES">Pays autorisés</option>
+        <option value="REGIONAL_AUTHORIZED">Partage régional</option>
+        <option value="PUBLIC_AGGREGATED">Public agrégé</option>
+      </select></label
+    >
     <strong>{{ filteredPolicies().length }} politique(s)</strong>
   </div>
 
   <div class="registry-layout">
     <section class="policy-list oh-card">
-      <header><div><h2>États propriétaires</h2><span>Politiques accessibles à votre compte</span></div><svg lucideDatabase size="20"></svg></header>
+      <header>
+        <div>
+          <h2>États propriétaires</h2>
+          <span>Politiques accessibles à votre compte</span>
+        </div>
+        <svg lucideDatabase size="20"></svg>
+      </header>
       @if (loading()) {
-        <div class="empty-state"><svg lucideRefreshCw size="23" class="is-spinning"></svg><strong>Chargement du registre…</strong></div>
+        <app-brand-loader
+          message="Chargement du registre…"
+          detail="Vérification des politiques de souveraineté accessibles"
+        />
       } @else {
         <div class="policy-list__items">
           @for (policy of filteredPolicies(); track policy.policyId) {
-            <button type="button" class="policy-card" [class.policy-card--selected]="selectedPolicy()?.policyId === policy.policyId" (click)="selectPolicy(policy)">
+            <button
+              type="button"
+              class="policy-card"
+              [class.policy-card--selected]="selectedPolicy()?.policyId === policy.policyId"
+              (click)="selectPolicy(policy)"
+            >
               <i>{{ policy.countryOwner }}</i>
-              <span><strong>{{ countryName(policy.countryOwner) }}</strong><small>{{ policy.policyId }} · Modifiée {{ formatDate(policy.updatedAt) }}</small></span>
-              <b [class]="'level-badge level-badge--' + levelTone(policy.sharingLevel)">{{ sharingLabels[policy.sharingLevel] }}</b>
+              <span
+                ><strong>{{ countryName(policy.countryOwner) }}</strong
+                ><small
+                  >{{ policy.policyId }} · Modifiée {{ formatDate(policy.updatedAt) }}</small
+                ></span
+              >
+              <b [class]="'level-badge level-badge--' + levelTone(policy.sharingLevel)">{{
+                sharingLabels[policy.sharingLevel]
+              }}</b>
             </button>
           } @empty {
-            <div class="empty-state"><svg lucideSearch size="24"></svg><strong>Aucune politique trouvée</strong><span>Modifiez les filtres du registre.</span></div>
+            <div class="empty-state">
+              <svg lucideSearch size="24"></svg><strong>Aucune politique trouvée</strong
+              ><span>Modifiez les filtres du registre.</span>
+            </div>
           }
         </div>
       }
@@ -62,43 +128,157 @@
       @if (selectedPolicy(); as policy) {
         <header>
           <i>{{ policy.countryOwner }}</i>
-          <div><span>État propriétaire</span><h2>{{ countryName(policy.countryOwner) }}</h2><small>{{ policy.policyId }} · {{ policy.simulated ? 'Politique de démonstration' : 'Politique institutionnelle' }}</small></div>
-          <b [class]="'level-badge level-badge--' + levelTone(policy.sharingLevel)">{{ sharingLabels[policy.sharingLevel] }}</b>
+          <div>
+            <span>État propriétaire</span>
+            <h2>{{ countryName(policy.countryOwner) }}</h2>
+            <small
+              >{{ policy.policyId }} ·
+              {{
+                policy.simulated ? 'Politique de démonstration' : 'Politique institutionnelle'
+              }}</small
+            >
+          </div>
+          <b [class]="'level-badge level-badge--' + levelTone(policy.sharingLevel)">{{
+            sharingLabels[policy.sharingLevel]
+          }}</b>
         </header>
 
         <section class="policy-section form-grid">
-          <label><span>Niveau de partage</span><select [disabled]="!canManage()" [value]="draftLevel()" (change)="onDraftLevel($event)"><option value="OWNER_ONLY">État propriétaire uniquement</option><option value="OWNER_AND_CEEAC">État propriétaire et CEEAC</option><option value="AUTHORIZED_COUNTRIES">Pays explicitement autorisés</option><option value="REGIONAL_AUTHORIZED">Partage régional autorisé</option><option value="PUBLIC_AGGREGATED">Données agrégées publiques</option></select></label>
-          <label><span>Niveau d’agrégation</span><select [disabled]="!canManage()" [value]="draftAggregation()" (change)="onDraftAggregation($event)"><option value="POINT">Coordonnée précise</option><option value="ADMIN_1">Niveau administratif 1</option><option value="COUNTRY">Niveau national</option><option value="REGIONAL">Niveau régional</option></select></label>
-          <label><span>Durée de conservation</span><div class="retention-input"><input type="number" min="1" max="3650" [disabled]="!canManage()" [value]="draftRetention()" (input)="onRetention($event)"><small>jours</small></div></label>
-          <label class="personal-data"><input type="checkbox" [disabled]="!canManage() || draftLevel() === 'PUBLIC_AGGREGATED'" [checked]="draftPersonalData()" (change)="onPersonalData($event)"><span><strong>Contient des données personnelles</strong><small>Active des contraintes renforcées de diffusion.</small></span></label>
+          <label
+            ><span>Niveau de partage</span
+            ><select
+              [disabled]="!canManage()"
+              [value]="draftLevel()"
+              (change)="onDraftLevel($event)"
+            >
+              <option value="OWNER_ONLY">État propriétaire uniquement</option>
+              <option value="OWNER_AND_CEEAC">État propriétaire et CEEAC</option>
+              <option value="AUTHORIZED_COUNTRIES">Pays explicitement autorisés</option>
+              <option value="REGIONAL_AUTHORIZED">Partage régional autorisé</option>
+              <option value="PUBLIC_AGGREGATED">Données agrégées publiques</option>
+            </select></label
+          >
+          <label
+            ><span>Niveau d’agrégation</span
+            ><select
+              [disabled]="!canManage()"
+              [value]="draftAggregation()"
+              (change)="onDraftAggregation($event)"
+            >
+              <option value="POINT">Coordonnée précise</option>
+              <option value="ADMIN_1">Niveau administratif 1</option>
+              <option value="COUNTRY">Niveau national</option>
+              <option value="REGIONAL">Niveau régional</option>
+            </select></label
+          >
+          <label
+            ><span>Durée de conservation</span>
+            <div class="retention-input">
+              <input
+                type="number"
+                min="1"
+                max="3650"
+                [disabled]="!canManage()"
+                [value]="draftRetention()"
+                (input)="onRetention($event)"
+              /><small>jours</small>
+            </div></label
+          >
+          <label class="personal-data"
+            ><input
+              type="checkbox"
+              [disabled]="!canManage() || draftLevel() === 'PUBLIC_AGGREGATED'"
+              [checked]="draftPersonalData()"
+              (change)="onPersonalData($event)"
+            /><span
+              ><strong>Contient des données personnelles</strong
+              ><small>Active des contraintes renforcées de diffusion.</small></span
+            ></label
+          >
         </section>
 
         <section class="policy-section">
-          <div class="section-heading"><h3>Rôles autorisés</h3><span>{{ draftRoles().length }} rôle(s)</span></div>
+          <div class="section-heading">
+            <h3>Rôles autorisés</h3>
+            <span>{{ draftRoles().length }} rôle(s)</span>
+          </div>
           <div class="role-grid">
             @for (role of roleOptions; track role.value) {
-              <label [class.role-option--active]="hasRole(role.value)"><input type="checkbox" [disabled]="!canManage() || draftLevel() === 'OWNER_ONLY'" [checked]="hasRole(role.value)" (change)="toggleRole(role.value, $event)"><span>{{ role.label }}</span></label>
+              <label [class.role-option--active]="hasRole(role.value)"
+                ><input
+                  type="checkbox"
+                  [disabled]="!canManage() || draftLevel() === 'OWNER_ONLY'"
+                  [checked]="hasRole(role.value)"
+                  (change)="toggleRole(role.value, $event)"
+                /><span>{{ role.label }}</span></label
+              >
             }
           </div>
         </section>
 
         <section class="policy-section">
-          <div class="section-heading"><div><h3>Pays destinataires</h3><span>@if (draftLevel() === 'REGIONAL_AUTHORIZED') { Les 11 États membres } @else if (explicitCountrySelection()) { {{ draftCountries().length }} pays autorisé(s) } @else { Défini automatiquement par le niveau de partage }</span></div></div>
-          <div class="country-grid" [class.country-grid--disabled]="!explicitCountrySelection() || !canManage()">
+          <div class="section-heading">
+            <div>
+              <h3>Pays destinataires</h3>
+              <span>
+                @if (draftLevel() === 'REGIONAL_AUTHORIZED') {
+                  Les 11 États membres
+                } @else if (explicitCountrySelection()) {
+                  {{ draftCountries().length }} pays autorisé(s)
+                } @else {
+                  Défini automatiquement par le niveau de partage
+                }
+              </span>
+            </div>
+          </div>
+          <div
+            class="country-grid"
+            [class.country-grid--disabled]="!explicitCountrySelection() || !canManage()"
+          >
             @for (country of countries; track country.code) {
-              <label [class.country-option--active]="hasCountry(country.code)"><input type="checkbox" [disabled]="!canManage() || !explicitCountrySelection()" [checked]="hasCountry(country.code)" (change)="toggleCountry(country.code, $event)"><i>{{ country.code }}</i><span>{{ country.name }}</span></label>
+              <label [class.country-option--active]="hasCountry(country.code)"
+                ><input
+                  type="checkbox"
+                  [disabled]="!canManage() || !explicitCountrySelection()"
+                  [checked]="hasCountry(country.code)"
+                  (change)="toggleCountry(country.code, $event)"
+                /><i>{{ country.code }}</i
+                ><span>{{ country.name }}</span></label
+              >
             }
           </div>
         </section>
 
-        <div class="policy-rules"><svg lucideShieldCheck size="18"></svg><span><strong>Règles automatiques de protection</strong>Une politique publique exclut toujours les données personnelles et impose une agrégation nationale ou régionale.</span></div>
+        <div class="policy-rules">
+          <svg lucideShieldCheck size="18"></svg
+          ><span
+            ><strong>Règles automatiques de protection</strong>Une politique publique exclut
+            toujours les données personnelles et impose une agrégation nationale ou régionale.</span
+          >
+        </div>
 
         <footer>
-          <span>{{ canManage() ? 'La décision sera inscrite dans le journal d’audit.' : 'Vous consultez cette politique en lecture seule.' }}</span>
-          @if (canManage()) { <button class="oh-button oh-button--primary" type="button" [disabled]="saving()" (click)="save()">{{ saving() ? 'Enregistrement…' : 'Enregistrer la politique' }}</button> }
+          <span>{{
+            canManage()
+              ? 'La décision sera inscrite dans le journal d’audit.'
+              : 'Vous consultez cette politique en lecture seule.'
+          }}</span>
+          @if (canManage()) {
+            <button
+              class="oh-button oh-button--primary"
+              type="button"
+              [disabled]="saving()"
+              (click)="save()"
+            >
+              {{ saving() ? 'Enregistrement…' : 'Enregistrer la politique' }}
+            </button>
+          }
         </footer>
       } @else {
-        <div class="empty-state empty-state--editor"><svg lucideShieldCheck size="28"></svg><strong>Sélectionnez une politique</strong><span>Ses règles de souveraineté apparaîtront ici.</span></div>
+        <div class="empty-state empty-state--editor">
+          <svg lucideShieldCheck size="28"></svg><strong>Sélectionnez une politique</strong
+          ><span>Ses règles de souveraineté apparaîtront ici.</span>
+        </div>
       }
     </aside>
   </div>
