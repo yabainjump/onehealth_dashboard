@@ -761,74 +761,43 @@
     box-shadow: 0 5px 15px rgb(28 53 72 / 12%);
   }
 
-  .observation-marker-shell,
-  .observation-cluster-shell {
+  .observation-point {
+    filter: drop-shadow(0 2px 3px rgb(17 37 55 / 35%));
+  }
+
+  .observation-pulse {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: map-marker-pulse 2.8s ease-out infinite;
+
+    &--verified-alert { animation-duration: 2.1s; }
+  }
+
+  .observation-cluster-point {
+    cursor: zoom-in;
+    filter: drop-shadow(0 4px 5px rgb(14 57 74 / 32%));
+  }
+
+  .observation-cluster-label {
+    padding: 0;
     border: 0;
     background: transparent;
-  }
-
-  .observation-marker {
-    position: absolute;
-    inset: 50% auto auto 50%;
-    width: 10px;
-    height: 10px;
-    border: 2px solid #fff;
-    border-radius: 50%;
-    background: var(--oh-observation);
-    box-shadow: 0 2px 7px rgb(17 37 55 / 38%);
-    transform: translate(-50%, -50%);
-
-    &--human { background: var(--oh-human); }
-    &--animal { background: var(--oh-animal); }
-    &--environment { background: var(--oh-observation); }
-    &--signal { width: 14px; height: 14px; }
-    &--verified-alert { width: 18px; height: 18px; border-width: 3px; }
-
-    &--signal::before,
-    &--verified-alert::before {
-      position: absolute;
-      inset: -6px;
-      content: '';
-      border: 2px solid currentColor;
-      border-radius: 50%;
-      color: inherit;
-      animation: map-marker-pulse 2.8s ease-out infinite;
-    }
-
-    &--verified-alert::before {
-      inset: -7px;
-      animation-duration: 2.1s;
-    }
-
-    &--human { color: var(--oh-human); }
-    &--animal { color: var(--oh-animal); }
-    &--environment { color: var(--oh-observation); }
-  }
-
-  .observation-cluster {
-    width: 48px;
-    height: 48px;
-    display: grid;
-    place-content: center;
-    border: 3px solid rgb(255 255 255 / 92%);
-    border-radius: 50%;
-    background: linear-gradient(145deg, #0d5878, #138a7e);
     color: #fff;
-    text-align: center;
-    box-shadow: 0 7px 18px rgb(14 57 74 / 32%);
+    font-size: 0.6875rem;
+    font-weight: 800;
+    box-shadow: none;
 
-    strong { font-size: 0.75rem; line-height: 1; }
-    small { margin-top: 2px; font-size: 0.42rem; line-height: 1; }
+    &::before { display: none; }
   }
 }
 
 @keyframes map-marker-pulse {
-  0% { opacity: 0.7; transform: scale(0.65); }
-  72%, 100% { opacity: 0; transform: scale(1.55); }
+  0% { opacity: 0.62; transform: scale(0.75); }
+  72%, 100% { opacity: 0; transform: scale(1.9); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  :host ::ng-deep .observation-marker::before {
+  :host ::ng-deep .observation-pulse {
     animation: none;
     opacity: 0.25;
   }

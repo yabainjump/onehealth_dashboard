@@ -31,7 +31,6 @@ import {
   LucideX,
 } from '@lucide/angular';
 import * as L from 'leaflet';
-import 'leaflet.markercluster';
 
 import { HubApiService, HubEventApi } from '../../core/data/hub-api.service';
 import { OneHealthDataService } from '../../core/data/one-health-data.service';
@@ -98,7 +97,7 @@ export class RegionalMapPage implements AfterViewInit, OnDestroy {
   private readonly hubApi = inject(HubApiService);
   private readonly zone = inject(NgZone);
   private map?: L.Map;
-  private markersLayer?: L.MarkerClusterGroup;
+  private markersLayer?: L.LayerGroup;
   private correlationLayer?: L.LayerGroup;
   private timelineTimer?: number;
 
@@ -353,7 +352,7 @@ export class RegionalMapPage implements AfterViewInit, OnDestroy {
       minZoom: 3,
       maxZoom: 13,
       zoomSnap: 0.25,
-      preferCanvas: true,
+      preferCanvas: false,
     });
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -364,19 +363,8 @@ export class RegionalMapPage implements AfterViewInit, OnDestroy {
 
     L.control.zoom({ position: 'topright' }).addTo(this.map);
     this.correlationLayer = L.layerGroup().addTo(this.map);
-    this.markersLayer = L.markerClusterGroup({
-      maxClusterRadius: 46,
-      disableClusteringAtZoom: 8,
-      showCoverageOnHover: false,
-      spiderfyOnMaxZoom: true,
-      iconCreateFunction: (cluster) =>
-        L.divIcon({
-          className: 'observation-cluster-shell',
-          html: `<span class="observation-cluster"><strong>${cluster.getChildCount()}</strong><small>points</small></span>`,
-          iconSize: [48, 48],
-          iconAnchor: [24, 24],
-        }),
-    }).addTo(this.map);
+    this.markersLayer = L.layerGroup().addTo(this.map);
+    this.map.on('zoomend', () => this.renderMarkers());
     this.fitCeeac();
     this.refreshMapLayers();
   }
@@ -398,18 +386,39 @@ export class RegionalMapPage implements AfterViewInit, OnDestroy {
 
     this.markersLayer.clearLayers();
 
-    for (const observation of this.filteredObservations()) {
-      const size =
-        observation.stage === 'verified-alert' ? 30 : observation.stage === 'signal' ? 26 : 22;
-      const marker = L.marker([observation.latitude, observation.longitude], {
-        icon: L.divIcon({
-          className: 'observation-marker-shell',
-          html: `<span class="observation-marker observation-marker--${observation.sector} observation-marker--${observation.stage}"></span>`,
-          iconSize: [size, size],
-          iconAnchor: [size / 2, size / 2],
-        }),
-        keyboard: true,
-        title: `${observation.countryName} · ${observation.title}`,
+    const zoom = Math.round(this.map.getZoom());
+    const groups = this.groupObservations(this.filteredObservations(), zoom);
+
+    for (const observations of groups) {
+      if (observations.length > 1 && zoom < 8) {
+        this.renderCluster(observations, zoom);
+        continue;
+      }
+
+      const observation = observations[0];
+      const radius =
+        observation.stage === 'verified-alert' ? 9 : observation.stage === 'signal' ? 7 : 5;
+
+      if (observation.stage !== 'observation') {
+        L.circleMarker([observation.latitude, observation.longitude], {
+          radius: radius + 4,
+          className: `observation-pulse observation-pulse--${observation.stage}`,
+          color: SECTOR_COLORS[observation.sector],
+          fill: false,
+          opacity: 0.52,
+          weight: 2,
+          interactive: false,
+        }).addTo(this.markersLayer);
+      }
+
+      const marker = L.circleMarker([observation.latitude, observation.longitude], {
+        radius,
+        className: `observation-point observation-point--${observation.stage}`,
+        color: '#ffffff',
+        weight: observation.stage === 'verified-alert' ? 3 : 2,
+        fillColor: SECTOR_COLORS[observation.sector],
+        fillOpacity: observation.stage === 'observation' ? 0.72 : 0.96,
+        opacity: 1,
       });
 
       const tooltip = document.createElement('span');
@@ -423,6 +432,57 @@ export class RegionalMapPage implements AfterViewInit, OnDestroy {
       });
       marker.addTo(this.markersLayer);
     }
+  }
+
+  private groupObservations(
+    observations: readonly OneHealthObservation[],
+    zoom: number,
+  ): readonly (readonly OneHealthObservation[])[] {
+    if (!this.map || zoom >= 8) {
+      return observations.map((observation) => [observation]);
+    }
+
+    const cellSize = 46;
+    const buckets = new Map<string, OneHealthObservation[]>();
+    for (const observation of observations) {
+      const point = this.map.project([observation.latitude, observation.longitude], zoom);
+      const key = `${Math.floor(point.x / cellSize)}:${Math.floor(point.y / cellSize)}`;
+      const bucket = buckets.get(key) ?? [];
+      bucket.push(observation);
+      buckets.set(key, bucket);
+    }
+
+    return [...buckets.values()];
+  }
+
+  private renderCluster(observations: readonly OneHealthObservation[], zoom: number): void {
+    if (!this.map || !this.markersLayer) {
+      return;
+    }
+
+    const latitude =
+      observations.reduce((sum, item) => sum + item.latitude, 0) / observations.length;
+    const longitude =
+      observations.reduce((sum, item) => sum + item.longitude, 0) / observations.length;
+    const radius = Math.min(22, 11 + Math.log2(observations.length) * 2.1);
+    const cluster = L.circleMarker([latitude, longitude], {
+      radius,
+      className: 'observation-cluster-point',
+      color: '#ffffff',
+      fillColor: '#137a7c',
+      fillOpacity: 0.94,
+      opacity: 1,
+      weight: 3,
+    });
+    const count = document.createElement('strong');
+    count.textContent = String(observations.length);
+    cluster.bindTooltip(count, {
+      className: 'observation-cluster-label',
+      direction: 'center',
+      permanent: true,
+    });
+    cluster.on('click', () => this.map?.setView([latitude, longitude], Math.min(8, zoom + 2)));
+    cluster.addTo(this.markersLayer);
   }
 
   private renderCorrelations(): void {
