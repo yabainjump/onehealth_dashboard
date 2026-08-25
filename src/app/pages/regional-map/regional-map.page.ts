@@ -20,7 +20,10 @@ import {
   LucideFilter,
   LucideLocateFixed,
   LucideMapPinned,
+  LucideNetwork,
   LucidePawPrint,
+  LucidePause,
+  LucidePlay,
   LucideRotateCcw,
   LucideShieldCheck,
   LucideStethoscope,
@@ -28,7 +31,9 @@ import {
   LucideX,
 } from '@lucide/angular';
 import * as L from 'leaflet';
+import 'leaflet.markercluster';
 
+import { HubApiService, HubEventApi } from '../../core/data/hub-api.service';
 import { OneHealthDataService } from '../../core/data/one-health-data.service';
 import {
   HealthSector,
@@ -36,6 +41,11 @@ import {
   ObservationStage,
   OneHealthObservation,
 } from '../../core/data/models/one-health-observation.model';
+import {
+  buildMapTimeline,
+  filterObservationsAt,
+  observationsForEvent,
+} from './regional-map.presenter';
 
 interface SectorOption {
   readonly id: HealthSector;
@@ -66,7 +76,10 @@ const SECTOR_COLORS: Readonly<Record<HealthSector, string>> = {
     LucideFilter,
     LucideLocateFixed,
     LucideMapPinned,
+    LucideNetwork,
     LucidePawPrint,
+    LucidePause,
+    LucidePlay,
     LucideRotateCcw,
     LucideShieldCheck,
     LucideStethoscope,
@@ -82,9 +95,12 @@ export class RegionalMapPage implements AfterViewInit, OnDestroy {
   private readonly mapContainer!: ElementRef<HTMLDivElement>;
 
   private readonly dataService = inject(OneHealthDataService);
+  private readonly hubApi = inject(HubApiService);
   private readonly zone = inject(NgZone);
   private map?: L.Map;
-  private markersLayer?: L.LayerGroup;
+  private markersLayer?: L.MarkerClusterGroup;
+  private correlationLayer?: L.LayerGroup;
+  private timelineTimer?: number;
 
   protected readonly period = signal<MapPeriod>('30d');
   protected readonly activeSectors = signal<ReadonlySet<HealthSector>>(
@@ -94,6 +110,10 @@ export class RegionalMapPage implements AfterViewInit, OnDestroy {
     new Set(['observation', 'signal', 'verified-alert']),
   );
   protected readonly filtersOpen = signal(false);
+  protected readonly timelinePercent = signal(100);
+  protected readonly timelinePlaying = signal(false);
+  protected readonly correlationsVisible = signal(true);
+  protected readonly hubEvents = signal<readonly HubEventApi[]>([]);
   protected readonly selectedObservation = signal<OneHealthObservation | null>(
     this.dataService.verifiedAlerts[0] ?? null,
   );
@@ -125,7 +145,7 @@ export class RegionalMapPage implements AfterViewInit, OnDestroy {
     { id: 'verified-alert', label: 'Alertes vérifiées' },
   ];
 
-  protected readonly filteredObservations = computed(() => {
+  private readonly periodObservations = computed(() => {
     this.dataService.revision();
     return this.dataService.filter({
       period: this.period(),
@@ -134,10 +154,26 @@ export class RegionalMapPage implements AfterViewInit, OnDestroy {
     });
   });
 
-  private readonly dataRevisionEffect = effect(() => {
-    this.dataService.revision();
+  protected readonly timeline = computed(() =>
+    buildMapTimeline(this.periodObservations(), this.timelinePercent()),
+  );
+
+  protected readonly filteredObservations = computed(() =>
+    filterObservationsAt(this.periodObservations(), this.timeline()?.cutoffMs ?? null),
+  );
+
+  protected readonly visibleCorrelationCount = computed(() => {
+    const observations = this.filteredObservations();
+    return this.hubEvents().filter((event) => observationsForEvent(event, observations).length >= 2)
+      .length;
+  });
+
+  private readonly mapDataEffect = effect(() => {
+    this.filteredObservations();
+    this.hubEvents();
+    this.correlationsVisible();
     if (this.map) {
-      this.refreshMarkers();
+      this.refreshMapLayers();
     }
   });
 
@@ -164,15 +200,18 @@ export class RegionalMapPage implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     this.initializeMap();
+    void this.loadHubEvents();
   }
 
   ngOnDestroy(): void {
+    this.stopTimelinePlayback();
     this.map?.remove();
   }
 
   protected selectPeriod(period: MapPeriod): void {
+    this.stopTimelinePlayback();
     this.period.set(period);
-    this.refreshMarkers();
+    this.timelinePercent.set(100);
   }
 
   protected toggleSector(sector: HealthSector): void {
@@ -185,7 +224,6 @@ export class RegionalMapPage implements AfterViewInit, OnDestroy {
     }
 
     this.activeSectors.set(nextSectors);
-    this.refreshMarkers();
   }
 
   protected toggleStage(stage: ObservationStage): void {
@@ -198,16 +236,48 @@ export class RegionalMapPage implements AfterViewInit, OnDestroy {
     }
 
     this.activeStages.set(nextStages);
-    this.refreshMarkers();
   }
 
   protected resetFilters(): void {
     this.period.set('30d');
     this.activeSectors.set(new Set(['human', 'animal', 'environment']));
     this.activeStages.set(new Set(['observation', 'signal', 'verified-alert']));
+    this.timelinePercent.set(100);
+    this.correlationsVisible.set(true);
     this.selectedObservation.set(null);
-    this.refreshMarkers();
+    this.stopTimelinePlayback();
     this.fitCeeac();
+  }
+
+  protected onTimelineInput(event: Event): void {
+    this.stopTimelinePlayback();
+    this.timelinePercent.set(Number((event.target as HTMLInputElement).value));
+  }
+
+  protected toggleTimelinePlayback(): void {
+    if (this.timelinePlaying()) {
+      this.stopTimelinePlayback();
+      return;
+    }
+
+    if (this.timelinePercent() >= 100) {
+      this.timelinePercent.set(0);
+    }
+
+    this.timelinePlaying.set(true);
+    this.timelineTimer = window.setInterval(() => {
+      this.zone.run(() => {
+        const nextPercent = Math.min(100, this.timelinePercent() + 4);
+        this.timelinePercent.set(nextPercent);
+        if (nextPercent === 100) {
+          this.stopTimelinePlayback();
+        }
+      });
+    }, 320);
+  }
+
+  protected toggleCorrelations(): void {
+    this.correlationsVisible.update((visible) => !visible);
   }
 
   protected toggleFilters(): void {
@@ -268,6 +338,15 @@ export class RegionalMapPage implements AfterViewInit, OnDestroy {
     }).format(new Date(isoDate));
   }
 
+  protected formatTimelineDate(timestamp: number): string {
+    return new Intl.DateTimeFormat('fr-FR', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      timeZone: 'UTC',
+    }).format(new Date(timestamp));
+  }
+
   private initializeMap(): void {
     this.map = L.map(this.mapContainer.nativeElement, {
       zoomControl: false,
@@ -284,12 +363,26 @@ export class RegionalMapPage implements AfterViewInit, OnDestroy {
     }).addTo(this.map);
 
     L.control.zoom({ position: 'topright' }).addTo(this.map);
-    this.markersLayer = L.layerGroup().addTo(this.map);
+    this.correlationLayer = L.layerGroup().addTo(this.map);
+    this.markersLayer = L.markerClusterGroup({
+      maxClusterRadius: 46,
+      disableClusteringAtZoom: 8,
+      showCoverageOnHover: false,
+      spiderfyOnMaxZoom: true,
+      iconCreateFunction: (cluster) =>
+        L.divIcon({
+          className: 'observation-cluster-shell',
+          html: `<span class="observation-cluster"><strong>${cluster.getChildCount()}</strong><small>points</small></span>`,
+          iconSize: [48, 48],
+          iconAnchor: [24, 24],
+        }),
+    }).addTo(this.map);
     this.fitCeeac();
-    this.renderMarkers();
+    this.refreshMapLayers();
   }
 
-  private refreshMarkers(): void {
+  private refreshMapLayers(): void {
+    this.renderCorrelations();
     this.renderMarkers();
 
     const selected = this.selectedObservation();
@@ -306,15 +399,17 @@ export class RegionalMapPage implements AfterViewInit, OnDestroy {
     this.markersLayer.clearLayers();
 
     for (const observation of this.filteredObservations()) {
-      const radius =
-        observation.stage === 'verified-alert' ? 9 : observation.stage === 'signal' ? 7 : 5;
-      const marker = L.circleMarker([observation.latitude, observation.longitude], {
-        radius,
-        color: '#ffffff',
-        weight: observation.stage === 'verified-alert' ? 3 : 2,
-        fillColor: SECTOR_COLORS[observation.sector],
-        fillOpacity: observation.stage === 'observation' ? 0.68 : 0.94,
-        opacity: 1,
+      const size =
+        observation.stage === 'verified-alert' ? 30 : observation.stage === 'signal' ? 26 : 22;
+      const marker = L.marker([observation.latitude, observation.longitude], {
+        icon: L.divIcon({
+          className: 'observation-marker-shell',
+          html: `<span class="observation-marker observation-marker--${observation.sector} observation-marker--${observation.stage}"></span>`,
+          iconSize: [size, size],
+          iconAnchor: [size / 2, size / 2],
+        }),
+        keyboard: true,
+        title: `${observation.countryName} · ${observation.title}`,
       });
 
       const tooltip = document.createElement('span');
@@ -328,5 +423,68 @@ export class RegionalMapPage implements AfterViewInit, OnDestroy {
       });
       marker.addTo(this.markersLayer);
     }
+  }
+
+  private renderCorrelations(): void {
+    if (!this.correlationLayer) {
+      return;
+    }
+
+    this.correlationLayer.clearLayers();
+    if (!this.correlationsVisible()) {
+      return;
+    }
+
+    const visibleObservations = this.filteredObservations();
+    for (const event of this.hubEvents()) {
+      const related = observationsForEvent(event, visibleObservations);
+      if (
+        related.length < 2 ||
+        !Number.isFinite(event.latitude) ||
+        !Number.isFinite(event.longitude)
+      ) {
+        continue;
+      }
+
+      const center: L.LatLngExpression = [event.latitude, event.longitude];
+      for (const observation of related) {
+        L.polyline([[observation.latitude, observation.longitude], center], {
+          color: '#6554c0',
+          dashArray: '4 6',
+          interactive: false,
+          opacity: 0.56,
+          weight: 1.5,
+        }).addTo(this.correlationLayer);
+      }
+
+      const eventMarker = L.circleMarker(center, {
+        radius: 5,
+        color: '#ffffff',
+        fillColor: '#6554c0',
+        fillOpacity: 0.96,
+        weight: 2,
+      });
+      const tooltip = document.createElement('span');
+      tooltip.textContent = `${event.title} · rapprochement ${Math.round(event.correlationScore * 100)} %`;
+      eventMarker.bindTooltip(tooltip, { direction: 'top', offset: [0, -5] });
+      eventMarker.addTo(this.correlationLayer);
+    }
+  }
+
+  private async loadHubEvents(): Promise<void> {
+    try {
+      const response = await this.hubApi.getEvents();
+      this.hubEvents.set(response.items);
+    } catch {
+      this.hubEvents.set([]);
+    }
+  }
+
+  private stopTimelinePlayback(): void {
+    if (this.timelineTimer !== undefined) {
+      window.clearInterval(this.timelineTimer);
+      this.timelineTimer = undefined;
+    }
+    this.timelinePlaying.set(false);
   }
 }

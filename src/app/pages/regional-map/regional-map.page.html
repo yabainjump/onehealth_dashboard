@@ -27,7 +27,11 @@
   </div>
 
   <div class="map-workspace oh-card">
-    <aside class="map-filters" [class.map-filters--open]="filtersOpen()" aria-label="Filtres de la carte">
+    <aside
+      class="map-filters"
+      [class.map-filters--open]="filtersOpen()"
+      aria-label="Filtres de la carte"
+    >
       <header class="map-filters__header">
         <span><svg lucideFilter size="18"></svg> Filtres de données</span>
         <button type="button" aria-label="Fermer les filtres" (click)="closeFilters()">
@@ -82,9 +86,15 @@
                 </span>
                 <span class="sector-option__icon">
                   @switch (option.id) {
-                    @case ('human') { <svg lucideStethoscope size="17"></svg> }
-                    @case ('animal') { <svg lucidePawPrint size="17"></svg> }
-                    @case ('environment') { <svg lucideTrees size="17"></svg> }
+                    @case ('human') {
+                      <svg lucideStethoscope size="17"></svg>
+                    }
+                    @case ('animal') {
+                      <svg lucidePawPrint size="17"></svg>
+                    }
+                    @case ('environment') {
+                      <svg lucideTrees size="17"></svg>
+                    }
                   }
                 </span>
                 <span class="sector-option__copy">
@@ -142,7 +152,11 @@
     }
 
     <div class="map-stage">
-      <div #mapContainer class="map-canvas" aria-label="Carte régionale interactive des observations simulées"></div>
+      <div
+        #mapContainer
+        class="map-canvas"
+        aria-label="Carte régionale interactive des observations simulées"
+      ></div>
 
       <div class="map-summary" aria-live="polite">
         <span><svg lucideActivity size="15"></svg></span>
@@ -151,20 +165,81 @@
       </div>
 
       <div class="map-actions" aria-label="Actions cartographiques">
-        <button type="button" title="Recentrer sur la CEEAC" aria-label="Recentrer sur la CEEAC" (click)="fitCeeac()">
+        <button
+          type="button"
+          title="Recentrer sur la CEEAC"
+          aria-label="Recentrer sur la CEEAC"
+          (click)="fitCeeac()"
+        >
           <svg lucideMapPinned size="18"></svg>
         </button>
-        <button type="button" title="Utiliser ma position" aria-label="Utiliser ma position" (click)="locateUser()">
+        <button
+          type="button"
+          title="Utiliser ma position"
+          aria-label="Utiliser ma position"
+          (click)="locateUser()"
+        >
           <svg lucideLocateFixed size="18"></svg>
         </button>
+        <button
+          type="button"
+          title="Afficher ou masquer les rapprochements One Health"
+          aria-label="Afficher ou masquer les rapprochements One Health"
+          [class.map-action--active]="correlationsVisible()"
+          [attr.aria-pressed]="correlationsVisible()"
+          (click)="toggleCorrelations()"
+        >
+          <svg lucideNetwork size="18"></svg>
+        </button>
       </div>
+
+      @if (timeline(); as range) {
+        <section class="map-timeline" aria-label="Lecture temporelle des observations">
+          <button
+            type="button"
+            [attr.aria-label]="
+              timelinePlaying() ? 'Mettre la chronologie en pause' : 'Lire la chronologie'
+            "
+            (click)="toggleTimelinePlayback()"
+          >
+            @if (timelinePlaying()) {
+              <svg lucidePause size="16"></svg>
+            } @else {
+              <svg lucidePlay size="16"></svg>
+            }
+          </button>
+          <div>
+            <header>
+              <strong>Chronologie</strong>
+              <span>{{ formatTimelineDate(range.cutoffMs) }}</span>
+            </header>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              step="1"
+              [value]="timelinePercent()"
+              [attr.aria-valuetext]="formatTimelineDate(range.cutoffMs)"
+              (input)="onTimelineInput($event)"
+            />
+            <footer>
+              <span>{{ formatTimelineDate(range.startMs) }}</span>
+              <span>{{ formatTimelineDate(range.endMs) }}</span>
+            </footer>
+          </div>
+        </section>
+      }
 
       <div class="map-legend-panel" aria-label="Légende des secteurs">
         <strong>Secteurs</strong>
         <span><i class="legend-marker legend-marker--human"></i> Santé humaine</span>
         <span><i class="legend-marker legend-marker--animal"></i> Santé animale</span>
         <span><i class="legend-marker legend-marker--environment"></i> Environnement</span>
+        <span class="legend-correlation">
+          <i></i> {{ visibleCorrelationCount() }} rapprochement(s) consolidé(s)
+        </span>
         <small>La taille distingue observation, signal et alerte vérifiée.</small>
+        <small>Une liaison indique un rapprochement de données, pas une causalité.</small>
       </div>
 
       @if (selectedObservation(); as observation) {
@@ -172,7 +247,9 @@
           <header>
             <span
               class="selected-observation__stage"
-              [class]="'selected-observation__stage selected-observation__stage--' + observation.stage"
+              [class]="
+                'selected-observation__stage selected-observation__stage--' + observation.stage
+              "
             >
               {{ stageLabel(observation.stage) }}
             </span>
