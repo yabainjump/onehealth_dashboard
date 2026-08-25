@@ -81,10 +81,13 @@ svg {
   display: block;
 }
 
-/* Aucun média ni champ de saisie ne doit élargir son conteneur sur petit écran. */
+/*
+ * Aucun média ne doit élargir son conteneur sur petit écran. Les canvas sont
+ * volontairement exclus : Leaflet étend son canvas de rendu autour de la vue
+ * pour dessiner les points pendant les déplacements et les zooms.
+ */
 img,
-video,
-canvas {
+video {
   max-width: 100%;
   height: auto;
 }

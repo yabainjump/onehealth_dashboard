@@ -7,6 +7,7 @@ import {
   OnDestroy,
   ViewChild,
   computed,
+  effect,
   inject,
   signal,
 } from '@angular/core';
@@ -124,13 +125,21 @@ export class RegionalMapPage implements AfterViewInit, OnDestroy {
     { id: 'verified-alert', label: 'Alertes vérifiées' },
   ];
 
-  protected readonly filteredObservations = computed(() =>
-    this.dataService.filter({
+  protected readonly filteredObservations = computed(() => {
+    this.dataService.revision();
+    return this.dataService.filter({
       period: this.period(),
       sectors: this.activeSectors(),
       stages: this.activeStages(),
-    }),
-  );
+    });
+  });
+
+  private readonly dataRevisionEffect = effect(() => {
+    this.dataService.revision();
+    if (this.map) {
+      this.refreshMarkers();
+    }
+  });
 
   protected readonly filteredStageCounts = computed(() => {
     const counts: Record<ObservationStage, number> = {
