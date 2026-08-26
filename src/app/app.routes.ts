@@ -5,6 +5,13 @@ import { hubDataResolver } from './core/data/hub-data.resolver';
 
 export const routes: Routes = [
   {
+    path: '',
+    pathMatch: 'full',
+    title: 'One Health Convergence Hub | CEEAC',
+    loadComponent: () =>
+      import('./pages/landing/landing.page').then((module) => module.LandingPage),
+  },
+  {
     path: 'connexion',
     title: 'Connexion | One Health Convergence Hub',
     loadComponent: () => import('./pages/auth/login.page').then((module) => module.LoginPage),
@@ -22,7 +29,6 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./layout/app-shell/app-shell.component').then((module) => module.AppShellComponent),
     children: [
-      { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
       {
         path: 'dashboard',
         title: 'Vue stratégique | One Health Network Dashboard',
@@ -104,5 +110,5 @@ export const routes: Routes = [
       },
     ],
   },
-  { path: '**', redirectTo: 'dashboard' },
+  { path: '**', redirectTo: '' },
 ];

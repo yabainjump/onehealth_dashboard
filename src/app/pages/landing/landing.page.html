@@ -1,0 +1,310 @@
+<div class="landing-shell">
+  <header class="landing-header">
+    <a class="landing-brand" href="#accueil" aria-label="One Health Convergence Hub — accueil">
+      <img src="assets/brand/one-health-icon.png" alt="" width="42" height="42" />
+      <span>
+        <strong>One Health</strong>
+        <small>Convergence Hub</small>
+      </span>
+    </a>
+
+    <nav class="landing-nav" aria-label="Navigation principale">
+      <a href="#vision">Vision</a>
+      <a href="#capacites">Capacités</a>
+      <a href="#architecture">Architecture</a>
+    </nav>
+
+    <a class="header-access" routerLink="/dashboard">
+      <span>Accéder au Hub</span>
+      <svg lucideArrowRight size="16"></svg>
+    </a>
+  </header>
+
+  <main>
+    <section class="hero" id="accueil">
+      <div class="hero__ambient hero__ambient--one" aria-hidden="true"></div>
+      <div class="hero__ambient hero__ambient--two" aria-hidden="true"></div>
+
+      <div class="hero__content" data-reveal>
+        <div class="signal-badge">
+          <i aria-hidden="true"></i>
+          Hub régional CEEAC · 11 États membres
+        </div>
+        <h1>
+          <span class="hero-title__base">Comprendre les signaux.</span>
+          <span class="hero-title__accent">Agir avant la convergence.</span>
+        </h1>
+        <p>
+          Une infrastructure régionale qui rapproche santé humaine, santé animale et environnement
+          pour transformer des flux dispersés en décisions explicables, souveraines et coordonnées.
+        </p>
+        <div class="hero__actions">
+          <a class="primary-action" routerLink="/dashboard">
+            Entrer dans le Hub
+            <svg lucideArrowRight size="18"></svg>
+          </a>
+          <a class="secondary-action" href="#architecture">
+            <svg lucideWorkflow size="18"></svg>
+            Découvrir l’architecture
+          </a>
+        </div>
+        <div class="hero__trust">
+          <span><svg lucideShieldCheck size="15"></svg>Données sous souveraineté des États</span>
+          <span><svg lucideActivity size="15"></svg>Surveillance multisectorielle</span>
+        </div>
+      </div>
+
+      <div
+        class="intelligence-visual"
+        data-reveal
+        (pointermove)="moveIntelligenceVisual($event)"
+        (pointerleave)="resetIntelligenceVisual($event)"
+        aria-label="Illustration animée de la convergence des trois secteurs One Health"
+      >
+        <div class="visual-grid" aria-hidden="true"></div>
+        <div class="visual-scan" aria-hidden="true"></div>
+
+        <div class="visual-topline">
+          <span><i></i> Convergence en direct</span>
+          <strong>DÉMO</strong>
+        </div>
+
+        <div class="orbit-system" aria-hidden="true">
+          <span class="orbit orbit--outer"></span>
+          <span class="orbit orbit--inner"></span>
+          <span class="orbit-dot orbit-dot--one"></span>
+          <span class="orbit-dot orbit-dot--two"></span>
+          <span class="orbit-dot orbit-dot--three"></span>
+          <div class="core-logo">
+            <span></span>
+            <img src="assets/brand/one-health-icon.png" alt="" />
+          </div>
+        </div>
+
+        <div class="sector-node sector-node--human">
+          <span><svg lucideStethoscope size="18"></svg></span>
+          <div><small>DHIS2</small><strong>Santé humaine</strong></div>
+          <i>56 flux</i>
+        </div>
+        <div class="sector-node sector-node--animal">
+          <span><svg lucidePawPrint size="18"></svg></span>
+          <div><small>ARIS 3</small><strong>Santé animale</strong></div>
+          <i>54 flux</i>
+        </div>
+        <div class="sector-node sector-node--environment">
+          <span><svg lucideTrees size="18"></svg></span>
+          <div><small>CAPC-AC</small><strong>Environnement</strong></div>
+          <i>55 flux</i>
+        </div>
+
+        <div class="visual-insight">
+          <svg lucideSparkles size="16"></svg>
+          <span
+            ><small>Rudolf · corrélation assistée</small
+            ><strong>3 secteurs rapprochés</strong></span
+          >
+          <b>Démo</b>
+        </div>
+      </div>
+    </section>
+
+    <section class="flow-strip" aria-label="Chaîne d’interopérabilité">
+      <div class="flow-track">
+        <span><svg lucideDatabase size="15"></svg>DHIS2 · Santé humaine</span><i></i>
+        <span><svg lucidePawPrint size="15"></svg>ARIS 3 · Santé animale</span><i></i>
+        <span><svg lucideTrees size="15"></svg>CAPC-AC · Environnement</span><i></i>
+        <span><svg lucideNetwork size="15"></svg>Normalisation régionale</span><i></i>
+        <span><svg lucideShieldCheck size="15"></svg>Décision autorisée</span>
+      </div>
+    </section>
+
+    <section class="vision section-wrap" id="vision">
+      <header class="section-heading" data-reveal>
+        <span>Une intelligence collective</span>
+        <h2>Trois systèmes vivants.<br />Une seule lecture du risque.</h2>
+        <p>
+          Le Hub ne remplace pas les plateformes nationales. Il les relie, préserve leur provenance
+          et révèle les rapprochements utiles à l’action régionale.
+        </p>
+      </header>
+
+      <div class="pillar-grid">
+        <article class="pillar-card pillar-card--human" data-reveal>
+          <div class="pillar-card__head">
+            <span><svg lucideStethoscope size="22"></svg></span>
+            <small>01</small>
+          </div>
+          <h3>Santé humaine</h3>
+          <p>
+            Surveillance épidémiologique, cas suspects et tendances issues des systèmes nationaux.
+          </p>
+          <div class="metric-line"><b>DHIS2</b><span>Flux ministériels</span></div>
+        </article>
+
+        <article class="pillar-card pillar-card--animal" data-reveal>
+          <div class="pillar-card__head">
+            <span><svg lucidePawPrint size="22"></svg></span>
+            <small>02</small>
+          </div>
+          <h3>Santé animale</h3>
+          <p>Zoonoses, mortalité animale et surveillance de la faune domestique et sauvage.</p>
+          <div class="metric-line"><b>ARIS 3</b><span>Services vétérinaires</span></div>
+        </article>
+
+        <article class="pillar-card pillar-card--environment" data-reveal>
+          <div class="pillar-card__head">
+            <span><svg lucideTrees size="22"></svg></span>
+            <small>03</small>
+          </div>
+          <h3>Climat & environnement</h3>
+          <p>Anomalies climatiques, qualité des milieux et facteurs écologiques de propagation.</p>
+          <div class="metric-line"><b>CAPC-AC</b><span>Stations & observations</span></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="regional-impact">
+      <div class="section-wrap impact-grid">
+        <div class="impact-intro" data-reveal>
+          <span>Portée régionale</span>
+          <h2>Une vision partagée,<br />sans perdre le contrôle.</h2>
+        </div>
+        <div class="impact-stat" data-reveal>
+          <strong>11</strong><span>États membres CEEAC</span>
+        </div>
+        <div class="impact-stat" data-reveal><strong>3</strong><span>Secteurs intégrés</span></div>
+        <div class="impact-stat" data-reveal>
+          <strong>24/7</strong><span>Lecture continue des signaux</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="capabilities section-wrap" id="capacites">
+      <div class="platform-preview" data-reveal>
+        <div class="platform-window">
+          <div class="window-bar"><i></i><i></i><i></i><span>onehealth://regional-view</span></div>
+          <div class="window-body">
+            <aside><b></b><span></span><span></span><span></span><span></span></aside>
+            <div class="mini-map">
+              <div class="map-contour"></div>
+              <i class="map-signal map-signal--one"></i>
+              <i class="map-signal map-signal--two"></i>
+              <i class="map-signal map-signal--three"></i>
+              <i class="map-signal map-signal--four"></i>
+              <div class="map-card">
+                <small>Signal multisectoriel</small><strong>Cameroun · Est</strong
+                ><span>À vérifier</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="floating-alert">
+          <i></i><span><small>Convergence détectée</small><strong>Risque zoonotique</strong></span>
+        </div>
+      </div>
+
+      <div class="capability-copy" data-reveal>
+        <span class="section-kicker">Capacités du Hub</span>
+        <h2>De la donnée brute à une décision traçable.</h2>
+        <p>
+          Une couche régionale sécurisée transforme des formats hétérogènes en observations
+          comparables, sans donner à l’IA le pouvoir de valider une alerte.
+        </p>
+
+        <div class="capability-list">
+          <article>
+            <span><svg lucideSparkles size="19"></svg></span>
+            <div>
+              <h3>Rudolf, assistant One Health</h3>
+              <p>Synthèses et rapprochements explicables, toujours soumis à l’expertise humaine.</p>
+            </div>
+          </article>
+          <article>
+            <span><svg lucideMap size="19"></svg></span>
+            <div>
+              <h3>Cartographie interactive</h3>
+              <p>Lecture spatiale et temporelle des observations, signaux et alertes vérifiées.</p>
+            </div>
+          </article>
+          <article>
+            <span><svg lucideShieldCheck size="19"></svg></span>
+            <div>
+              <h3>Souveraineté par conception</h3>
+              <p>Rôles, pays autorisés, provenance et décisions humaines restent audités.</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="architecture" id="architecture">
+      <div class="section-wrap architecture__inner" data-reveal>
+        <div>
+          <span class="section-kicker">Architecture d’interopérabilité</span>
+          <h2>Connecter ce qui existe.<br />Éclairer ce qui converge.</h2>
+        </div>
+        <div class="architecture-flow" aria-label="Flux des données jusqu’à la décision">
+          <div>
+            <svg lucideDatabase size="20"></svg><span><small>01</small>Sources nationales</span>
+          </div>
+          <i><svg lucideArrowRight size="18"></svg></i>
+          <div>
+            <svg lucideNetwork size="20"></svg><span><small>02</small>Hub souverain</span>
+          </div>
+          <i><svg lucideArrowRight size="18"></svg></i>
+          <div>
+            <svg lucideActivity size="20"></svg><span><small>03</small>Analyse croisée</span>
+          </div>
+          <i><svg lucideArrowRight size="18"></svg></i>
+          <div>
+            <svg lucideShieldCheck size="20"></svg><span><small>04</small>Décision humaine</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="final-cta section-wrap" data-reveal>
+      <div class="final-cta__orb" aria-hidden="true"><svg lucideGlobe2 size="120"></svg></div>
+      <div>
+        <span>One Health Convergence Hub</span>
+        <h2>Une région mieux connectée<br />réagit plus tôt.</h2>
+        <p>Explorez le démonstrateur régional et découvrez le cycle complet de qualification.</p>
+      </div>
+      <a routerLink="/dashboard">Accéder au Hub <svg lucideArrowRight size="18"></svg></a>
+    </section>
+  </main>
+
+  <footer class="landing-footer">
+    <div class="landing-footer__brand">
+      <img src="assets/brand/one-health-icon.png" alt="" width="34" height="34" />
+      <span><strong>One Health Network</strong><small>Convergence Hub régional</small></span>
+    </div>
+    <p>© 2026 · Données simulées · Version démonstrateur</p>
+    <nav aria-label="Liens de pied de page">
+      <button type="button" (click)="legalDialog.showModal()">Mentions légales</button>
+      <a href="mailto:support@onehealthnetwork.yaba-in.com">Support</a>
+      <button type="button" (click)="privacyDialog.showModal()">Confidentialité</button>
+    </nav>
+  </footer>
+
+  <dialog #legalDialog class="landing-dialog" aria-labelledby="legal-title">
+    <span>Cadre du démonstrateur</span>
+    <h2 id="legal-title">Mentions légales</h2>
+    <p>
+      One Health Convergence Hub est présenté ici comme un démonstrateur régional. Les données et
+      indicateurs visibles sont simulés et ne constituent ni une alerte sanitaire officielle ni une
+      décision de la CEEAC.
+    </p>
+    <form method="dialog"><button>Fermer</button></form>
+  </dialog>
+
+  <dialog #privacyDialog class="landing-dialog" aria-labelledby="privacy-title">
+    <span>Protection des accès</span>
+    <h2 id="privacy-title">Confidentialité</h2>
+    <p>
+      Cette page publique ne charge aucune donnée institutionnelle du Hub. L’accès aux espaces
+      opérationnels exige une authentification et reste limité par les rôles et pays autorisés.
+    </p>
+    <form method="dialog"><button>Fermer</button></form>
+  </dialog>
+</div>
