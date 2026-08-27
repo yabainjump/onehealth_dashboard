@@ -1,0 +1,50 @@
+<div class="motion-field" [class.motion-field--dark]="tone() === 'dark'" aria-hidden="true">
+  <span class="motion-field__scan"></span>
+
+  <svg viewBox="0 0 240 240" focusable="false">
+    <defs>
+      <linearGradient id="convergence-ring" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#176dcc" />
+        <stop offset="0.52" stop-color="#0e91bb" />
+        <stop offset="1" stop-color="#18a679" />
+      </linearGradient>
+      <radialGradient id="convergence-core">
+        <stop offset="0" stop-color="#ffffff" stop-opacity="0.44" />
+        <stop offset="1" stop-color="#ffffff" stop-opacity="0" />
+      </radialGradient>
+    </defs>
+
+    <circle class="motion-field__halo" cx="120" cy="120" r="108" />
+
+    <g class="motion-field__orbit motion-field__orbit--outer">
+      <circle cx="120" cy="120" r="96" />
+      <circle class="motion-field__node motion-field__node--human" cx="55" cy="49" r="4" />
+      <circle class="motion-field__node motion-field__node--animal" cx="205" cy="88" r="4" />
+      <circle class="motion-field__node motion-field__node--environment" cx="90" cy="211" r="4" />
+    </g>
+
+    <g class="motion-field__orbit motion-field__orbit--middle">
+      <circle cx="120" cy="120" r="76" />
+      <circle class="motion-field__node motion-field__node--blue" cx="44" cy="120" r="3" />
+      <circle class="motion-field__node motion-field__node--green" cx="175" cy="68" r="3" />
+    </g>
+
+    <g class="motion-field__orbit motion-field__orbit--inner">
+      <circle cx="120" cy="120" r="57" />
+    </g>
+
+    <g class="motion-field__links">
+      <path d="M55 49 120 120 205 88" />
+      <path d="M205 88 120 120 90 211" />
+      <path d="M90 211 120 120 55 49" />
+    </g>
+
+    <circle class="motion-field__core-glow" cx="120" cy="120" r="48" />
+  </svg>
+
+  <span class="motion-field__pulse motion-field__pulse--one"></span>
+  <span class="motion-field__pulse motion-field__pulse--two"></span>
+  <span class="motion-field__core">
+    <img src="assets/brand/one-health-icon.png" alt="" width="88" height="88" />
+  </span>
+</div>

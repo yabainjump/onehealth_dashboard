@@ -422,98 +422,6 @@
   transform: translate(-50%, -52%);
 }
 
-.orbit {
-  position: absolute;
-  border-radius: 50%;
-  will-change: transform;
-
-  &--outer {
-    inset: 0;
-    border: 1px solid rgb(18 100 158 / 19%);
-    box-shadow: 0 0 50px rgb(17 122 146 / 7%);
-    animation: orbit-rotate 20s linear infinite;
-
-    &::before,
-    &::after {
-      position: absolute;
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: #159a75;
-      box-shadow: 0 0 13px #159a75;
-      content: '';
-    }
-
-    &::before {
-      top: 11%;
-      left: 17%;
-    }
-    &::after {
-      right: 8%;
-      bottom: 24%;
-      background: #0c6db1;
-    }
-  }
-
-  &--inner {
-    inset: 14%;
-    border: 1px dashed rgb(12 88 182 / 22%);
-    animation: orbit-rotate 14s linear infinite reverse;
-  }
-}
-
-.orbit-dot {
-  position: absolute;
-  width: 10px;
-  height: 10px;
-  border: 2px solid #fff;
-  border-radius: 50%;
-  box-shadow: 0 4px 12px rgb(18 66 97 / 24%);
-
-  &--one {
-    top: 49%;
-    left: -4px;
-    background: #db3d4a;
-  }
-  &--two {
-    top: 9%;
-    right: 18%;
-    background: #ef8128;
-  }
-  &--three {
-    right: 5%;
-    bottom: 16%;
-    background: #159a75;
-  }
-}
-
-.core-logo {
-  position: absolute;
-  inset: 25%;
-  display: grid;
-  place-items: center;
-  border: 1px solid rgb(21 112 148 / 17%);
-  border-radius: 50%;
-  background: rgb(255 255 255 / 86%);
-  box-shadow: 0 22px 50px rgb(15 69 100 / 17%);
-
-  span {
-    position: absolute;
-    inset: -9px;
-    border: 1px solid rgb(16 121 142 / 15%);
-    border-radius: 50%;
-    animation: core-pulse 3s ease-out infinite;
-  }
-
-  img {
-    width: 74%;
-    height: 74%;
-    border-radius: 50%;
-    object-fit: contain;
-    animation: core-breathe 4s ease-in-out infinite;
-  }
-}
-
 .sector-node {
   --node-scale: 1;
   position: absolute;
@@ -1558,30 +1466,6 @@
   58%,
   100% {
     transform: translateY(480%);
-  }
-}
-
-@keyframes orbit-rotate {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes core-pulse {
-  0% {
-    opacity: 0.75;
-    transform: scale(0.88);
-  }
-  75%,
-  100% {
-    opacity: 0;
-    transform: scale(1.25);
-  }
-}
-
-@keyframes core-breathe {
-  50% {
-    transform: scale(1.045);
   }
 }
 

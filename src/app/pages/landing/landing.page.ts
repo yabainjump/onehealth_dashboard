@@ -23,6 +23,7 @@ import {
   LucideTrees,
   LucideWorkflow,
 } from '@lucide/angular';
+import { ConvergenceMotionComponent } from '../../shared/components/convergence-motion/convergence-motion.component';
 
 @Component({
   selector: 'app-landing-page',
@@ -40,6 +41,7 @@ import {
     LucideStethoscope,
     LucideTrees,
     LucideWorkflow,
+    ConvergenceMotionComponent,
   ],
   templateUrl: './landing.page.html',
   styleUrl: './landing.page.scss',

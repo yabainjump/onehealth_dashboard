@@ -1,0 +1,207 @@
+:host {
+  display: block;
+}
+
+.motion-field {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  isolation: isolate;
+  color: #116fba;
+
+  svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    filter: drop-shadow(0 18px 40px rgb(7 66 106 / 10%));
+  }
+}
+
+.motion-field__scan {
+  position: absolute;
+  z-index: -1;
+  width: 78%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: conic-gradient(from 8deg, transparent 0 82%, rgb(20 151 135 / 18%) 94%, transparent);
+  animation: convergence-spin 8s linear infinite;
+}
+
+.motion-field__halo {
+  fill: url('#convergence-core');
+  stroke: rgb(21 115 172 / 8%);
+  stroke-width: 1;
+}
+
+.motion-field__orbit {
+  transform-box: fill-box;
+  transform-origin: center;
+
+  > circle:first-child {
+    fill: none;
+    stroke: url('#convergence-ring');
+    stroke-width: 1.2;
+  }
+
+  &--outer {
+    animation: convergence-spin 24s linear infinite;
+
+    > circle:first-child {
+      stroke-dasharray: 10 7;
+      opacity: 0.58;
+    }
+  }
+
+  &--middle {
+    animation: convergence-spin 17s linear infinite reverse;
+
+    > circle:first-child {
+      stroke-dasharray: 3 8;
+      opacity: 0.5;
+    }
+  }
+
+  &--inner {
+    animation: convergence-spin 11s linear infinite;
+
+    > circle:first-child {
+      stroke-dasharray: 1 5;
+      opacity: 0.35;
+    }
+  }
+}
+
+.motion-field__node {
+  stroke: rgb(255 255 255 / 88%);
+  stroke-width: 2;
+  filter: drop-shadow(0 0 5px currentColor);
+
+  &--human {
+    fill: #e94e5c;
+  }
+  &--animal {
+    fill: #f38a31;
+  }
+  &--environment,
+  &--green {
+    fill: #19a57c;
+  }
+  &--blue {
+    fill: #1685c5;
+  }
+}
+
+.motion-field__links {
+  fill: none;
+  opacity: 0.3;
+  stroke: url('#convergence-ring');
+  stroke-dasharray: 4 7;
+  stroke-width: 0.85;
+  animation: convergence-dash 12s linear infinite;
+}
+
+.motion-field__core-glow {
+  fill: url('#convergence-core');
+}
+
+.motion-field__core {
+  position: absolute;
+  width: 31%;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgb(24 117 161 / 16%);
+  border-radius: 50%;
+  background: rgb(255 255 255 / 88%);
+  box-shadow:
+    0 22px 55px rgb(6 56 91 / 15%),
+    inset 0 1px 0 rgb(255 255 255 / 88%);
+  animation: convergence-breathe 4.5s ease-in-out infinite;
+
+  img {
+    width: 76%;
+    height: 76%;
+    object-fit: contain;
+  }
+}
+
+.motion-field__pulse {
+  position: absolute;
+  width: 31%;
+  aspect-ratio: 1;
+  border: 1px solid rgb(24 158 126 / 22%);
+  border-radius: 50%;
+  animation: convergence-pulse 3.6s ease-out infinite;
+
+  &--two {
+    animation-delay: 1.8s;
+  }
+}
+
+.motion-field--dark {
+  .motion-field__halo {
+    stroke: rgb(153 224 255 / 12%);
+  }
+
+  .motion-field__orbit > circle:first-child,
+  .motion-field__links {
+    opacity: 0.68;
+  }
+
+  .motion-field__core {
+    border-color: rgb(255 255 255 / 22%);
+    background: rgb(255 255 255 / 94%);
+    box-shadow: 0 24px 70px rgb(1 25 39 / 38%);
+  }
+
+  .motion-field__pulse {
+    border-color: rgb(123 232 202 / 28%);
+  }
+}
+
+@keyframes convergence-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes convergence-dash {
+  to {
+    stroke-dashoffset: -44;
+  }
+}
+
+@keyframes convergence-breathe {
+  50% {
+    transform: scale(1.045);
+  }
+}
+
+@keyframes convergence-pulse {
+  0% {
+    opacity: 0.8;
+    transform: scale(0.92);
+  }
+  80%,
+  100% {
+    opacity: 0;
+    transform: scale(1.65);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .motion-field__scan,
+  .motion-field__orbit,
+  .motion-field__links,
+  .motion-field__core,
+  .motion-field__pulse {
+    animation: none;
+  }
+
+  .motion-field__pulse {
+    display: none;
+  }
+}

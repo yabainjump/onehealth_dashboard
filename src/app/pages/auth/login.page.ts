@@ -4,12 +4,14 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { LucideEye, LucideEyeOff, LucideLockKeyhole, LucideMail } from '@lucide/angular';
 import { DashboardAuthService } from '../../core/auth/dashboard-auth.service';
 import { BrandLoaderComponent } from '../../shared/components/brand-loader/brand-loader.component';
+import { ConvergenceMotionComponent } from '../../shared/components/convergence-motion/convergence-motion.component';
 
 @Component({
   selector: 'app-login-page',
   imports: [
     ReactiveFormsModule,
     BrandLoaderComponent,
+    ConvergenceMotionComponent,
     LucideEye,
     LucideEyeOff,
     LucideLockKeyhole,

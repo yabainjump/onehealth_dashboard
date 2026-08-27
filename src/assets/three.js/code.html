@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+    }
+  </style>
+</head>
+<body>
+<!-- STITCH_THREEJS_START:ANIMATION_35 class="fixed inset-0 w-full h-full bg-transparent" -->
+<div class="fixed inset-0 w-full h-full bg-transparent" style="display:block;">
+<script src="https://ajax.googleapis.com/ajax/libs/threejs/r125/three.min.js"></script>
+<div id="threejs-container-ANIMATION_35" style="width:100%;height:100%"></div>
+<script>
+(function() {
+  const container = document.getElementById('threejs-container-ANIMATION_35');
+  const devicePixelRatio = window.devicePixelRatio || 1;
+  const width = container.clientWidth || window.innerWidth;
+const height = container.clientHeight || window.innerHeight;
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+renderer.setSize(width, height);
+container.appendChild(renderer.domElement);
+
+// Abstract data sphere representing global connectivity
+const geometry = new THREE.IcosahedronGeometry(2, 2);
+const material = new THREE.MeshPhongMaterial({
+    color: 0x1d51a5,
+    wireframe: true,
+    transparent: true,
+    opacity: 0.4,
+    shininess: 100
+});
+const sphere = new THREE.Mesh(geometry, material);
+scene.add(sphere);
+
+// Floating data points
+const pointsGeometry = new THREE.BufferGeometry();
+const pointsCount = 1000;
+const positions = new Float32Array(pointsCount * 3);
+for(let i = 0; i < pointsCount * 3; i++) {
+    positions[i] = (Math.random() - 0.5) * 10;
+}
+pointsGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+const pointsMaterial = new THREE.PointsMaterial({ color: 0x4dabff, size: 0.05, transparent: true });
+const points = new THREE.Points(pointsGeometry, pointsMaterial);
+scene.add(points);
+
+const light = new THREE.DirectionalLight(0xffffff, 1);
+light.position.set(5, 5, 5);
+scene.add(light);
+scene.add(new THREE.AmbientLight(0x404040));
+
+camera.position.z = 5;
+
+const animate = () => {
+    requestAnimationFrame(animate);
+    sphere.rotation.y += 0.002;
+    sphere.rotation.x += 0.001;
+    points.rotation.y -= 0.001;
+    renderer.render(scene, camera);
+};
+
+window.addEventListener('resize', () => {
+    const w = container.clientWidth || window.innerWidth;
+    const h = container.clientHeight || window.innerHeight;
+    renderer.setSize(w, h);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+});
+
+animate();
+})();
+</script>
+</div>
+<!-- STITCH_THREEJS_END:ANIMATION_35 -->
+</body>
+</html>
