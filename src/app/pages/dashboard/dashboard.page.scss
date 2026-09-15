@@ -378,9 +378,9 @@
 
 .risk-map {
   position: relative;
-  height: 360px;
+  height: clamp(360px, 46vw, 470px);
   overflow: hidden;
-  background: #e7edf2;
+  background: #17394c;
   isolation: isolate;
 }
 

@@ -68,6 +68,10 @@ export class RegionalMapPreviewComponent implements AfterViewInit, OnDestroy {
       maxZoom: 19,
       subdomains: ['a', 'b', 'c'],
       attribution: '&copy; OpenStreetMap contributors',
+      className: 'ohn-operational-tiles',
+      updateWhenIdle: true,
+      keepBuffer: 2,
+      noWrap: true,
     }).addTo(this.map);
 
     L.control.zoom({ position: 'topright' }).addTo(this.map);
@@ -112,7 +116,7 @@ export class RegionalMapPreviewComponent implements AfterViewInit, OnDestroy {
 
   private markerOptions(observation: OneHealthObservation): L.CircleMarkerOptions {
     return {
-      radius: observation.stage === 'verified-alert' ? 9 : observation.stage === 'signal' ? 7 : 5,
+      radius: observation.stage === 'verified-alert' ? 8 : observation.stage === 'signal' ? 6 : 4,
       color: '#ffffff',
       weight: observation.stage === 'verified-alert' ? 3 : 2,
       fillColor: SECTOR_COLORS[observation.sector],

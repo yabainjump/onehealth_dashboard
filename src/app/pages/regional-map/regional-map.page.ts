@@ -414,6 +414,10 @@ export class RegionalMapPage implements AfterViewInit, OnDestroy {
       maxZoom: 19,
       subdomains: ['a', 'b', 'c'],
       attribution: '&copy; OpenStreetMap contributors',
+      className: 'ohn-operational-tiles',
+      updateWhenIdle: true,
+      keepBuffer: 3,
+      noWrap: true,
     }).addTo(this.map);
 
     L.control.zoom({ position: 'topright' }).addTo(this.map);
