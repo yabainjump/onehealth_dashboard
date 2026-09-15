@@ -8,10 +8,16 @@ import {
   effect,
   inject,
   input,
+  signal,
 } from '@angular/core';
 import * as L from 'leaflet';
 
 import { OneHealthDataService } from '../../../core/data/one-health-data.service';
+import { BrandLoaderComponent } from '../brand-loader/brand-loader.component';
+import {
+  createCeeacBoundaryLayer,
+  loadCeeacBoundaries,
+} from '../../utils/ceeac-boundaries.util';
 import {
   HealthSector,
   MapPeriod,
@@ -26,12 +32,22 @@ const SECTOR_COLORS: Readonly<Record<HealthSector, string>> = {
 
 @Component({
   selector: 'app-regional-map-preview',
+  imports: [BrandLoaderComponent],
   template: `
     <div
       #mapContainer
       class="map-preview__canvas"
       aria-label="Carte régionale en lecture seule des observations One Health"
     ></div>
+    @if (!mapReady()) {
+      <div class="map-preview__loading">
+        <app-brand-loader
+          mode="inline"
+          message="Chargement de la carte…"
+          detail=""
+        />
+      </div>
+    }
   `,
   styleUrl: './regional-map-preview.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -41,10 +57,13 @@ export class RegionalMapPreviewComponent implements AfterViewInit, OnDestroy {
   private readonly mapContainer!: ElementRef<HTMLDivElement>;
 
   readonly period = input<MapPeriod>('year');
+  readonly mapReady = signal(false);
 
   private readonly dataService = inject(OneHealthDataService);
   private map?: L.Map;
   private markersLayer?: L.LayerGroup;
+  private boundariesLayer?: L.GeoJSON;
+  private tileLoadFallbackTimer?: number;
 
   private readonly periodEffect = effect(() => {
     const period = this.period();
@@ -64,17 +83,24 @@ export class RegionalMapPreviewComponent implements AfterViewInit, OnDestroy {
       scrollWheelZoom: false,
     });
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      subdomains: ['a', 'b', 'c'],
-      attribution: '&copy; OpenStreetMap contributors',
-      className: 'ohn-operational-tiles',
-      updateWhenIdle: true,
-      keepBuffer: 2,
-      noWrap: true,
-    }).addTo(this.map);
+    const tileLayer = L.tileLayer(
+      'https://tile.openstreetmap.org/{z}/{x}/{y}.png?ngsw-bypass=true',
+      {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap contributors',
+        className: 'ohn-operational-tiles',
+        updateWhenIdle: true,
+        updateWhenZooming: false,
+        keepBuffer: 1,
+        noWrap: true,
+      },
+    );
+    tileLayer.once('load', () => this.finishMapLoading());
+    tileLayer.addTo(this.map);
+    this.tileLoadFallbackTimer = window.setTimeout(() => this.finishMapLoading(), 6_000);
 
     L.control.zoom({ position: 'topright' }).addTo(this.map);
+    void this.initializeCountryBoundaries();
     this.markersLayer = L.layerGroup().addTo(this.map);
     this.fitCeeac();
     this.renderMarkers(this.period());
@@ -83,6 +109,9 @@ export class RegionalMapPreviewComponent implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    if (this.tileLoadFallbackTimer !== undefined) {
+      window.clearTimeout(this.tileLoadFallbackTimer);
+    }
     this.map?.remove();
   }
 
@@ -123,5 +152,31 @@ export class RegionalMapPreviewComponent implements AfterViewInit, OnDestroy {
       fillOpacity: observation.stage === 'observation' ? 0.68 : 0.94,
       opacity: 1,
     };
+  }
+
+  private async initializeCountryBoundaries(): Promise<void> {
+    try {
+      const boundaries = await loadCeeacBoundaries();
+      if (!this.map) {
+        return;
+      }
+      this.boundariesLayer?.remove();
+      this.boundariesLayer = createCeeacBoundaryLayer(this.map, boundaries, () =>
+        this.dataService.filter({
+          period: this.period(),
+          sectors: new Set(['human', 'animal', 'environment']),
+        }),
+      );
+    } catch {
+      // L'aperçu reste utilisable même si le fichier statique est indisponible.
+    }
+  }
+
+  private finishMapLoading(): void {
+    if (this.tileLoadFallbackTimer !== undefined) {
+      window.clearTimeout(this.tileLoadFallbackTimer);
+      this.tileLoadFallbackTimer = undefined;
+    }
+    this.mapReady.set(true);
   }
 }

@@ -191,6 +191,15 @@
         aria-label="Carte régionale interactive des observations simulées"
       ></div>
 
+      @if (!mapReady()) {
+        <div class="map-loading">
+          <app-brand-loader
+            message="Chargement de la carte…"
+            detail="Préparation des tuiles et des observations"
+          />
+        </div>
+      }
+
       <div class="map-summary" aria-live="polite">
         <span><svg lucideActivity size="15"></svg></span>
         <strong>{{ filteredObservations().length }}</strong>
@@ -279,6 +288,7 @@
         </span>
         <small>La taille distingue observation, signal et alerte vérifiée.</small>
         <small>Une liaison indique un rapprochement de données, pas une causalité.</small>
+        <small>Contours nationaux indicatifs · Natural Earth.</small>
       </div>
 
       @if (selectedObservation(); as observation) {

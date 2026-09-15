@@ -386,6 +386,26 @@
   background: #17394c;
 }
 
+.map-loading {
+  position: absolute;
+  inset: 0;
+  z-index: 1100;
+  display: grid;
+  place-items: center;
+  background: rgb(11 38 56 / 88%);
+  color: #fff;
+  backdrop-filter: blur(7px);
+
+  app-brand-loader {
+    width: min(360px, calc(100% - 40px));
+    padding: 22px;
+    border: 1px solid rgb(255 255 255 / 14%);
+    border-radius: 18px;
+    background: rgb(255 255 255 / 94%);
+    box-shadow: 0 18px 48px rgb(2 18 30 / 28%);
+  }
+}
+
 .map-summary,
 .map-actions,
 .map-timeline,

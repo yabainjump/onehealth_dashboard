@@ -47,6 +47,11 @@ import {
   filterObservationsAt,
   observationsForEvent,
 } from './regional-map.presenter';
+import { BrandLoaderComponent } from '../../shared/components/brand-loader/brand-loader.component';
+import {
+  createCeeacBoundaryLayer,
+  loadCeeacBoundaries,
+} from '../../shared/utils/ceeac-boundaries.util';
 
 interface SectorOption {
   readonly id: HealthSector;
@@ -92,6 +97,7 @@ const DEFAULT_CUSTOM_DATE_FROM = formatDateInput(
     LucideStethoscope,
     LucideTrees,
     LucideX,
+    BrandLoaderComponent,
   ],
   templateUrl: './regional-map.page.html',
   styleUrl: './regional-map.page.scss',
@@ -107,7 +113,11 @@ export class RegionalMapPage implements AfterViewInit, OnDestroy {
   private map?: L.Map;
   private markersLayer?: L.LayerGroup;
   private correlationLayer?: L.LayerGroup;
+  private boundariesLayer?: L.GeoJSON;
+  private standardRenderer?: L.Canvas;
+  private emphasisRenderer?: L.SVG;
   private timelineTimer?: number;
+  private tileLoadFallbackTimer?: number;
 
   protected readonly period = signal<MapPeriod>('30d');
   protected readonly customPeriodActive = signal(false);
@@ -123,6 +133,7 @@ export class RegionalMapPage implements AfterViewInit, OnDestroy {
   protected readonly timelinePercent = signal(100);
   protected readonly timelinePlaying = signal(false);
   protected readonly correlationsVisible = signal(true);
+  protected readonly mapReady = signal(false);
   protected readonly hubEvents = signal<readonly HubEventApi[]>([]);
   protected readonly selectedObservation = signal<OneHealthObservation | null>(
     this.dataService.verifiedAlerts[0] ?? null,
@@ -238,6 +249,9 @@ export class RegionalMapPage implements AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.stopTimelinePlayback();
+    if (this.tileLoadFallbackTimer !== undefined) {
+      window.clearTimeout(this.tileLoadFallbackTimer);
+    }
     this.map?.remove();
   }
 
@@ -407,20 +421,29 @@ export class RegionalMapPage implements AfterViewInit, OnDestroy {
       minZoom: 3,
       maxZoom: 13,
       zoomSnap: 0.25,
-      preferCanvas: false,
+      preferCanvas: true,
     });
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      subdomains: ['a', 'b', 'c'],
-      attribution: '&copy; OpenStreetMap contributors',
-      className: 'ohn-operational-tiles',
-      updateWhenIdle: true,
-      keepBuffer: 3,
-      noWrap: true,
-    }).addTo(this.map);
+    const tileLayer = L.tileLayer(
+      'https://tile.openstreetmap.org/{z}/{x}/{y}.png?ngsw-bypass=true',
+      {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap contributors',
+        className: 'ohn-operational-tiles',
+        updateWhenIdle: true,
+        updateWhenZooming: false,
+        keepBuffer: 1,
+        noWrap: true,
+      },
+    );
+    tileLayer.once('load', () => this.zone.run(() => this.finishMapLoading()));
+    tileLayer.addTo(this.map);
+    this.tileLoadFallbackTimer = window.setTimeout(() => this.finishMapLoading(), 6_000);
 
     L.control.zoom({ position: 'topright' }).addTo(this.map);
+    this.standardRenderer = L.canvas({ padding: 0.35 });
+    this.emphasisRenderer = L.svg({ padding: 0.35 });
+    void this.initializeCountryBoundaries();
     this.correlationLayer = L.layerGroup().addTo(this.map);
     this.markersLayer = L.layerGroup().addTo(this.map);
     this.fitCeeac();
@@ -457,6 +480,7 @@ export class RegionalMapPage implements AfterViewInit, OnDestroy {
           opacity: 0.52,
           weight: 2,
           interactive: false,
+          renderer: this.emphasisRenderer,
         }).addTo(this.markersLayer);
       }
 
@@ -468,6 +492,8 @@ export class RegionalMapPage implements AfterViewInit, OnDestroy {
         fillColor: SECTOR_COLORS[observation.sector],
         fillOpacity: observation.stage === 'observation' ? 0.72 : 0.96,
         opacity: 1,
+        renderer:
+          observation.stage === 'observation' ? this.standardRenderer : this.emphasisRenderer,
       });
 
       const tooltip = document.createElement('span');
@@ -538,11 +564,36 @@ export class RegionalMapPage implements AfterViewInit, OnDestroy {
     }
   }
 
+  private async initializeCountryBoundaries(): Promise<void> {
+    try {
+      const boundaries = await loadCeeacBoundaries();
+      if (!this.map) {
+        return;
+      }
+      this.boundariesLayer?.remove();
+      this.boundariesLayer = createCeeacBoundaryLayer(
+        this.map,
+        boundaries,
+        () => this.filteredObservations(),
+      );
+    } catch {
+      // La carte et les signaux restent utilisables si le fichier statique est indisponible.
+    }
+  }
+
   private stopTimelinePlayback(): void {
     if (this.timelineTimer !== undefined) {
       window.clearInterval(this.timelineTimer);
       this.timelineTimer = undefined;
     }
     this.timelinePlaying.set(false);
+  }
+
+  private finishMapLoading(): void {
+    if (this.tileLoadFallbackTimer !== undefined) {
+      window.clearTimeout(this.tileLoadFallbackTimer);
+      this.tileLoadFallbackTimer = undefined;
+    }
+    this.mapReady.set(true);
   }
 }
