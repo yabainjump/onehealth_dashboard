@@ -100,6 +100,20 @@
           }
         </fieldset>
 
+        <fieldset class="filter-group country-filter-group">
+          <legend><svg lucideMapPinned size="14"></svg> État membre</legend>
+          <label class="country-select">
+            <span class="sr-only">Filtrer la carte par État membre</span>
+            <select [value]="selectedCountryCode() ?? ''" (change)="onCountryInput($event)">
+              <option value="">Tous les États membres</option>
+              @for (country of countryOptions; track country.code) {
+                <option [value]="country.code">{{ country.name }}</option>
+              }
+            </select>
+          </label>
+          <small>Cliquez également directement sur un pays de la carte.</small>
+        </fieldset>
+
         <fieldset class="filter-group">
           <legend>Sources sectorielles</legend>
           <div class="sector-options">
@@ -202,8 +216,23 @@
 
       <div class="map-summary" aria-live="polite">
         <span><svg lucideActivity size="15"></svg></span>
-        <strong>{{ filteredObservations().length }}</strong>
+        <strong>
+          {{ filteredObservations().length }}
+          @if (selectedCountryName(); as countryName) {
+            <em>· {{ countryName }}</em>
+          }
+        </strong>
         <small>points affichés sur {{ totalObservations }}</small>
+        @if (selectedCountryName()) {
+          <button
+            type="button"
+            title="Afficher de nouveau tous les États membres"
+            aria-label="Retirer le filtre pays"
+            (click)="clearCountryFilter()"
+          >
+            <svg lucideX size="14"></svg>
+          </button>
+        }
       </div>
 
       <div class="map-actions" aria-label="Actions cartographiques">
@@ -286,6 +315,12 @@
         <span class="legend-correlation">
           <i></i> {{ visibleCorrelationCount() }} rapprochement(s) consolidé(s)
         </span>
+        <div class="legend-activity" aria-label="Niveau cartographique indicatif">
+          <b>Niveau indicatif</b>
+          <span><i class="legend-risk legend-risk--watch"></i> Veille</span>
+          <span><i class="legend-risk legend-risk--elevated"></i> Renforcée</span>
+          <span><i class="legend-risk legend-risk--critical"></i> Critique</span>
+        </div>
         <small>La taille distingue observation, signal et alerte vérifiée.</small>
         <small>Une liaison indique un rapprochement de données, pas une causalité.</small>
         <small>Contours nationaux indicatifs · Natural Earth.</small>

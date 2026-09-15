@@ -17,6 +17,7 @@ import { BrandLoaderComponent } from '../brand-loader/brand-loader.component';
 import {
   createCeeacBoundaryLayer,
   loadCeeacBoundaries,
+  refreshCeeacBoundaryLayer,
 } from '../../utils/ceeac-boundaries.util';
 import {
   HealthSector,
@@ -130,6 +131,7 @@ export class RegionalMapPreviewComponent implements AfterViewInit, OnDestroy {
       period,
       sectors: new Set(['human', 'animal', 'environment']),
     });
+    refreshCeeacBoundaryLayer(this.boundariesLayer, observations);
 
     for (const observation of observations) {
       const marker = L.circleMarker(
@@ -161,12 +163,13 @@ export class RegionalMapPreviewComponent implements AfterViewInit, OnDestroy {
         return;
       }
       this.boundariesLayer?.remove();
-      this.boundariesLayer = createCeeacBoundaryLayer(this.map, boundaries, () =>
-        this.dataService.filter({
-          period: this.period(),
-          sectors: new Set(['human', 'animal', 'environment']),
-        }),
-      );
+      this.boundariesLayer = createCeeacBoundaryLayer(this.map, boundaries, {
+        visibleObservations: () =>
+          this.dataService.filter({
+            period: this.period(),
+            sectors: new Set(['human', 'animal', 'environment']),
+          }),
+      });
     } catch {
       // L'aperçu reste utilisable même si le fichier statique est indisponible.
     }

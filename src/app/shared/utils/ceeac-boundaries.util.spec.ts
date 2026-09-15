@@ -4,16 +4,43 @@ import { summarizeCeeacCountry } from './ceeac-boundaries.util';
 describe('CEEAC boundaries utilities', () => {
   it('summarizes only the visible observations of the requested country', () => {
     const observations = [
-      { countryCode: 'CM', stage: 'observation' },
-      { countryCode: 'CM', stage: 'signal' },
-      { countryCode: 'CM', stage: 'verified-alert' },
-      { countryCode: 'GA', stage: 'signal' },
+      {
+        countryCode: 'CM',
+        stage: 'observation',
+        sector: 'human',
+        severity: 'low',
+        observedAt: '2026-08-01T08:00:00.000Z',
+      },
+      {
+        countryCode: 'CM',
+        stage: 'signal',
+        sector: 'animal',
+        severity: 'high',
+        observedAt: '2026-08-02T08:00:00.000Z',
+      },
+      {
+        countryCode: 'CM',
+        stage: 'verified-alert',
+        sector: 'environment',
+        severity: 'critical',
+        observedAt: '2026-08-03T08:00:00.000Z',
+      },
+      {
+        countryCode: 'GA',
+        stage: 'signal',
+        sector: 'human',
+        severity: 'medium',
+        observedAt: '2026-08-04T08:00:00.000Z',
+      },
     ] as OneHealthObservation[];
 
     expect(summarizeCeeacCountry('CM', observations)).toEqual({
       observations: 3,
       signals: 1,
       verifiedAlerts: 1,
+      sectors: ['Humaine', 'Animale', 'Environnement'],
+      latestObservedAt: '2026-08-03T08:00:00.000Z',
+      level: 'critical',
     });
   });
 });

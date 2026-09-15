@@ -33,7 +33,10 @@ import {
 import * as L from 'leaflet';
 
 import { HubApiService, HubEventApi } from '../../core/data/hub-api.service';
-import { DEMO_REFERENCE_DATE } from '../../core/data/mock/ceeac-reference';
+import {
+  CEEAC_COUNTRIES,
+  DEMO_REFERENCE_DATE,
+} from '../../core/data/mock/ceeac-reference';
 import { OneHealthDataService } from '../../core/data/one-health-data.service';
 import {
   HealthSector,
@@ -49,8 +52,10 @@ import {
 } from './regional-map.presenter';
 import { BrandLoaderComponent } from '../../shared/components/brand-loader/brand-loader.component';
 import {
+  CeeacCountrySelection,
   createCeeacBoundaryLayer,
   loadCeeacBoundaries,
+  refreshCeeacBoundaryLayer,
 } from '../../shared/utils/ceeac-boundaries.util';
 
 interface SectorOption {
@@ -133,6 +138,7 @@ export class RegionalMapPage implements AfterViewInit, OnDestroy {
   protected readonly timelinePercent = signal(100);
   protected readonly timelinePlaying = signal(false);
   protected readonly correlationsVisible = signal(true);
+  protected readonly selectedCountryCode = signal<string | null>(null);
   protected readonly mapReady = signal(false);
   protected readonly hubEvents = signal<readonly HubEventApi[]>([]);
   protected readonly selectedObservation = signal<OneHealthObservation | null>(
@@ -165,6 +171,11 @@ export class RegionalMapPage implements AfterViewInit, OnDestroy {
     { id: 'signal', label: 'Signaux à vérifier' },
     { id: 'verified-alert', label: 'Alertes vérifiées' },
   ];
+  protected readonly countryOptions = CEEAC_COUNTRIES;
+  protected readonly selectedCountryName = computed(() => {
+    const selectedCode = this.selectedCountryCode();
+    return CEEAC_COUNTRIES.find((country) => country.code === selectedCode)?.name ?? '';
+  });
 
   protected readonly customDateError = computed(() => {
     if (!this.customPeriodActive()) {
@@ -205,9 +216,17 @@ export class RegionalMapPage implements AfterViewInit, OnDestroy {
     buildMapTimeline(this.periodObservations(), this.timelinePercent()),
   );
 
-  protected readonly filteredObservations = computed(() =>
+  private readonly boundaryObservations = computed(() =>
     filterObservationsAt(this.periodObservations(), this.timeline()?.cutoffMs ?? null),
   );
+
+  protected readonly filteredObservations = computed(() => {
+    const observations = this.boundaryObservations();
+    const selectedCode = this.selectedCountryCode();
+    return selectedCode
+      ? observations.filter((observation) => observation.countryCode === selectedCode)
+      : observations;
+  });
 
   protected readonly visibleCorrelationCount = computed(() => {
     const observations = this.filteredObservations();
@@ -217,6 +236,8 @@ export class RegionalMapPage implements AfterViewInit, OnDestroy {
 
   private readonly mapDataEffect = effect(() => {
     this.filteredObservations();
+    this.boundaryObservations();
+    this.selectedCountryCode();
     this.hubEvents();
     this.correlationsVisible();
     if (this.map) {
@@ -310,6 +331,7 @@ export class RegionalMapPage implements AfterViewInit, OnDestroy {
     this.customDateTo.set(DEFAULT_CUSTOM_DATE_TO);
     this.activeSectors.set(new Set(['human', 'animal', 'environment']));
     this.activeStages.set(new Set(['observation', 'signal', 'verified-alert']));
+    this.selectedCountryCode.set(null);
     this.timelinePercent.set(100);
     this.correlationsVisible.set(true);
     this.selectedObservation.set(null);
@@ -320,6 +342,29 @@ export class RegionalMapPage implements AfterViewInit, OnDestroy {
   protected onTimelineInput(event: Event): void {
     this.stopTimelinePlayback();
     this.timelinePercent.set(Number((event.target as HTMLInputElement).value));
+  }
+
+  protected onCountryInput(event: Event): void {
+    const code = (event.target as HTMLSelectElement).value || null;
+    this.selectedCountryCode.set(code);
+    this.selectedObservation.set(null);
+
+    const country = CEEAC_COUNTRIES.find((item) => item.code === code);
+    if (country) {
+      this.map?.flyTo(
+        [country.center[0], country.center[1]],
+        country.code === 'ST' ? 7 : 5.5,
+        { duration: 0.65 },
+      );
+    } else {
+      this.fitCeeac();
+    }
+  }
+
+  protected clearCountryFilter(): void {
+    this.selectedCountryCode.set(null);
+    this.selectedObservation.set(null);
+    this.fitCeeac();
   }
 
   protected toggleTimelinePlayback(): void {
@@ -451,6 +496,11 @@ export class RegionalMapPage implements AfterViewInit, OnDestroy {
   }
 
   private refreshMapLayers(): void {
+    refreshCeeacBoundaryLayer(
+      this.boundariesLayer,
+      this.boundaryObservations(),
+      this.selectedCountryCode(),
+    );
     this.renderCorrelations();
     this.renderMarkers();
 
@@ -574,11 +624,28 @@ export class RegionalMapPage implements AfterViewInit, OnDestroy {
       this.boundariesLayer = createCeeacBoundaryLayer(
         this.map,
         boundaries,
-        () => this.filteredObservations(),
+        {
+          visibleObservations: () => this.boundaryObservations(),
+          selectedCountryCode: () => this.selectedCountryCode(),
+          onCountrySelect: (selection) => this.selectCountryFromMap(selection),
+        },
       );
     } catch {
       // La carte et les signaux restent utilisables si le fichier statique est indisponible.
     }
+  }
+
+  private selectCountryFromMap(selection: CeeacCountrySelection): void {
+    this.zone.run(() => {
+      this.selectedCountryCode.set(selection.code);
+      this.selectedObservation.set(null);
+      this.map?.fitBounds(selection.bounds, {
+        animate: true,
+        duration: 0.65,
+        maxZoom: selection.code === 'ST' ? 7 : 6,
+        padding: [28, 28],
+      });
+    });
   }
 
   private stopTimelinePlayback(): void {

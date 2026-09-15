@@ -12,24 +12,45 @@ export interface CeeacCountrySummary {
   readonly observations: number;
   readonly signals: number;
   readonly verifiedAlerts: number;
+  readonly sectors: readonly string[];
+  readonly latestObservedAt: string | null;
+  readonly level: CeeacActivityLevel;
+}
+
+export type CeeacActivityLevel = 'none' | 'watch' | 'elevated' | 'critical';
+
+export interface CeeacCountrySelection {
+  readonly code: string;
+  readonly name: string;
+  readonly bounds: L.LatLngBounds;
+}
+
+export interface CeeacBoundaryLayerOptions {
+  readonly visibleObservations: () => readonly OneHealthObservation[];
+  readonly selectedCountryCode?: () => string | null;
+  readonly onCountrySelect?: (selection: CeeacCountrySelection) => void;
 }
 
 export type CeeacBoundaries = FeatureCollection<Geometry, CeeacCountryProperties>;
 
 const CEEAC_BOUNDARIES_URL = 'assets/geo/ceeac-countries.geojson';
 const CEEAC_PANE = 'ceeac-country-boundaries';
-const COUNTRY_COLORS: Readonly<Record<string, string>> = {
-  AO: '#f59e0b',
-  BI: '#38bdf8',
-  CM: '#fb7185',
-  CF: '#facc15',
-  TD: '#a78bfa',
-  CG: '#34d399',
-  CD: '#f97316',
-  GQ: '#22d3ee',
-  GA: '#4ade80',
-  RW: '#e879f9',
-  ST: '#60a5fa',
+const ACTIVITY_COLORS: Readonly<Record<CeeacActivityLevel, string>> = {
+  none: '#64748b',
+  watch: '#eab308',
+  elevated: '#f97316',
+  critical: '#ef4444',
+};
+const ACTIVITY_LABELS: Readonly<Record<CeeacActivityLevel, string>> = {
+  none: 'Aucune donnée visible',
+  watch: 'Veille',
+  elevated: 'Surveillance renforcée',
+  critical: 'Activité critique',
+};
+const SECTOR_LABELS: Readonly<Record<OneHealthObservation['sector'], string>> = {
+  human: 'Humaine',
+  animal: 'Animale',
+  environment: 'Environnement',
 };
 
 let cachedBoundaries: Promise<CeeacBoundaries> | undefined;
@@ -65,20 +86,47 @@ export function summarizeCeeacCountry(
   const countryObservations = observations.filter(
     (observation) => observation.countryCode === countryCode,
   );
+  const signals = countryObservations.filter((observation) => observation.stage === 'signal').length;
+  const verifiedAlerts = countryObservations.filter(
+    (observation) => observation.stage === 'verified-alert',
+  ).length;
+  const hasCriticalSeverity = countryObservations.some(
+    (observation) => observation.severity === 'critical',
+  );
+  const hasHighSeverity = countryObservations.some(
+    (observation) => observation.severity === 'high',
+  );
+  const sectors = [...new Set(countryObservations.map((observation) => observation.sector))].map(
+    (sector) => SECTOR_LABELS[sector],
+  );
+  const latestObservedAt = countryObservations.reduce<string | null>(
+    (latest, observation) =>
+      latest === null || observation.observedAt > latest ? observation.observedAt : latest,
+    null,
+  );
+  const level: CeeacActivityLevel =
+    verifiedAlerts > 0 || hasCriticalSeverity
+      ? 'critical'
+      : signals > 0 || hasHighSeverity
+        ? 'elevated'
+        : countryObservations.length > 0
+          ? 'watch'
+          : 'none';
 
   return {
     observations: countryObservations.length,
-    signals: countryObservations.filter((observation) => observation.stage === 'signal').length,
-    verifiedAlerts: countryObservations.filter(
-      (observation) => observation.stage === 'verified-alert',
-    ).length,
+    signals,
+    verifiedAlerts,
+    sectors,
+    latestObservedAt,
+    level,
   };
 }
 
 export function createCeeacBoundaryLayer(
   map: L.Map,
   boundaries: CeeacBoundaries,
-  visibleObservations: () => readonly OneHealthObservation[],
+  options: CeeacBoundaryLayerOptions,
 ): L.GeoJSON<CeeacCountryProperties> {
   const pane = map.getPane(CEEAC_PANE) ?? map.createPane(CEEAC_PANE);
   pane.style.zIndex = '350';
@@ -86,11 +134,19 @@ export function createCeeacBoundaryLayer(
   const renderer = L.svg({ pane: CEEAC_PANE, padding: 0.4 });
   return L.geoJSON<CeeacCountryProperties>(boundaries, {
     style: (feature) => ({
-      ...countryStyle(feature?.properties.code ?? '', false),
+      ...countryStyle(
+        summarizeCeeacCountry(feature?.properties.code ?? '', options.visibleObservations()),
+        false,
+        feature?.properties.code === options.selectedCountryCode?.(),
+      ),
       renderer,
     }),
     onEachFeature: (feature, layer) => {
-      const tooltip = buildCountryTooltip(feature, visibleObservations());
+      const tooltip = buildCountryTooltip(
+        feature,
+        options.visibleObservations(),
+        Boolean(options.onCountrySelect),
+      );
       layer.bindTooltip(tooltip, {
         className: 'ceeac-country-tooltip',
         direction: 'top',
@@ -102,13 +158,40 @@ export function createCeeacBoundaryLayer(
       layer.on({
         mouseover: () => {
           if (layer instanceof L.Path) {
-            layer.setStyle(countryStyle(feature.properties.code, true));
+            layer.setStyle(
+              countryStyle(
+                summarizeCeeacCountry(feature.properties.code, options.visibleObservations()),
+                true,
+                feature.properties.code === options.selectedCountryCode?.(),
+              ),
+            );
           }
-          layer.setTooltipContent(buildCountryTooltip(feature, visibleObservations()));
+          layer.setTooltipContent(
+            buildCountryTooltip(
+              feature,
+              options.visibleObservations(),
+              Boolean(options.onCountrySelect),
+            ),
+          );
         },
         mouseout: () => {
           if (layer instanceof L.Path) {
-            layer.setStyle(countryStyle(feature.properties.code, false));
+            layer.setStyle(
+              countryStyle(
+                summarizeCeeacCountry(feature.properties.code, options.visibleObservations()),
+                false,
+                feature.properties.code === options.selectedCountryCode?.(),
+              ),
+            );
+          }
+        },
+        click: () => {
+          if (options.onCountrySelect && layer instanceof L.Polygon) {
+            options.onCountrySelect({
+              code: feature.properties.code,
+              name: feature.properties.name,
+              bounds: layer.getBounds(),
+            });
           }
         },
       });
@@ -116,21 +199,46 @@ export function createCeeacBoundaryLayer(
   }).addTo(map);
 }
 
-function countryStyle(code: string, highlighted: boolean): L.PathOptions {
-  const color = COUNTRY_COLORS[code] ?? '#38bdf8';
+export function refreshCeeacBoundaryLayer(
+  layer: L.GeoJSON<CeeacCountryProperties> | undefined,
+  observations: readonly OneHealthObservation[],
+  selectedCountryCode: string | null = null,
+): void {
+  layer?.setStyle((feature) =>
+    countryStyle(
+      summarizeCeeacCountry(feature?.properties.code ?? '', observations),
+      false,
+      feature?.properties.code === selectedCountryCode,
+    ),
+  );
+}
+
+function countryStyle(
+  summary: CeeacCountrySummary,
+  highlighted: boolean,
+  selected: boolean,
+): L.PathOptions {
+  const color = ACTIVITY_COLORS[summary.level];
+  const baseFillOpacity: Readonly<Record<CeeacActivityLevel, number>> = {
+    none: 0.025,
+    watch: 0.07,
+    elevated: 0.11,
+    critical: 0.15,
+  };
   return {
     className: 'ceeac-country-boundary',
     color,
     fillColor: color,
-    fillOpacity: highlighted ? 0.2 : 0.035,
-    opacity: highlighted ? 1 : 0.88,
-    weight: highlighted ? 3 : 1.7,
+    fillOpacity: highlighted ? 0.3 : selected ? 0.22 : baseFillOpacity[summary.level],
+    opacity: highlighted || selected ? 1 : 0.9,
+    weight: highlighted ? 3.2 : selected ? 2.8 : 1.7,
   };
 }
 
 function buildCountryTooltip(
   feature: Feature<Geometry, CeeacCountryProperties>,
   observations: readonly OneHealthObservation[],
+  selectable: boolean,
 ): HTMLElement {
   const summary = summarizeCeeacCountry(feature.properties.code, observations);
   const card = document.createElement('article');
@@ -140,6 +248,9 @@ function buildCountryTooltip(
   eyebrow.textContent = 'État membre CEEAC';
   const title = document.createElement('strong');
   title.textContent = feature.properties.name;
+  const status = document.createElement('span');
+  status.className = `ceeac-country-card__status ceeac-country-card__status--${summary.level}`;
+  status.textContent = ACTIVITY_LABELS[summary.level];
   const metrics = document.createElement('div');
 
   for (const [value, label] of [
@@ -156,6 +267,23 @@ function buildCountryTooltip(
     metrics.append(metric);
   }
 
-  card.append(eyebrow, title, metrics);
+  const context = document.createElement('p');
+  const latest = summary.latestObservedAt
+    ? new Intl.DateTimeFormat('fr-FR', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        timeZone: 'UTC',
+      }).format(new Date(summary.latestObservedAt))
+    : '—';
+  context.textContent = `Secteurs : ${summary.sectors.join(', ') || '—'} · Dernière donnée : ${latest}`;
+
+  card.append(eyebrow, title, status, metrics, context);
+  if (selectable) {
+    const hint = document.createElement('small');
+    hint.className = 'ceeac-country-card__hint';
+    hint.textContent = 'Cliquer pour filtrer ce pays';
+    card.append(hint);
+  }
   return card;
 }

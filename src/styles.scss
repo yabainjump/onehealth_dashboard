@@ -317,7 +317,7 @@ body .ceeac-country-tooltip.leaflet-tooltip-top::before {
     gap: 6px;
   }
 
-  span {
+  > div > span {
     min-width: 0;
     display: grid;
     gap: 2px;
@@ -336,6 +336,49 @@ body .ceeac-country-tooltip.leaflet-tooltip-top::before {
     font-size: 0.48rem;
     font-style: normal;
     line-height: 1.25;
+  }
+
+  &__status {
+    width: fit-content;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 7px;
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    font-size: 0.52rem;
+    font-weight: 760;
+
+    &::before {
+      width: 6px;
+      height: 6px;
+      content: '';
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 18%, transparent);
+    }
+
+    &--none { color: #cbd5e1; }
+    &--watch { color: #fde047; }
+    &--elevated { color: #fb923c; }
+    &--critical { color: #fb7185; }
+  }
+
+  > p {
+    margin: 1px 0 0;
+    color: rgb(255 255 255 / 68%);
+    font-size: 0.5rem;
+    line-height: 1.45;
+  }
+
+  &__hint {
+    padding-top: 7px;
+    border-top: 1px solid rgb(255 255 255 / 10%);
+    color: #8be8ee !important;
+    font-size: 0.49rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0 !important;
+    text-transform: none !important;
   }
 }
 
