@@ -1,13 +1,10 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, timeout } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import {
-  DashboardProfileUpdate,
-  DashboardUser,
-  LoginResponse,
-} from './dashboard-user.model';
+import { DashboardProfileUpdate, DashboardUser, LoginResponse } from './dashboard-user.model';
 import { DashboardSessionService } from './dashboard-session.service';
+import { OneHealthDataService } from '../data/one-health-data.service';
 
 export class DashboardLoginError extends Error {
   constructor(
@@ -22,11 +19,16 @@ export class DashboardLoginError extends Error {
 export class DashboardAuthService {
   private readonly http = inject(HttpClient);
   private readonly session = inject(DashboardSessionService);
+  private readonly hubData = inject(OneHealthDataService);
   private restorePromise: Promise<DashboardUser | null> | null = null;
+  private sessionVersion = 0;
 
   readonly currentUser = signal<DashboardUser | null>(null);
 
   async login(email: string, password: string): Promise<DashboardUser> {
+    const version = ++this.sessionVersion;
+    this.restorePromise = null;
+    this.hubData.reset();
     try {
       const response = await firstValueFrom(
         this.http.post<LoginResponse>(`${environment.apiBaseUrl}/auth/login`, {
@@ -34,10 +36,13 @@ export class DashboardAuthService {
           password,
         }),
       );
+      if (version !== this.sessionVersion)
+        throw new Error('Connexion remplacée par une nouvelle session.');
       this.session.setToken(response.accessToken);
       this.currentUser.set(response.user);
       return response.user;
     } catch (error: unknown) {
+      if (version !== this.sessionVersion) throw error;
       this.session.clear();
       this.currentUser.set(null);
       if (error instanceof HttpErrorResponse) {
@@ -61,20 +66,25 @@ export class DashboardAuthService {
       return Promise.resolve(null);
     }
     if (!this.restorePromise) {
+      const version = this.sessionVersion;
+      const token = this.session.getToken();
       this.restorePromise = firstValueFrom(
         this.http.get<DashboardUser>(`${environment.apiBaseUrl}/auth/me`),
       )
         .then((user) => {
+          if (version !== this.sessionVersion || token !== this.session.getToken()) return null;
           this.currentUser.set(user);
           return user;
         })
         .catch(() => {
+          if (version !== this.sessionVersion || token !== this.session.getToken()) return null;
+          this.hubData.reset();
           this.session.clear();
           this.currentUser.set(null);
           return null;
         })
         .finally(() => {
-          this.restorePromise = null;
+          if (version === this.sessionVersion) this.restorePromise = null;
         });
     }
     return this.restorePromise;
@@ -116,10 +126,23 @@ export class DashboardAuthService {
   }
 
   async updateProfile(update: DashboardProfileUpdate): Promise<DashboardUser> {
+    const version = this.sessionVersion;
     try {
       const user = await firstValueFrom(
         this.http.patch<DashboardUser>(`${environment.apiBaseUrl}/users/me`, update),
       );
+      const previous = this.currentUser();
+      if (version !== this.sessionVersion || previous?.id !== user.id) {
+        throw new Error('Session modifiée pendant la mise à jour du profil.');
+      }
+      if (
+        previous &&
+        (previous.role !== user.role ||
+          JSON.stringify(previous.hubRoles) !== JSON.stringify(user.hubRoles) ||
+          JSON.stringify(previous.hubCountryCodes) !== JSON.stringify(user.hubCountryCodes))
+      ) {
+        this.hubData.reset();
+      }
       this.currentUser.set(user);
       return user;
     } catch (error: unknown) {
@@ -139,14 +162,21 @@ export class DashboardAuthService {
   }
 
   async logout(): Promise<void> {
-    if (this.session.getToken()) {
-      try {
-        await firstValueFrom(this.http.post(`${environment.apiBaseUrl}/auth/logout`, {}));
-      } catch {
-        // La session locale doit toujours être supprimée, même hors ligne.
-      }
-    }
+    this.sessionVersion += 1;
+    this.restorePromise = null;
+    this.hubData.reset();
+    // Subscribe while the old token still exists; erase local state immediately.
+    const request = this.session.getToken()
+      ? firstValueFrom(
+          this.http.post(`${environment.apiBaseUrl}/auth/logout`, {}).pipe(timeout(10_000)),
+        )
+      : Promise.resolve();
     this.session.clear();
     this.currentUser.set(null);
+    try {
+      await request;
+    } catch {
+      // Never restore local credentials when the network logout fails.
+    }
   }
 }

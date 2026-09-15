@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import {
   LucideActivity,
@@ -16,7 +16,8 @@ import {
   LucideTriangleAlert,
 } from '@lucide/angular';
 
-import { OneHealthDataService } from '../../core/data/one-health-data.service';
+import { AlertRegistryStore } from './alert-registry.store';
+import { BrandLoaderComponent } from '../../shared/components/brand-loader/brand-loader.component';
 import { CEEAC_COUNTRIES } from '../../core/data/mock/ceeac-reference';
 import {
   SECTOR_LABELS,
@@ -38,6 +39,7 @@ type StageFilter = 'all' | ObservationStage;
   selector: 'app-alert-list-page',
   imports: [
     RouterLink,
+    BrandLoaderComponent,
     LucideActivity,
     LucideArrowRight,
     LucideChevronLeft,
@@ -52,73 +54,29 @@ type StageFilter = 'all' | ObservationStage;
     LucideTrees,
     LucideTriangleAlert,
   ],
+  providers: [AlertRegistryStore],
   templateUrl: './alert-list.page.html',
   styleUrl: './alert-list.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AlertListPage {
-  private readonly dataService = inject(OneHealthDataService);
+  protected readonly registry = inject(AlertRegistryStore);
   private readonly pageSize = 8;
-
-  protected readonly summary = this.dataService.summary;
+  protected readonly summary = this.registry.summary;
   protected readonly countries = CEEAC_COUNTRIES;
-  protected readonly viewMode = signal<AlertViewMode>('priority');
-  protected readonly searchTerm = signal('');
-  protected readonly selectedCountry = signal('all');
-  protected readonly selectedSector = signal<SectorFilter>('all');
-  protected readonly selectedStage = signal<StageFilter>('all');
-  protected readonly currentPage = signal(1);
-
-  protected readonly filteredObservations = computed(() => {
-    const search = this.searchTerm().toLocaleLowerCase('fr');
-    const country = this.selectedCountry();
-    const sector = this.selectedSector();
-    const stage = this.selectedStage();
-    const viewMode = this.viewMode();
-
-    const observations = this.dataService.observations.filter((observation) => {
-      const matchesSearch =
-        !search ||
-        [
-          observation.id,
-          observation.sourceRecordId,
-          observation.title,
-          observation.countryName,
-          observation.adminArea,
-          observation.sourceSystem,
-        ].some((value) => value.toLocaleLowerCase('fr').includes(search));
-      const matchesCountry = country === 'all' || observation.countryCode === country;
-      const matchesSector = sector === 'all' || observation.sector === sector;
-      const matchesStage = stage === 'all' || observation.stage === stage;
-      const matchesView = viewMode !== 'priority' || observation.stage !== 'observation';
-
-      return matchesSearch && matchesCountry && matchesSector && matchesStage && matchesView;
-    });
-
-    return [...observations].sort((left, right) => {
-      if (viewMode === 'country') {
-        const byCountry = left.countryName.localeCompare(right.countryName, 'fr');
-        if (byCountry) {
-          return byCountry;
-        }
-      }
-
-      return right.observedAt.localeCompare(left.observedAt);
-    });
-  });
-
-  protected readonly totalPages = computed(() =>
-    Math.max(1, Math.ceil(this.filteredObservations().length / this.pageSize)),
-  );
-
-  protected readonly pagedObservations = computed(() => {
-    const safePage = Math.min(this.currentPage(), this.totalPages());
-    const start = (safePage - 1) * this.pageSize;
-    return this.filteredObservations().slice(start, start + this.pageSize);
-  });
+  protected readonly viewMode = this.registry.viewMode;
+  protected readonly searchTerm = this.registry.searchTerm;
+  protected readonly selectedCountry = this.registry.selectedCountry;
+  protected readonly selectedSector = this.registry.selectedSector;
+  protected readonly selectedStage = this.registry.selectedStage;
+  protected readonly currentPage = this.registry.currentPage;
+  protected readonly totalPages = this.registry.totalPages;
+  protected readonly pagedObservations = this.registry.items;
 
   protected readonly resultRange = computed(() => {
-    const total = this.filteredObservations().length;
+    const total = this.registry.total();
+    if (this.registry.loading()) return 'Chargement…';
+    if (this.registry.error()) return 'Résultats indisponibles';
     if (!total) {
       return 'Aucun résultat';
     }
@@ -180,6 +138,7 @@ export class AlertListPage {
   }
 
   protected exportCsv(): void {
+    if (this.registry.loading() || this.registry.error() || !this.pagedObservations().length) return;
     const headers = [
       'Identifiant Hub',
       'Identifiant source',
@@ -192,7 +151,7 @@ export class AlertListPage {
       'Sévérité',
       'Date',
     ];
-    const rows = this.filteredObservations().map((observation) => [
+    const rows = this.pagedObservations().map((observation) => [
       observation.id,
       observation.sourceRecordId,
       observation.sourceSystem,
@@ -211,7 +170,7 @@ export class AlertListPage {
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement('a');
     anchor.href = url;
-    anchor.download = 'one-health-ceeac-signaux.csv';
+    anchor.download = `one-health-ceeac-signaux-page-${this.currentPage()}.csv`;
     anchor.style.display = 'none';
     document.body.append(anchor);
     anchor.click();

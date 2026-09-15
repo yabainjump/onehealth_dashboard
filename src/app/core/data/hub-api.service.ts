@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, fromEvent, NEVER, Observable, takeUntil, timeout } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { OneHealthObservation } from './models/one-health-observation.model';
 
@@ -236,7 +236,23 @@ export interface UpdateHubSharingPolicyInput {
   readonly containsPersonalData: boolean;
 }
 
-interface HubObservationPage {
+export interface HubObservationQuery {
+  page: number;
+  limit: number;
+  search?: string;
+  countryCode?: string;
+  sector?: OneHealthObservation['sector'];
+  stage?: OneHealthObservation['stage'];
+  view?: 'all' | 'priority' | 'country';
+}
+
+export interface HubSummary {
+  readonly total: number;
+  readonly byStage: Record<OneHealthObservation['stage'], number>;
+  readonly simulated: boolean;
+}
+
+export interface HubObservationPage {
   readonly items: readonly OneHealthObservation[];
   readonly total: number;
   readonly page: number;
@@ -244,23 +260,56 @@ interface HubObservationPage {
   readonly pages: number;
 }
 
+export class HubDatasetLimitError extends Error {
+  constructor() {
+    super(
+      'Le volume dépasse la limite de 10 000 observations de cette vue. Une vue paginée côté serveur est nécessaire.',
+    );
+  }
+}
+
 @Injectable({ providedIn: 'root' })
 export class HubApiService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = `${environment.apiBaseUrl}/hub`;
 
-  async getAllObservations(): Promise<readonly OneHealthObservation[]> {
-    const firstPage = await this.getObservationPage(1, 100);
+  listObservations(query: HubObservationQuery): Observable<HubObservationPage> {
+    const params: Record<string, string | number> = {};
+    for (const [key, value] of Object.entries(query)) {
+      if (value !== undefined && value !== '') params[key] = value;
+    }
+    return this.http.get<HubObservationPage>(`${this.baseUrl}/observations`, { params })
+      .pipe(timeout(30_000));
+  }
+
+  observationSummary(): Observable<HubSummary> {
+    return this.http.get<HubSummary>(`${this.baseUrl}/summary`).pipe(timeout(30_000));
+  }
+
+  async getAllObservations(signal?: AbortSignal): Promise<readonly OneHealthObservation[]> {
+    const firstPage = await this.getObservationPage(1, 100, signal);
+    if (
+      !Number.isInteger(firstPage.pages) ||
+      firstPage.pages < 0 ||
+      firstPage.pages > 100 ||
+      firstPage.total > 10_000
+    ) {
+      throw new HubDatasetLimitError();
+    }
     if (firstPage.pages <= 1) {
       return firstPage.items;
     }
 
-    const remainingPages = await Promise.all(
-      Array.from({ length: firstPage.pages - 1 }, (_, index) =>
-        this.getObservationPage(index + 2, 100),
-      ),
-    );
-    return [firstPage, ...remainingPages].flatMap((page) => page.items);
+    const items = [...firstPage.items];
+    for (let page = 2; page <= firstPage.pages; page += 3) {
+      const batch = await Promise.all(
+        Array.from({ length: Math.min(3, firstPage.pages - page + 1) }, (_, offset) =>
+          this.getObservationPage(page + offset, 100, signal),
+        ),
+      );
+      items.push(...batch.flatMap((result) => result.items));
+    }
+    return items;
   }
 
   getObservationDetail(id: string): Promise<HubObservationDetailApi> {
@@ -390,11 +439,18 @@ export class HubApiService {
     );
   }
 
-  private getObservationPage(page: number, limit: number): Promise<HubObservationPage> {
+  private getObservationPage(
+    page: number,
+    limit: number,
+    signal?: AbortSignal,
+  ): Promise<HubObservationPage> {
+    if (signal?.aborted) return Promise.reject(new Error('Chargement annulé.'));
     return firstValueFrom(
-      this.http.get<HubObservationPage>(`${this.baseUrl}/observations`, {
-        params: { page, limit },
-      }),
+      this.http
+        .get<HubObservationPage>(`${this.baseUrl}/observations`, {
+          params: { page, limit },
+        })
+        .pipe(timeout(30_000), takeUntil(signal ? fromEvent(signal, 'abort') : NEVER)),
     );
   }
 }

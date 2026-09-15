@@ -25,18 +25,19 @@ export const routes: Routes = [
   {
     path: '',
     canActivate: [dashboardAuthGuard],
-    resolve: { hubData: hubDataResolver },
     loadComponent: () =>
       import('./layout/app-shell/app-shell.component').then((module) => module.AppShellComponent),
     children: [
       {
         path: 'dashboard',
+        resolve: { hubData: hubDataResolver },
         title: 'Vue stratégique | One Health Network Dashboard',
         loadComponent: () =>
           import('./pages/dashboard/dashboard.page').then((module) => module.DashboardPage),
       },
       {
         path: 'etat-membre',
+        resolve: { hubData: hubDataResolver },
         title: 'État membre | One Health Network Dashboard',
         loadComponent: () =>
           import('./pages/member-state/member-state.page').then(
@@ -45,12 +46,14 @@ export const routes: Routes = [
       },
       {
         path: 'carte',
+        resolve: { hubData: hubDataResolver },
         title: 'Carte régionale | One Health Network Dashboard',
         loadComponent: () =>
           import('./pages/regional-map/regional-map.page').then((module) => module.RegionalMapPage),
       },
       {
         path: 'alertes/:id',
+        resolve: { hubData: hubDataResolver },
         title: 'Détail du signal | One Health Network Dashboard',
         loadComponent: () =>
           import('./pages/alerts/alert-detail.page').then((module) => module.AlertDetailPage),
@@ -63,12 +66,14 @@ export const routes: Routes = [
       },
       {
         path: 'analyses',
+        resolve: { hubData: hubDataResolver },
         title: 'Analyses sectorielles | One Health Network Dashboard',
         loadComponent: () =>
           import('./pages/analyses/analyses.page').then((module) => module.AnalysesPage),
       },
       {
         path: 'rapports',
+        resolve: { hubData: hubDataResolver },
         title: 'Rapports | One Health Network Dashboard',
         loadComponent: () =>
           import('./pages/reports/reports.page').then((module) => module.ReportsPage),

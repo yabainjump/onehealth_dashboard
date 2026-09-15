@@ -7,9 +7,9 @@
     </div>
 
     <div class="alerts-page__actions">
-      <button class="oh-button" type="button" (click)="exportCsv()">
+      <button class="oh-button" type="button" (click)="exportCsv()" [disabled]="registry.loading() || !pagedObservations().length">
         <svg lucideDownload size="16"></svg>
-        Exporter CSV
+        Exporter cette page (CSV)
       </button>
       <a class="oh-button oh-button--primary" routerLink="/carte">
         <svg lucideMap size="16"></svg>
@@ -18,6 +18,7 @@
     </div>
   </header>
 
+  @if (summary()?.simulated) {
   <div class="demo-notice" role="status">
     <svg lucideShieldCheck size="17"></svg>
     <span>
@@ -26,6 +27,8 @@
     </span>
   </div>
 
+  }
+  @if (summary(); as summary) {
   <div class="alert-stats" aria-label="Répartition des niveaux de qualification">
     <article class="alert-stat alert-stat--observation oh-card">
       <span><svg lucideActivity size="18"></svg></span>
@@ -40,6 +43,11 @@
       <div><strong>{{ summary.byStage['verified-alert'] }}</strong><small>Alertes vérifiées</small></div>
     </article>
   </div>
+
+  } @else {
+    <p role="status">{{ registry.summaryError() || "Chargement des compteurs…" }}</p>
+    @if (registry.summaryError()) { <button class="oh-button" (click)="registry.retry()">Réessayer</button> }
+  }
 
   <article class="alerts-table-card oh-card">
     <header class="table-controls">
@@ -57,7 +65,7 @@
           (click)="setViewMode('priority')"
         >
           À traiter
-          <span>{{ summary.byStage.signal + summary.byStage['verified-alert'] }}</span>
+          @if (summary(); as counts) { <span>{{ counts.byStage.signal + counts.byStage['verified-alert'] }}</span> }
         </button>
         <button
           type="button"
@@ -108,10 +116,20 @@
           <option value="verified-alert">Alerte vérifiée</option>
         </select>
       </label>
-      <strong>{{ filteredObservations().length }} résultats</strong>
+      <strong>{{ registry.loading() || registry.error() ? "—" : registry.total() }} résultats</strong>
     </div>
 
-    @if (pagedObservations().length) {
+    @if (registry.pageLimitReached()) {
+      <p role="status">Plus de 8 000 résultats : affinez les filtres pour accéder aux résultats au-delà des 1 000 premières pages.</p>
+    }
+    @if (registry.loading()) {
+      <app-brand-loader message="Chargement des alertes…" />
+    } @else if (registry.error()) {
+      <div class="empty-state" role="alert">
+        <strong>{{ registry.error() }}</strong>
+        <button class="oh-button" type="button" (click)="registry.retry()">Réessayer</button>
+      </div>
+    } @else if (pagedObservations().length) {
       <div class="alert-table" role="table" aria-label="Signaux et alertes One Health">
         <div class="alert-table__head" role="row">
           <span role="columnheader">Identifiant</span>
@@ -194,16 +212,18 @@
         <button
           type="button"
           aria-label="Page précédente"
-          [disabled]="currentPage() <= 1"
+          [disabled]="registry.loading() || !!registry.error() || currentPage() <= 1"
           (click)="previousPage()"
         >
           <svg lucideChevronLeft size="16"></svg>
         </button>
-        <strong>Page {{ currentPage() }} / {{ totalPages() }}</strong>
+        @if (!registry.loading() && !registry.error()) {
+          <strong>Page {{ currentPage() }} / {{ totalPages() }}</strong>
+        }
         <button
           type="button"
           aria-label="Page suivante"
-          [disabled]="currentPage() >= totalPages()"
+          [disabled]="registry.loading() || !!registry.error() || currentPage() >= totalPages()"
           (click)="nextPage()"
         >
           <svg lucideChevronRight size="16"></svg>

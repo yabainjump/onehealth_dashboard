@@ -15,7 +15,11 @@ describe('Dashboard routes', () => {
     const dashboardRoute = protectedShell?.children?.find((route) => route.path === 'dashboard');
 
     expect(protectedShell?.canActivate?.length).toBeGreaterThan(0);
-    expect(protectedShell?.resolve?.['hubData']).toBeDefined();
+    expect(protectedShell?.resolve).toBeUndefined();
+    expect(dashboardRoute?.resolve?.['hubData']).toBeDefined();
+    for (const path of ['alertes', 'aide', 'profil', 'administration', 'connecteurs', 'souverainete']) {
+      expect(protectedShell?.children?.find((route) => route.path === path)?.resolve).toBeUndefined();
+    }
     expect(dashboardRoute?.loadComponent).toBeDefined();
   });
 

@@ -1,7 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
 import { environment } from '../../../environments/environment';
-import { HubApiService } from './hub-api.service';
+import { HubApiService, HubDatasetLimitError } from './hub-api.service';
 
 import { DEMO_REFERENCE_DATE } from './mock/ceeac-reference';
 import { MOCK_ONE_HEALTH_OBSERVATIONS } from './mock/mock-observations';
@@ -31,6 +31,9 @@ export class OneHealthDataService {
   private readonly hubApi = inject(HubApiService);
   private loadPromise: Promise<void> | null = null;
   private loadedScopeKey = '';
+  private generation = 0;
+  private loadedAt = 0;
+  private loadController?: AbortController;
 
   readonly dataMode = signal<'initial' | 'api' | 'fallback'>('initial');
   readonly revision = signal(0);
@@ -70,38 +73,64 @@ export class OneHealthDataService {
   ];
 
   loadFromHub(scopeKey: string): Promise<void> {
-    if (this.dataMode() !== 'initial' && this.loadedScopeKey === scopeKey) {
+    if (this.loadedScopeKey !== scopeKey) {
+      this.reset();
+      this.loadedScopeKey = scopeKey;
+    }
+    if (this.dataMode() === 'api' && Date.now() - this.loadedAt < 60_000) {
       return Promise.resolve();
     }
+    return this.loadCurrentScope();
+  }
+
+  reset(): void {
+    this.generation += 1;
+    this.loadController?.abort();
+    this.loadController = undefined;
+    this.loadPromise = null;
+    this.loadedScopeKey = '';
+    this.loadedAt = 0;
+    this.replaceObservations([]);
+    this.dataMode.set('initial');
+    this.dataNotice.set(null);
+  }
+
+  private loadCurrentScope(): Promise<void> {
     if (!this.loadPromise) {
+      const generation = this.generation;
+      this.loadController = new AbortController();
+      const isCurrent = () => generation === this.generation;
       this.loadPromise = this.hubApi
-        .getAllObservations()
+        .getAllObservations(this.loadController.signal)
         .then((observations) => {
-          if (!observations.length) {
-            throw new Error('Le Hub ne contient encore aucune observation.');
-          }
+          if (!isCurrent()) throw new Error('Chargement remplacé par une nouvelle session.');
           this.replaceObservations(observations);
-          this.loadedScopeKey = scopeKey;
+          this.loadedAt = Date.now();
           this.dataMode.set('api');
           this.dataNotice.set(null);
         })
         .catch((error: unknown) => {
+          if (!isCurrent()) throw error;
           if (
-            error instanceof HttpErrorResponse &&
-            (error.status === 401 || error.status === 403)
+            error instanceof HubDatasetLimitError ||
+            (error instanceof HttpErrorResponse && (error.status === 401 || error.status === 403))
           ) {
+            this.reset();
             throw error;
           }
           if (!environment.allowDemoFallback) {
             throw error;
           }
           this.replaceObservations(MOCK_ONE_HEALTH_OBSERVATIONS);
-          this.loadedScopeKey = scopeKey;
           this.dataMode.set('fallback');
           this.dataNotice.set('API Hub indisponible — jeu local fictif utilisé temporairement.');
         })
         .finally(() => {
-          this.loadPromise = null;
+          if (isCurrent()) {
+            this.loadController?.abort();
+            this.loadController = undefined;
+            this.loadPromise = null;
+          }
         });
     }
     return this.loadPromise;
@@ -116,11 +145,8 @@ export class OneHealthDataService {
   }
 
   async refreshFromHub(): Promise<void> {
-    const observations = await this.hubApi.getAllObservations();
-    if (!observations.length) throw new Error('Le Hub ne contient aucune observation.');
-    this.replaceObservations(observations);
-    this.dataMode.set('api');
-    this.dataNotice.set(null);
+    if (!this.loadedScopeKey) throw new Error('Aucun périmètre Hub chargé.');
+    await this.loadCurrentScope();
   }
 
   filter(filter: ObservationFilter): readonly OneHealthObservation[] {
@@ -183,6 +209,7 @@ export class OneHealthDataService {
   }
 
   private calculateCompleteness(): number {
+    if (!this.observations.length) return 0;
     const completeRecords = this.observations.filter(
       (observation) =>
         Boolean(
