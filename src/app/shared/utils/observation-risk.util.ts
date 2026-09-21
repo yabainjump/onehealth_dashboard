@@ -3,9 +3,9 @@ import { ObservationSeverity } from '../../core/data/models/one-health-observati
 export type MapRiskLevel = 'low' | 'medium' | 'high';
 
 export const MAP_RISK_COLORS: Readonly<Record<MapRiskLevel, string>> = {
-  low: '#16a34a',
-  medium: '#f97316',
-  high: '#dc2626',
+  low: '#2e7d32',
+  medium: '#ed6c02',
+  high: '#ba1a1a',
 };
 
 export const MAP_RISK_LABELS: Readonly<Record<MapRiskLevel, string>> = {

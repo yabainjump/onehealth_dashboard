@@ -359,9 +359,9 @@ body .ceeac-country-tooltip.leaflet-tooltip-top::before {
     }
 
     &--none { color: #cbd5e1; }
-    &--watch { color: #fde047; }
-    &--elevated { color: #fb923c; }
-    &--critical { color: #fb7185; }
+    &--low { color: #81c784; }
+    &--medium { color: #ffb74d; }
+    &--high { color: #ef9a9a; }
   }
 
   > p {

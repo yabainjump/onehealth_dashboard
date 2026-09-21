@@ -1,5 +1,6 @@
 import { OneHealthObservation } from '../../core/data/models/one-health-observation.model';
 import {
+  CEEAC_TERRITORY_COLORS,
   countryStyle,
   summarizeCeeacCountry,
 } from './ceeac-boundaries.util';
@@ -58,18 +59,33 @@ describe('CEEAC boundaries utilities', () => {
     };
 
     expect(
-      countryStyle(summary, {
-        highlighted: true,
-        selected: false,
-        selectionActive: true,
-      }).fillOpacity,
+      countryStyle(
+        summary,
+        {
+          highlighted: true,
+          selected: false,
+          selectionActive: true,
+        },
+        'CM',
+      ).fillOpacity,
     ).toBe(0);
-    expect(
-      countryStyle(summary, {
+    const selectedStyle = countryStyle(
+      summary,
+      {
         highlighted: false,
         selected: true,
         selectionActive: true,
-      }).fillOpacity,
-    ).toBeGreaterThan(0);
+      },
+      'CM',
+    );
+    expect(selectedStyle.fillOpacity).toBeGreaterThan(0);
+    expect(selectedStyle.color).toBe('#a9693d');
+    expect(selectedStyle.fillColor).toBe('#f5cfb3');
+  });
+
+  it('defines one territory palette for every CEEAC member state', () => {
+    expect(Object.keys(CEEAC_TERRITORY_COLORS).sort()).toEqual(
+      ['AO', 'BI', 'CD', 'CF', 'CG', 'CM', 'GA', 'GQ', 'RW', 'ST', 'TD'],
+    );
   });
 });

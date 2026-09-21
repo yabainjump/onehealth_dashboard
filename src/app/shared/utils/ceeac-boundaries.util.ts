@@ -3,7 +3,6 @@ import * as L from 'leaflet';
 
 import { OneHealthObservation } from '../../core/data/models/one-health-observation.model';
 import {
-  MAP_RISK_COLORS,
   MAP_RISK_LABELS,
   MapRiskLevel,
   toMapRiskLevel,
@@ -31,6 +30,11 @@ export interface CeeacCountrySelection {
   readonly bounds: L.LatLngBounds;
 }
 
+export interface CeeacTerritoryColor {
+  readonly fill: string;
+  readonly stroke: string;
+}
+
 export interface CeeacBoundaryLayerOptions {
   readonly visibleObservations: () => readonly OneHealthObservation[];
   readonly selectedCountryCode?: () => string | null;
@@ -41,9 +45,22 @@ export type CeeacBoundaries = FeatureCollection<Geometry, CeeacCountryProperties
 
 const CEEAC_BOUNDARIES_URL = 'assets/geo/ceeac-countries.geojson';
 const CEEAC_PANE = 'ceeac-country-boundaries';
-const ACTIVITY_COLORS: Readonly<Record<CeeacActivityLevel, string>> = {
-  none: '#64748b',
-  ...MAP_RISK_COLORS,
+const DEFAULT_TERRITORY_COLOR: CeeacTerritoryColor = {
+  fill: '#b8c7d9',
+  stroke: '#60758c',
+};
+export const CEEAC_TERRITORY_COLORS: Readonly<Record<string, CeeacTerritoryColor>> = {
+  AO: { fill: '#e8b9c0', stroke: '#9f5f6a' },
+  BI: { fill: '#dcc8ef', stroke: '#7b5b9d' },
+  CM: { fill: '#f5cfb3', stroke: '#a9693d' },
+  CF: { fill: '#c4ecd8', stroke: '#4f9072' },
+  TD: { fill: '#fff9ad', stroke: '#a89735' },
+  CG: { fill: '#c8efa7', stroke: '#67964a' },
+  CD: { fill: '#78b478', stroke: '#3f7948' },
+  GQ: { fill: '#eba45f', stroke: '#995923' },
+  GA: { fill: '#a9c8f2', stroke: '#4f75ad' },
+  RW: { fill: '#f4e2ae', stroke: '#a47e32' },
+  ST: { fill: '#b8dfb1', stroke: '#548659' },
 };
 const ACTIVITY_LABELS: Readonly<Record<CeeacActivityLevel, string>> = {
   none: 'Aucune donnée visible',
@@ -140,6 +157,7 @@ export function createCeeacBoundaryLayer(
           selected: feature?.properties.code === options.selectedCountryCode?.(),
           selectionActive: Boolean(options.selectedCountryCode?.()),
         },
+        feature?.properties.code ?? '',
       ),
       renderer,
     }),
@@ -168,6 +186,7 @@ export function createCeeacBoundaryLayer(
                   selected: feature.properties.code === options.selectedCountryCode?.(),
                   selectionActive: Boolean(options.selectedCountryCode?.()),
                 },
+                feature.properties.code,
               ),
             );
           }
@@ -189,6 +208,7 @@ export function createCeeacBoundaryLayer(
                   selected: feature.properties.code === options.selectedCountryCode?.(),
                   selectionActive: Boolean(options.selectedCountryCode?.()),
                 },
+                feature.properties.code,
               ),
             );
           }
@@ -220,6 +240,7 @@ export function refreshCeeacBoundaryLayer(
         selected: feature?.properties.code === selectedCountryCode,
         selectionActive: selectedCountryCode !== null,
       },
+      feature?.properties.code ?? '',
     ),
   );
 }
@@ -231,28 +252,26 @@ export function countryStyle(
     readonly selected: boolean;
     readonly selectionActive: boolean;
   },
+  countryCode: string,
 ): L.PathOptions {
-  const color = ACTIVITY_COLORS[summary.level];
-  const baseFillOpacity: Readonly<Record<CeeacActivityLevel, number>> = {
-    none: 0.025,
-    low: 0.07,
-    medium: 0.11,
-    high: 0.15,
-  };
+  const territoryColor = CEEAC_TERRITORY_COLORS[countryCode] ?? DEFAULT_TERRITORY_COLOR;
+  const baseFillOpacity = summary.observations > 0 ? 0.16 : 0.08;
   const fillOpacity =
     state.selectionActive && !state.selected
       ? 0
-      : state.highlighted
-        ? 0.3
+      : state.selected && state.highlighted
+        ? 0.38
         : state.selected
-          ? 0.22
-          : baseFillOpacity[summary.level];
+          ? 0.32
+          : state.highlighted
+            ? 0.26
+            : baseFillOpacity;
   return {
     className: 'ceeac-country-boundary',
-    color,
-    fillColor: color,
+    color: territoryColor.stroke,
+    fillColor: territoryColor.fill,
     fillOpacity,
-    opacity: state.highlighted || state.selected ? 1 : 0.9,
+    opacity: state.highlighted || state.selected ? 1 : 0.88,
     weight: state.highlighted ? 3.2 : state.selected ? 2.8 : 1.7,
   };
 }
