@@ -5,6 +5,14 @@
   height: 100%;
 }
 
+.map-preview__stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #17394c;
+}
+
 .map-preview__loading {
   position: absolute;
   inset: 0;

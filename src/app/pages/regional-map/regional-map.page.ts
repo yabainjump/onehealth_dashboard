@@ -51,6 +51,7 @@ import {
   observationsForEvent,
 } from './regional-map.presenter';
 import { BrandLoaderComponent } from '../../shared/components/brand-loader/brand-loader.component';
+import { MapFullscreenControlComponent } from '../../shared/components/map-fullscreen-control/map-fullscreen-control.component';
 import {
   CeeacCountrySelection,
   createCeeacBoundaryLayer,
@@ -103,6 +104,7 @@ const DEFAULT_CUSTOM_DATE_FROM = formatDateInput(
     LucideTrees,
     LucideX,
     BrandLoaderComponent,
+    MapFullscreenControlComponent,
   ],
   templateUrl: './regional-map.page.html',
   styleUrl: './regional-map.page.scss',

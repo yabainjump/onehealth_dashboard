@@ -14,6 +14,7 @@ import * as L from 'leaflet';
 
 import { OneHealthDataService } from '../../../core/data/one-health-data.service';
 import { BrandLoaderComponent } from '../brand-loader/brand-loader.component';
+import { MapFullscreenControlComponent } from '../map-fullscreen-control/map-fullscreen-control.component';
 import {
   createCeeacBoundaryLayer,
   loadCeeacBoundaries,
@@ -33,22 +34,21 @@ const SECTOR_COLORS: Readonly<Record<HealthSector, string>> = {
 
 @Component({
   selector: 'app-regional-map-preview',
-  imports: [BrandLoaderComponent],
+  imports: [BrandLoaderComponent, MapFullscreenControlComponent],
   template: `
-    <div
-      #mapContainer
-      class="map-preview__canvas"
-      aria-label="Carte régionale en lecture seule des observations One Health"
-    ></div>
-    @if (!mapReady()) {
-      <div class="map-preview__loading">
-        <app-brand-loader
-          mode="inline"
-          message="Chargement de la carte…"
-          detail=""
-        />
-      </div>
-    }
+    <div #fullscreenHost class="map-preview__stage ohn-map-fullscreen-host">
+      <div
+        #mapContainer
+        class="map-preview__canvas"
+        aria-label="Carte régionale en lecture seule des observations One Health"
+      ></div>
+      @if (!mapReady()) {
+        <div class="map-preview__loading">
+          <app-brand-loader mode="inline" message="Chargement de la carte…" detail="" />
+        </div>
+      }
+      <app-map-fullscreen-control [target]="fullscreenHost" />
+    </div>
   `,
   styleUrl: './regional-map-preview.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

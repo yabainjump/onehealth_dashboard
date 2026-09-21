@@ -198,7 +198,7 @@
       ></button>
     }
 
-    <div class="map-stage">
+    <div #mapStage class="map-stage ohn-map-fullscreen-host">
       <div
         #mapContainer
         class="map-canvas"
@@ -236,6 +236,7 @@
       </div>
 
       <div class="map-actions" aria-label="Actions cartographiques">
+        <app-map-fullscreen-control [target]="mapStage" [inline]="true" />
         <button
           type="button"
           title="Recentrer sur la CEEAC"
