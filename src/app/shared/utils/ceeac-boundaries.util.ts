@@ -2,6 +2,12 @@ import type { Feature, FeatureCollection, Geometry } from 'geojson';
 import * as L from 'leaflet';
 
 import { OneHealthObservation } from '../../core/data/models/one-health-observation.model';
+import {
+  MAP_RISK_COLORS,
+  MAP_RISK_LABELS,
+  MapRiskLevel,
+  toMapRiskLevel,
+} from './observation-risk.util';
 
 export interface CeeacCountryProperties {
   readonly code: string;
@@ -17,7 +23,7 @@ export interface CeeacCountrySummary {
   readonly level: CeeacActivityLevel;
 }
 
-export type CeeacActivityLevel = 'none' | 'watch' | 'elevated' | 'critical';
+export type CeeacActivityLevel = 'none' | MapRiskLevel;
 
 export interface CeeacCountrySelection {
   readonly code: string;
@@ -37,15 +43,11 @@ const CEEAC_BOUNDARIES_URL = 'assets/geo/ceeac-countries.geojson';
 const CEEAC_PANE = 'ceeac-country-boundaries';
 const ACTIVITY_COLORS: Readonly<Record<CeeacActivityLevel, string>> = {
   none: '#64748b',
-  watch: '#eab308',
-  elevated: '#f97316',
-  critical: '#ef4444',
+  ...MAP_RISK_COLORS,
 };
 const ACTIVITY_LABELS: Readonly<Record<CeeacActivityLevel, string>> = {
   none: 'Aucune donnée visible',
-  watch: 'Veille',
-  elevated: 'Surveillance renforcée',
-  critical: 'Activité critique',
+  ...MAP_RISK_LABELS,
 };
 const SECTOR_LABELS: Readonly<Record<OneHealthObservation['sector'], string>> = {
   human: 'Humaine',
@@ -90,11 +92,8 @@ export function summarizeCeeacCountry(
   const verifiedAlerts = countryObservations.filter(
     (observation) => observation.stage === 'verified-alert',
   ).length;
-  const hasCriticalSeverity = countryObservations.some(
-    (observation) => observation.severity === 'critical',
-  );
-  const hasHighSeverity = countryObservations.some(
-    (observation) => observation.severity === 'high',
+  const riskLevels = countryObservations.map((observation) =>
+    toMapRiskLevel(observation.severity),
   );
   const sectors = [...new Set(countryObservations.map((observation) => observation.sector))].map(
     (sector) => SECTOR_LABELS[sector],
@@ -105,12 +104,12 @@ export function summarizeCeeacCountry(
     null,
   );
   const level: CeeacActivityLevel =
-    verifiedAlerts > 0 || hasCriticalSeverity
-      ? 'critical'
-      : signals > 0 || hasHighSeverity
-        ? 'elevated'
-        : countryObservations.length > 0
-          ? 'watch'
+    verifiedAlerts > 0 || riskLevels.includes('high')
+      ? 'high'
+      : riskLevels.includes('medium')
+        ? 'medium'
+        : riskLevels.includes('low')
+          ? 'low'
           : 'none';
 
   return {
@@ -136,8 +135,11 @@ export function createCeeacBoundaryLayer(
     style: (feature) => ({
       ...countryStyle(
         summarizeCeeacCountry(feature?.properties.code ?? '', options.visibleObservations()),
-        false,
-        feature?.properties.code === options.selectedCountryCode?.(),
+        {
+          highlighted: false,
+          selected: feature?.properties.code === options.selectedCountryCode?.(),
+          selectionActive: Boolean(options.selectedCountryCode?.()),
+        },
       ),
       renderer,
     }),
@@ -161,8 +163,11 @@ export function createCeeacBoundaryLayer(
             layer.setStyle(
               countryStyle(
                 summarizeCeeacCountry(feature.properties.code, options.visibleObservations()),
-                true,
-                feature.properties.code === options.selectedCountryCode?.(),
+                {
+                  highlighted: true,
+                  selected: feature.properties.code === options.selectedCountryCode?.(),
+                  selectionActive: Boolean(options.selectedCountryCode?.()),
+                },
               ),
             );
           }
@@ -179,8 +184,11 @@ export function createCeeacBoundaryLayer(
             layer.setStyle(
               countryStyle(
                 summarizeCeeacCountry(feature.properties.code, options.visibleObservations()),
-                false,
-                feature.properties.code === options.selectedCountryCode?.(),
+                {
+                  highlighted: false,
+                  selected: feature.properties.code === options.selectedCountryCode?.(),
+                  selectionActive: Boolean(options.selectedCountryCode?.()),
+                },
               ),
             );
           }
@@ -207,31 +215,45 @@ export function refreshCeeacBoundaryLayer(
   layer?.setStyle((feature) =>
     countryStyle(
       summarizeCeeacCountry(feature?.properties.code ?? '', observations),
-      false,
-      feature?.properties.code === selectedCountryCode,
+      {
+        highlighted: false,
+        selected: feature?.properties.code === selectedCountryCode,
+        selectionActive: selectedCountryCode !== null,
+      },
     ),
   );
 }
 
-function countryStyle(
+export function countryStyle(
   summary: CeeacCountrySummary,
-  highlighted: boolean,
-  selected: boolean,
+  state: {
+    readonly highlighted: boolean;
+    readonly selected: boolean;
+    readonly selectionActive: boolean;
+  },
 ): L.PathOptions {
   const color = ACTIVITY_COLORS[summary.level];
   const baseFillOpacity: Readonly<Record<CeeacActivityLevel, number>> = {
     none: 0.025,
-    watch: 0.07,
-    elevated: 0.11,
-    critical: 0.15,
+    low: 0.07,
+    medium: 0.11,
+    high: 0.15,
   };
+  const fillOpacity =
+    state.selectionActive && !state.selected
+      ? 0
+      : state.highlighted
+        ? 0.3
+        : state.selected
+          ? 0.22
+          : baseFillOpacity[summary.level];
   return {
     className: 'ceeac-country-boundary',
     color,
     fillColor: color,
-    fillOpacity: highlighted ? 0.3 : selected ? 0.22 : baseFillOpacity[summary.level],
-    opacity: highlighted || selected ? 1 : 0.9,
-    weight: highlighted ? 3.2 : selected ? 2.8 : 1.7,
+    fillOpacity,
+    opacity: state.highlighted || state.selected ? 1 : 0.9,
+    weight: state.highlighted ? 3.2 : state.selected ? 2.8 : 1.7,
   };
 }
 

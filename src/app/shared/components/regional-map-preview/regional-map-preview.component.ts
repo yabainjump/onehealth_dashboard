@@ -25,6 +25,11 @@ import {
   MapPeriod,
   OneHealthObservation,
 } from '../../../core/data/models/one-health-observation.model';
+import {
+  MAP_RISK_COLORS,
+  MAP_RISK_LABELS,
+  toMapRiskLevel,
+} from '../../utils/observation-risk.util';
 
 const SECTOR_COLORS: Readonly<Record<HealthSector, string>> = {
   human: '#d83a42',
@@ -139,16 +144,18 @@ export class RegionalMapPreviewComponent implements AfterViewInit, OnDestroy {
         this.markerOptions(observation),
       );
       const tooltip = document.createElement('span');
-      tooltip.textContent = `${observation.countryName} · ${observation.title}`;
+      const riskLevel = toMapRiskLevel(observation.severity);
+      tooltip.textContent = `${observation.countryName} · ${observation.title} · Niveau ${MAP_RISK_LABELS[riskLevel].toLowerCase()}`;
       marker.bindTooltip(tooltip, { direction: 'top', offset: [0, -6] });
       marker.addTo(this.markersLayer);
     }
   }
 
   private markerOptions(observation: OneHealthObservation): L.CircleMarkerOptions {
+    const riskLevel = toMapRiskLevel(observation.severity);
     return {
       radius: observation.stage === 'verified-alert' ? 8 : observation.stage === 'signal' ? 6 : 4,
-      color: '#ffffff',
+      color: MAP_RISK_COLORS[riskLevel],
       weight: observation.stage === 'verified-alert' ? 3 : 2,
       fillColor: SECTOR_COLORS[observation.sector],
       fillOpacity: observation.stage === 'observation' ? 0.68 : 0.94,

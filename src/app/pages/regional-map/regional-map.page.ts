@@ -58,6 +58,11 @@ import {
   loadCeeacBoundaries,
   refreshCeeacBoundaryLayer,
 } from '../../shared/utils/ceeac-boundaries.util';
+import {
+  MAP_RISK_COLORS,
+  MAP_RISK_LABELS,
+  toMapRiskLevel,
+} from '../../shared/utils/observation-risk.util';
 
 interface SectorOption {
   readonly id: HealthSector;
@@ -522,14 +527,16 @@ export class RegionalMapPage implements AfterViewInit, OnDestroy {
     for (const observation of this.filteredObservations()) {
       const radius =
         observation.stage === 'verified-alert' ? 8 : observation.stage === 'signal' ? 6 : 4;
+      const riskLevel = toMapRiskLevel(observation.severity);
+      const riskColor = MAP_RISK_COLORS[riskLevel];
 
       if (observation.stage !== 'observation') {
         L.circleMarker([observation.latitude, observation.longitude], {
           radius: radius + 3,
-          className: `observation-pulse observation-pulse--${observation.stage}`,
-          color: SECTOR_COLORS[observation.sector],
+          className: `observation-pulse observation-pulse--${observation.stage} observation-risk--${riskLevel}`,
+          color: riskColor,
           fill: false,
-          opacity: 0.52,
+          opacity: 0.58,
           weight: 2,
           interactive: false,
           renderer: this.emphasisRenderer,
@@ -538,8 +545,8 @@ export class RegionalMapPage implements AfterViewInit, OnDestroy {
 
       const marker = L.circleMarker([observation.latitude, observation.longitude], {
         radius,
-        className: `observation-point observation-point--${observation.stage}`,
-        color: '#ffffff',
+        className: `observation-point observation-point--${observation.stage} observation-risk--${riskLevel}`,
+        color: riskColor,
         weight: observation.stage === 'verified-alert' ? 3 : 2,
         fillColor: SECTOR_COLORS[observation.sector],
         fillOpacity: observation.stage === 'observation' ? 0.72 : 0.96,
@@ -549,7 +556,7 @@ export class RegionalMapPage implements AfterViewInit, OnDestroy {
       });
 
       const tooltip = document.createElement('span');
-      tooltip.textContent = `${observation.countryName} · ${observation.title}`;
+      tooltip.textContent = `${observation.countryName} · ${observation.title} · Niveau ${MAP_RISK_LABELS[riskLevel].toLowerCase()}`;
       marker.bindTooltip(tooltip, { direction: 'top', offset: [0, -6] });
       marker.on('click', () => {
         this.zone.run(() => {

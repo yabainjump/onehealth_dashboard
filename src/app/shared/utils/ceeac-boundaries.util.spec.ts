@@ -1,5 +1,8 @@
 import { OneHealthObservation } from '../../core/data/models/one-health-observation.model';
-import { summarizeCeeacCountry } from './ceeac-boundaries.util';
+import {
+  countryStyle,
+  summarizeCeeacCountry,
+} from './ceeac-boundaries.util';
 
 describe('CEEAC boundaries utilities', () => {
   it('summarizes only the visible observations of the requested country', () => {
@@ -40,7 +43,33 @@ describe('CEEAC boundaries utilities', () => {
       verifiedAlerts: 1,
       sectors: ['Humaine', 'Animale', 'Environnement'],
       latestObservedAt: '2026-08-03T08:00:00.000Z',
-      level: 'critical',
+      level: 'high',
     });
+  });
+
+  it('removes only the unselected country fills while a country is selected', () => {
+    const summary = {
+      observations: 2,
+      signals: 1,
+      verifiedAlerts: 0,
+      sectors: ['Humaine'],
+      latestObservedAt: '2026-08-03T08:00:00.000Z',
+      level: 'medium' as const,
+    };
+
+    expect(
+      countryStyle(summary, {
+        highlighted: true,
+        selected: false,
+        selectionActive: true,
+      }).fillOpacity,
+    ).toBe(0);
+    expect(
+      countryStyle(summary, {
+        highlighted: false,
+        selected: true,
+        selectionActive: true,
+      }).fillOpacity,
+    ).toBeGreaterThan(0);
   });
 });
