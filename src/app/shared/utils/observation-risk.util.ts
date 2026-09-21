@@ -5,7 +5,7 @@ export type MapRiskLevel = 'low' | 'medium' | 'high';
 export const MAP_RISK_COLORS: Readonly<Record<MapRiskLevel, string>> = {
   low: '#2e7d32',
   medium: '#ed6c02',
-  high: '#ba1a1a',
+  high: '#e57373',
 };
 
 export const MAP_RISK_LABELS: Readonly<Record<MapRiskLevel, string>> = {
@@ -26,4 +26,8 @@ export function toMapRiskLevel(severity: ObservationSeverity): MapRiskLevel {
     return 'medium';
   }
   return 'high';
+}
+
+export function isPulsingMapRiskLevel(level: MapRiskLevel): boolean {
+  return level === 'medium' || level === 'high';
 }

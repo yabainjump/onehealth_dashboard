@@ -59,6 +59,7 @@ import {
   refreshCeeacBoundaryLayer,
 } from '../../shared/utils/ceeac-boundaries.util';
 import {
+  isPulsingMapRiskLevel,
   MAP_RISK_COLORS,
   MAP_RISK_LABELS,
   toMapRiskLevel,
@@ -530,13 +531,13 @@ export class RegionalMapPage implements AfterViewInit, OnDestroy {
       const riskLevel = toMapRiskLevel(observation.severity);
       const riskColor = MAP_RISK_COLORS[riskLevel];
 
-      if (observation.stage !== 'observation') {
+      if (isPulsingMapRiskLevel(riskLevel)) {
         L.circleMarker([observation.latitude, observation.longitude], {
           radius: radius + 3,
-          className: `observation-pulse observation-pulse--${observation.stage} observation-risk--${riskLevel}`,
+          className: `observation-pulse observation-pulse--${riskLevel} observation-risk--${riskLevel}`,
           color: riskColor,
           fill: false,
-          opacity: 0.58,
+          opacity: riskLevel === 'medium' ? 0.46 : 0.56,
           weight: 2,
           interactive: false,
           renderer: this.emphasisRenderer,

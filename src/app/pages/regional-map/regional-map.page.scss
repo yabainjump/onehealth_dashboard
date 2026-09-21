@@ -773,7 +773,7 @@
 
   &--low { color: #2e7d32; }
   &--medium { color: #ed6c02; }
-  &--high { color: #ba1a1a; }
+  &--high { color: #e57373; }
 }
 
 .legend-stage {
@@ -996,17 +996,20 @@
   }
 
   .observation-pulse {
+    --map-pulse-opacity: 0.56;
+
     transform-box: fill-box;
     transform-origin: center;
     animation: map-marker-pulse 2.8s ease-out infinite;
 
-    &--verified-alert { animation-duration: 2.1s; }
+    &--medium { --map-pulse-opacity: 0.42; animation-duration: 3.2s; }
+    &--high { --map-pulse-opacity: 0.56; animation-duration: 2.35s; }
   }
 
 }
 
 @keyframes map-marker-pulse {
-  0% { opacity: 0.62; transform: scale(0.75); }
+  0% { opacity: var(--map-pulse-opacity); transform: scale(0.75); }
   72%, 100% { opacity: 0; transform: scale(1.9); }
 }
 
