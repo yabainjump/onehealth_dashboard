@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
+import { RouterLink } from '@angular/router';
 import {
   LucideDownload,
   LucideFileText,
@@ -10,6 +18,7 @@ import {
   LucideSparkles,
 } from '@lucide/angular';
 import { OneHealthDataService } from '../../core/data/one-health-data.service';
+import { HubApiService, HubScenarioApi } from '../../core/data/hub-api.service';
 import { HubAiApiService } from '../../core/data/hub-ai-api.service';
 import { DashboardAuthService } from '../../core/auth/dashboard-auth.service';
 import { RudolfMarkdownPipe } from '../../shared/pipes/rudolf-markdown.pipe';
@@ -30,6 +39,7 @@ type ReportScopeFilter = 'all' | ReportScope;
 @Component({
   selector: 'app-reports-page',
   imports: [
+    RouterLink,
     LucideDownload,
     LucideFileText,
     LucideFilter,
@@ -44,8 +54,9 @@ type ReportScopeFilter = 'all' | ReportScope;
   styleUrl: './reports.page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ReportsPage {
+export class ReportsPage implements OnInit {
   private readonly dataService = inject(OneHealthDataService);
+  private readonly hubApi = inject(HubApiService);
   private readonly hubAi = inject(HubAiApiService);
   protected readonly auth = inject(DashboardAuthService);
 
@@ -61,6 +72,16 @@ export class ReportsPage {
   protected readonly aiBusy = signal(false);
   protected readonly aiDraft = signal('');
   protected readonly aiError = signal('');
+  protected readonly scenario = signal<HubScenarioApi | null>(null);
+
+  async ngOnInit(): Promise<void> {
+    if (!this.auth.canManageConnectors()) return;
+    try {
+      this.scenario.set(await this.hubApi.getScenario());
+    } catch {
+      this.scenario.set(null);
+    }
+  }
 
   protected async prepareRudolfDraft(): Promise<void> {
     const report = this.selectedReport();

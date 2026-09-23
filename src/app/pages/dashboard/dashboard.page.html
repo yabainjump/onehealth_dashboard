@@ -49,6 +49,15 @@
         >
           {{ scenario()?.status || 'READY' }}
         </span>
+        @if (scenario()?.reportAvailable) {
+          <a
+            class="oh-button scenario-card__report-link"
+            [routerLink]="['/rapports/scenario', scenario()!.scenarioCode]"
+          >
+            <svg lucideFileChartColumn size="16"></svg>
+            Voir le rapport
+          </a>
+        }
         <button
           class="oh-button oh-button--primary"
           type="button"

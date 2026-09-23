@@ -17,6 +17,43 @@
   strong { color: var(--oh-primary-900); }
 }
 
+.scenario-report-entry {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  gap: 13px;
+  align-items: center;
+  margin-top: 14px;
+  padding: 14px 16px;
+  border: 1px solid #bcd5ec;
+  border-radius: 12px;
+  background: linear-gradient(115deg, #f4f9ff, #f1faf7);
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+
+  &:hover {
+    border-color: #84aed4;
+    box-shadow: 0 12px 28px rgb(16 73 130 / 10%);
+    transform: translateY(-1px);
+  }
+
+  &__icon {
+    width: 44px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+    border-radius: 11px;
+    background: var(--oh-primary-800);
+    color: #fff;
+  }
+
+  > span:nth-child(2) { min-width: 0; display: grid; gap: 2px; }
+  small { color: var(--oh-primary-700); font-size: .54rem; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; }
+  strong { overflow: hidden; color: var(--oh-primary-950); font-size: .78rem; text-overflow: ellipsis; white-space: nowrap; }
+  i { color: var(--oh-ink-500); font-size: .6rem; font-style: normal; }
+  b { color: var(--oh-primary-800); font-size: .66rem; white-space: nowrap; }
+}
+
 .report-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 16px; }
 .report-kpis article { min-height: 105px; display: grid; align-content: center; gap: 3px; padding: 16px 18px; border-top: 3px solid var(--oh-primary-700); }
 .report-kpis span { color: var(--oh-ink-600); font-size: .625rem; font-weight: 720; text-transform: uppercase; letter-spacing: .045em; }
@@ -66,6 +103,7 @@
 }
 
 @container workspace (max-width: 604px) {
+  .scenario-report-entry { grid-template-columns: 40px minmax(0, 1fr); b { grid-column: 2; } }
   .reports-hero { align-items: stretch; flex-direction: column; .oh-button { width: 100%; } }
   .report-kpis { grid-template-columns: 1fr 1fr; gap: 8px; }
   .report-kpis article { min-height: 92px; padding: 12px; }

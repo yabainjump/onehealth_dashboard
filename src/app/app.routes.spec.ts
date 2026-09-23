@@ -13,6 +13,9 @@ describe('Dashboard routes', () => {
   it('keeps the operational dashboard inside the authenticated Hub shell', () => {
     const protectedShell = routes.find((route) => route.path === '' && route.pathMatch !== 'full');
     const dashboardRoute = protectedShell?.children?.find((route) => route.path === 'dashboard');
+    const scenarioReportRoute = protectedShell?.children?.find(
+      (route) => route.path === 'rapports/scenario/:scenarioCode',
+    );
 
     expect(protectedShell?.canActivate?.length).toBeGreaterThan(0);
     expect(protectedShell?.resolve).toBeUndefined();
@@ -21,6 +24,7 @@ describe('Dashboard routes', () => {
       expect(protectedShell?.children?.find((route) => route.path === path)?.resolve).toBeUndefined();
     }
     expect(dashboardRoute?.loadComponent).toBeDefined();
+    expect(scenarioReportRoute?.loadComponent).toBeDefined();
   });
 
   it('redirects unknown public URLs to the landing page', () => {

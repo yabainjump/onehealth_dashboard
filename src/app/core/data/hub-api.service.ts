@@ -73,6 +73,42 @@ export interface HubScenarioApi {
   readonly initiatedBy: string | null;
   readonly startedAt: string | null;
   readonly completedAt: string | null;
+  readonly reportAvailable: boolean;
+  readonly reportId: string | null;
+  readonly simulated: true;
+}
+
+export interface HubScenarioReportApi {
+  readonly reportId: string;
+  readonly reportType: 'SIMULATION';
+  readonly scenarioCode: string;
+  readonly title: string;
+  readonly executiveSummary: string;
+  readonly objective: string;
+  readonly countries: readonly {
+    readonly countryCode: string;
+    readonly countryName: string;
+  }[];
+  readonly sectors: readonly ('human' | 'animal' | 'environment')[];
+  readonly sourceSystems: readonly string[];
+  readonly observationCount: number;
+  readonly signalCount: number;
+  readonly eventCount: number;
+  readonly confidenceScore: number;
+  readonly findings: readonly string[];
+  readonly recommendations: readonly string[];
+  readonly limitations: readonly string[];
+  readonly chronology: readonly {
+    readonly code: string;
+    readonly label: string;
+    readonly status: 'PENDING' | 'COMPLETED' | 'FAILED';
+    readonly completedAt: string | null;
+  }[];
+  readonly observationIds: readonly string[];
+  readonly signalCode: string;
+  readonly eventCode: string;
+  readonly generatedAt: string;
+  readonly official: false;
   readonly simulated: true;
 }
 
@@ -346,6 +382,14 @@ export class HubApiService {
 
   runScenario(): Promise<HubScenarioApi> {
     return firstValueFrom(this.http.post<HubScenarioApi>(`${this.baseUrl}/demo/scenario/run`, {}));
+  }
+
+  getScenarioReport(scenarioCode: string): Promise<HubScenarioReportApi> {
+    return firstValueFrom(
+      this.http.get<HubScenarioReportApi>(
+        `${this.baseUrl}/demo/scenarios/${encodeURIComponent(scenarioCode)}/report`,
+      ),
+    );
   }
 
   getAlertReports(

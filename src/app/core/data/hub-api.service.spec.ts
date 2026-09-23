@@ -58,4 +58,20 @@ describe('HubApiService bounded loading', () => {
     expect(rejected).toBeTrue();
     http.expectNone(() => true);
   }));
+
+  it('loads a scenario report through the protected Hub API path', fakeAsync(() => {
+    let reportId = '';
+    void service.getScenarioReport('SCN-CM/TD').then((report) => {
+      reportId = report.reportId;
+    });
+
+    const request = http.expectOne((candidate) =>
+      candidate.url.endsWith('/api/hub/demo/scenarios/SCN-CM%2FTD/report'),
+    );
+    expect(request.request.method).toBe('GET');
+    request.flush({ reportId: 'SIM-SCN-CM-TD' });
+    flushMicrotasks();
+
+    expect(reportId).toBe('SIM-SCN-CM-TD');
+  }));
 });

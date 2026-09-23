@@ -1,0 +1,94 @@
+<section class="scenario-report-page">
+  <nav class="report-breadcrumb" aria-label="Fil d’Ariane">
+    <a routerLink="/rapports"><svg lucideArrowLeft size="15"></svg> Bibliothèque des rapports</a>
+    <span>/</span><strong>Rapport de simulation</strong>
+  </nav>
+
+  @if (loading()) {
+    <div class="report-state oh-card">
+      <app-brand-loader message="Préparation du rapport…" detail="Lecture de la dernière exécution du scénario" />
+    </div>
+  } @else if (error()) {
+    <div class="report-state report-state--error oh-card" role="alert">
+      <svg lucideTriangleAlert size="28"></svg><h1>Rapport indisponible</h1><p>{{ error() }}</p>
+      <div><a class="oh-button" routerLink="/dashboard">Retour au tableau de bord</a><button class="oh-button oh-button--primary" type="button" (click)="loadReport()"><svg lucideRefreshCw size="16"></svg> Réessayer</button></div>
+    </div>
+  } @else if (report(); as item) {
+    <header class="report-hero">
+      <div class="report-hero__content">
+        <p>Rapport de fin d’exécution</p>
+        <h1>{{ item.title }}</h1>
+        <span>{{ item.objective }}</span>
+        <div class="report-hero__badges">
+          <strong><svg lucideFileText size="14"></svg> Simulation</strong>
+          <strong><svg lucideShieldCheck size="14"></svg> Non officiel</strong>
+          <small>Généré le {{ formatDate(item.generatedAt) }}</small>
+        </div>
+      </div>
+      <img src="assets/brand/one-health-icon.png" alt="Logo One Health Network" />
+    </header>
+
+    <div class="report-toolbar">
+      <span><svg lucideCheckCircle2 size="16"></svg> Exécution terminée et traçable</span>
+      <div>
+        <button class="oh-button" type="button" (click)="printReport()"><svg lucidePrinter size="16"></svg> Imprimer / PDF</button>
+        <button class="oh-button oh-button--primary" type="button" (click)="downloadReport()"><svg lucideDownload size="16"></svg> Télécharger HTML</button>
+      </div>
+    </div>
+    @if (feedback()) { <p class="report-feedback" role="status">{{ feedback() }}</p> }
+
+    <section class="report-metrics" aria-label="Indicateurs du scénario">
+      <article class="oh-card"><span>Observations</span><strong>{{ item.observationCount }}</strong><small>Données normalisées</small></article>
+      <article class="oh-card"><span>Sources</span><strong>{{ item.sourceSystems.length }}</strong><small>{{ item.sourceSystems.join(' · ') }}</small></article>
+      <article class="oh-card"><span>États concernés</span><strong>{{ item.countries.length }}</strong><small>{{ item.countries[0].countryName }} · {{ item.countries[1].countryName }}</small></article>
+      <article class="oh-card"><span>Confiance du signal</span><strong>{{ confidencePercent(item) }}%</strong><small>À vérifier par un expert</small></article>
+    </section>
+
+    <div class="report-grid">
+      <main>
+        <section class="report-section report-summary oh-card">
+          <div class="section-heading"><span><svg lucideNetwork size="18"></svg></span><div><p>Lecture décisionnelle</p><h2>Synthèse exécutive</h2></div></div>
+          <p>{{ item.executiveSummary }}</p>
+          <div class="coverage-chips">
+            @for (country of item.countries; track country.countryCode) { <span><svg lucideMapPin size="13"></svg>{{ country.countryName }}</span> }
+            @for (sector of item.sectors; track sector) { <span>{{ sectorLabels[sector] }}</span> }
+          </div>
+        </section>
+
+        <section class="report-section oh-card">
+          <div class="section-heading"><span><svg lucideCheckCircle2 size="18"></svg></span><div><p>Pipeline Hub</p><h2>Chronologie de traitement</h2></div></div>
+          <ol class="report-timeline">
+            @for (step of item.chronology; track step.code; let index = $index) {
+              <li><i>{{ index + 1 }}</i><span><strong>{{ step.label }}</strong><small>{{ step.status === 'COMPLETED' ? 'Étape terminée' : step.status }}</small></span><svg lucideCheckCircle2 size="17"></svg></li>
+            }
+          </ol>
+        </section>
+
+        <section class="report-section oh-card">
+          <div class="section-heading"><span><svg lucideDatabase size="18"></svg></span><div><p>Résultats descriptifs</p><h2>Constats de la simulation</h2></div></div>
+          <div class="finding-list">@for (finding of item.findings; track finding; let index = $index) { <article><b>{{ index + 1 }}</b><p>{{ finding }}</p></article> }</div>
+        </section>
+
+        <section class="report-section oh-card">
+          <div class="section-heading"><span><svg lucideShieldCheck size="18"></svg></span><div><p>Suite proposée</p><h2>Actions de vérification</h2></div></div>
+          <ol class="recommendation-list">@for (recommendation of item.recommendations; track recommendation) { <li>{{ recommendation }}</li> }</ol>
+        </section>
+      </main>
+
+      <aside>
+        <section class="trace-card oh-card">
+          <p>Traçabilité technique</p><h2>Chaîne de preuve</h2>
+          <dl><div><dt>Rapport</dt><dd>{{ item.reportId }}</dd></div><div><dt>Scénario</dt><dd>{{ item.scenarioCode }}</dd></div><div><dt>Événement</dt><dd>{{ item.eventCode }}</dd></div><div><dt>Signal</dt><dd>{{ item.signalCode }}</dd></div></dl>
+          <h3>Observations sources</h3><ul>@for (id of item.observationIds; track id) { <li>{{ id }}</li> }</ul>
+        </section>
+
+        <section class="governance-card oh-card">
+          <svg lucideTriangleAlert size="22"></svg><h2>Limites et gouvernance</h2>
+          <strong>Validation humaine obligatoire</strong>
+          <ul>@for (limitation of item.limitations; track limitation) { <li>{{ limitation }}</li> }</ul>
+          <p>Ce document ne peut pas être publié comme alerte sanitaire officielle.</p>
+        </section>
+      </aside>
+    </div>
+  }
+</section>

@@ -44,6 +44,11 @@
     flex-wrap: wrap;
     gap: 10px;
   }
+  &__report-link {
+    border-color: #b9c9ea;
+    background: #fff;
+    color: var(--oh-primary-800);
+  }
 }
 
 .demo-notice {

@@ -19,6 +19,21 @@
     </span>
   </div>
 
+  @if (scenario()?.reportAvailable) {
+    <a
+      class="scenario-report-entry"
+      [routerLink]="['/rapports/scenario', scenario()!.scenarioCode]"
+    >
+      <span class="scenario-report-entry__icon"><svg lucideFileText size="20"></svg></span>
+      <span>
+        <small>Dernière simulation terminée</small>
+        <strong>{{ scenario()!.title }}</strong>
+        <i>Consulter la synthèse, la chronologie et la chaîne de preuve</i>
+      </span>
+      <b>Voir le rapport</b>
+    </a>
+  }
+
   <div class="report-kpis">
     <article class="oh-card"><span>Documents disponibles</span><strong>{{ summary().total }}</strong><small>3 formats institutionnels</small></article>
     <article class="oh-card"><span>Pays couverts</span><strong>{{ summary().countries }}</strong><small>États membres documentés</small></article>

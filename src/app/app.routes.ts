@@ -72,6 +72,14 @@ export const routes: Routes = [
           import('./pages/analyses/analyses.page').then((module) => module.AnalysesPage),
       },
       {
+        path: 'rapports/scenario/:scenarioCode',
+        title: 'Rapport de simulation | One Health Network Dashboard',
+        loadComponent: () =>
+          import('./pages/reports/scenario-report.page').then(
+            (module) => module.ScenarioReportPage,
+          ),
+      },
+      {
         path: 'rapports',
         resolve: { hubData: hubDataResolver },
         title: 'Rapports | One Health Network Dashboard',
