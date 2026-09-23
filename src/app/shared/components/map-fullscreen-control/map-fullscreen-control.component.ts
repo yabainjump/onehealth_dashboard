@@ -153,6 +153,13 @@ export class MapFullscreenControlComponent implements OnDestroy {
       return;
     }
 
+    // L'API native refuse les éléments détachés du document. Le mode CSS reste
+    // utilisable dans ce cas (prévisualisation, WebView ou montage différé).
+    if (!target.isConnected) {
+      this.enableFallback(target);
+      return;
+    }
+
     const legacyTarget = target as LegacyFullscreenElement;
     try {
       if (target.requestFullscreen) {

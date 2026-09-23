@@ -1,12 +1,15 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
   OnInit,
   computed,
+  effect,
   inject,
   signal,
+  viewChild,
 } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import {
   LucideArrowRight,
   LucideCheckCircle2,
@@ -23,6 +26,7 @@ import {
   LucideTrees,
   LucideTriangleAlert,
 } from '@lucide/angular';
+import { DOCUMENT } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 
 import { OneHealthDataService } from '../../core/data/one-health-data.service';
@@ -31,10 +35,12 @@ import { HealthSector, MapPeriod } from '../../core/data/models/one-health-obser
 import { RegionalMapPreviewComponent } from '../../shared/components/regional-map-preview/regional-map-preview.component';
 import { DashboardAuthService } from '../../core/auth/dashboard-auth.service';
 import {
+  CeeacCountryCode,
   HubApiService,
   HubDecisionApi,
   HubEventApi,
   HubScenarioApi,
+  RunHubScenarioInput,
 } from '../../core/data/hub-api.service';
 
 interface PriorityAlert {
@@ -45,6 +51,35 @@ interface PriorityAlert {
   readonly sector: 'Humain' | 'Animal' | 'Environnement';
   readonly age: string;
   readonly tone: 'critical' | 'high' | 'observation';
+}
+
+type ScenarioOverlayState = 'hidden' | 'configure' | 'running' | 'success' | 'error';
+
+interface ScenarioCountryOption {
+  readonly code: CeeacCountryCode;
+  readonly name: string;
+}
+
+const SCENARIO_COUNTRIES: readonly ScenarioCountryOption[] = [
+  { code: 'AO', name: 'Angola' },
+  { code: 'BI', name: 'Burundi' },
+  { code: 'CM', name: 'Cameroun' },
+  { code: 'CF', name: 'République centrafricaine' },
+  { code: 'TD', name: 'Tchad' },
+  { code: 'CG', name: 'Congo' },
+  { code: 'CD', name: 'Rép. dém. du Congo' },
+  { code: 'GQ', name: 'Guinée équatoriale' },
+  { code: 'GA', name: 'Gabon' },
+  { code: 'RW', name: 'Rwanda' },
+  { code: 'ST', name: 'São Tomé-et-Príncipe' },
+];
+
+function localIsoDate(offsetDays = 0): string {
+  const value = new Date();
+  value.setDate(value.getDate() + offsetDays);
+  const month = String(value.getMonth() + 1).padStart(2, '0');
+  const day = String(value.getDate()).padStart(2, '0');
+  return `${value.getFullYear()}-${month}-${day}`;
 }
 
 @Component({
@@ -74,6 +109,8 @@ interface PriorityAlert {
 export class DashboardPage implements OnInit {
   private readonly dataService = inject(OneHealthDataService);
   private readonly hubApi = inject(HubApiService);
+  private readonly router = inject(Router);
+  private readonly document = inject(DOCUMENT);
   protected readonly auth = inject(DashboardAuthService);
 
   protected readonly selectedPeriod = signal<MapPeriod>('year');
@@ -102,6 +139,60 @@ export class DashboardPage implements OnInit {
   protected readonly scenario = signal<HubScenarioApi | null>(null);
   protected readonly scenarioBusy = signal(false);
   protected readonly scenarioMessage = signal<string | null>(null);
+  protected readonly scenarioOverlayState = signal<ScenarioOverlayState>('hidden');
+  protected readonly scenarioCountries = SCENARIO_COUNTRIES;
+  protected readonly scenarioMaximumDate = localIsoDate();
+  protected readonly scenarioDraft = signal<RunHubScenarioInput>({
+    sourceCountryCode: 'CM',
+    comparisonCountryCode: 'TD',
+    dateFrom: localIsoDate(-29),
+    dateTo: localIsoDate(),
+  });
+  protected readonly scenarioConfigurationError = computed(() => {
+    const draft = this.scenarioDraft();
+    if (draft.sourceCountryCode === draft.comparisonCountryCode) {
+      return 'Choisissez deux États membres différents.';
+    }
+    const from = this.strictDate(draft.dateFrom);
+    const to = this.strictDate(draft.dateTo);
+    const today = this.strictDate(this.scenarioMaximumDate);
+    if (!from || !to || !today) return 'Renseignez une période valide.';
+    if (from.getTime() > to.getTime()) {
+      return 'La date de début doit précéder la date de fin.';
+    }
+    if (to.getTime() > today.getTime()) {
+      return 'La période ne peut pas se terminer dans le futur.';
+    }
+    const days = Math.floor((to.getTime() - from.getTime()) / 86_400_000) + 1;
+    return days > 90 ? 'La période est limitée à 90 jours inclus.' : null;
+  });
+  protected readonly scenarioSourceCountryName = computed(() =>
+    this.countryName(this.scenarioDraft().sourceCountryCode),
+  );
+  protected readonly scenarioComparisonCountryName = computed(() =>
+    this.countryName(this.scenarioDraft().comparisonCountryCode),
+  );
+  private readonly scenarioDialog = viewChild<ElementRef<HTMLElement>>('scenarioDialog');
+  private readonly scenarioPrimaryAction =
+    viewChild<ElementRef<HTMLButtonElement>>('scenarioPrimaryAction');
+  private readonly scenarioOverlayScrollLock = effect((onCleanup) => {
+    if (this.scenarioOverlayState() === 'hidden') return;
+    const previousOverflow = this.document.body.style.overflow;
+    this.document.body.style.overflow = 'hidden';
+    onCleanup(() => {
+      this.document.body.style.overflow = previousOverflow;
+    });
+  });
+  private readonly scenarioOverlayFocus = effect(() => {
+    const state = this.scenarioOverlayState();
+    if (state === 'hidden') return;
+    const target =
+      state === 'running' || state === 'configure'
+        ? this.scenarioDialog()
+        : this.scenarioPrimaryAction();
+    if (!target) return;
+    queueMicrotask(() => target.nativeElement.focus());
+  });
 
   protected readonly priorityAlerts = computed<readonly PriorityAlert[]>(() => {
     this.dataService.revision();
@@ -131,22 +222,75 @@ export class DashboardPage implements OnInit {
     }
   }
 
+  protected openScenarioConfiguration(): void {
+    if (this.scenarioBusy()) return;
+    this.scenarioMessage.set(null);
+    this.scenarioOverlayState.set('configure');
+  }
+
+  protected updateScenarioCountry(
+    field: 'sourceCountryCode' | 'comparisonCountryCode',
+    event: Event,
+  ): void {
+    const value = (event.target as HTMLSelectElement).value as CeeacCountryCode;
+    if (!SCENARIO_COUNTRIES.some((country) => country.code === value)) return;
+    this.scenarioDraft.update((draft) => ({ ...draft, [field]: value }));
+  }
+
+  protected updateScenarioDate(field: 'dateFrom' | 'dateTo', event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
+    this.scenarioDraft.update((draft) => ({ ...draft, [field]: value }));
+  }
+
   protected async runScenario(): Promise<void> {
     if (this.scenarioBusy()) return;
+    const configurationError = this.scenarioConfigurationError();
+    if (configurationError) {
+      this.scenarioMessage.set(configurationError);
+      return;
+    }
     this.scenarioBusy.set(true);
     this.scenarioMessage.set(null);
+    this.scenarioOverlayState.set('running');
     try {
-      this.scenario.set(await this.hubApi.runScenario());
-      await this.dataService.refreshFromHub();
-      await Promise.all([this.loadDecisions(), this.loadEvents()]);
+      this.scenario.set(await this.hubApi.runScenario(this.scenarioDraft()));
+      await Promise.allSettled([
+        this.dataService.refreshFromHub(),
+        this.loadDecisions(),
+        this.loadEvents(),
+      ]);
       this.scenarioMessage.set(
-        `Scénario terminé : quatre observations, un événement consolidé${this.scenario()?.eventCode ? ` (${this.scenario()!.eventCode})` : ''} et un signal décisionnel sont disponibles.`,
+        `Scénario terminé entre ${this.scenarioSourceCountryName()} et ${this.scenarioComparisonCountryName()} : quatre observations, un événement consolidé${this.scenario()?.eventCode ? ` (${this.scenario()!.eventCode})` : ''} et un signal décisionnel sont disponibles.`,
       );
+      this.scenarioOverlayState.set('success');
     } catch (error: unknown) {
       this.scenarioMessage.set(this.scenarioErrorMessage(error));
+      this.scenarioOverlayState.set('error');
     } finally {
       this.scenarioBusy.set(false);
     }
+  }
+
+  protected dismissScenarioOverlay(): void {
+    if (this.scenarioOverlayState() === 'running') return;
+    this.scenarioOverlayState.set('hidden');
+  }
+
+  protected retryScenario(): void {
+    if (this.scenarioBusy()) return;
+    void this.runScenario();
+  }
+
+  protected scenarioPeriodLabel(): string {
+    const draft = this.scenarioDraft();
+    return `${this.formatScenarioDate(draft.dateFrom)} – ${this.formatScenarioDate(draft.dateTo)}`;
+  }
+
+  protected openScenarioReport(): void {
+    const scenarioCode = this.scenario()?.scenarioCode;
+    if (!scenarioCode || !this.scenario()?.reportAvailable) return;
+    this.scenarioOverlayState.set('hidden');
+    void this.router.navigate(['/rapports/scenario', scenarioCode]);
   }
 
   protected exportData(): void {
@@ -251,6 +395,26 @@ export class DashboardPage implements OnInit {
       return `L'exécution du scénario a échoué côté Hub (HTTP ${error.status || 0}).`;
     }
     return "L'exécution du scénario a échoué. Vérifiez la connexion au Hub.";
+  }
+
+  private strictDate(value: string): Date | null {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+    const parsed = new Date(`${value}T00:00:00.000Z`);
+    if (Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== value) {
+      return null;
+    }
+    return parsed;
+  }
+
+  private countryName(code: CeeacCountryCode): string {
+    return SCENARIO_COUNTRIES.find((country) => country.code === code)?.name ?? code;
+  }
+
+  private formatScenarioDate(value: string): string {
+    const parsed = this.strictDate(value);
+    return parsed
+      ? new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium', timeZone: 'UTC' }).format(parsed)
+      : value;
   }
 
   private sectorLabel(sector: HealthSector): PriorityAlert['sector'] {

@@ -26,6 +26,14 @@ export function renderScenarioReportHtml(report: HubScenarioReportApi): string {
   };
   const traceRows = [
     ['Scénario', report.scenarioCode],
+    [
+      'Période simulée',
+      `${report.configuration.dateFrom} → ${report.configuration.dateTo}`,
+    ],
+    [
+      'Pays',
+      `${report.configuration.sourceCountryCode} → ${report.configuration.comparisonCountryCode}`,
+    ],
     ['Événement', report.eventCode],
     ['Signal', report.signalCode],
     ['Observations', report.observationIds.join(' · ')],

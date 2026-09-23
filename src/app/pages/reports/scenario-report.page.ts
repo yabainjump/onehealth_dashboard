@@ -96,6 +96,13 @@ export class ScenarioReportPage implements OnInit {
     }).format(new Date(value));
   }
 
+  protected formatPeriodDate(value: string): string {
+    return new Intl.DateTimeFormat('fr-FR', {
+      dateStyle: 'long',
+      timeZone: 'UTC',
+    }).format(new Date(`${value}T00:00:00.000Z`));
+  }
+
   protected printReport(): void {
     window.print();
   }

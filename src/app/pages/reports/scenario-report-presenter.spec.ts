@@ -11,6 +11,15 @@ const report: HubScenarioReportApi = {
   title: 'Rapport <script>alert(1)</script>',
   executiveSummary: 'Synthèse intersectorielle.',
   objective: 'Démontrer le Hub.',
+  configuration: {
+    sourceCountryCode: 'CM',
+    comparisonCountryCode: 'TD',
+    dateFrom: '2026-09-01',
+    dateTo: '2026-09-23',
+    sectors: ['human', 'animal', 'environment'],
+    sourceSystems: ['DHIS2', 'ARIS 3', 'CAPC-AC'],
+    analysisType: 'CROSS_SECTOR_CONVERGENCE',
+  },
   countries: [
     { countryCode: 'CM', countryName: 'Cameroun' },
     { countryCode: 'TD', countryName: 'Tchad' },
@@ -46,6 +55,7 @@ describe('scenario report presenter', () => {
 
     expect(html).toContain('Simulation · Non officiel');
     expect(html).toContain('Validation humaine obligatoire');
+    expect(html).toContain('2026-09-01 → 2026-09-23');
     expect(html).toContain('&lt;script&gt;alert(1)&lt;/script&gt;');
     expect(html).not.toContain('<script>alert(1)</script>');
   });

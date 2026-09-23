@@ -22,7 +22,11 @@
         <div class="report-hero__badges">
           <strong><svg lucideFileText size="14"></svg> Simulation</strong>
           <strong><svg lucideShieldCheck size="14"></svg> Non officiel</strong>
-          <small>Généré le {{ formatDate(item.generatedAt) }}</small>
+          <small>
+            Période du {{ formatPeriodDate(item.configuration.dateFrom) }} au
+            {{ formatPeriodDate(item.configuration.dateTo) }} · Généré le
+            {{ formatDate(item.generatedAt) }}
+          </small>
         </div>
       </div>
       <img src="assets/brand/one-health-icon.png" alt="Logo One Health Network" />
@@ -78,7 +82,7 @@
       <aside>
         <section class="trace-card oh-card">
           <p>Traçabilité technique</p><h2>Chaîne de preuve</h2>
-          <dl><div><dt>Rapport</dt><dd>{{ item.reportId }}</dd></div><div><dt>Scénario</dt><dd>{{ item.scenarioCode }}</dd></div><div><dt>Événement</dt><dd>{{ item.eventCode }}</dd></div><div><dt>Signal</dt><dd>{{ item.signalCode }}</dd></div></dl>
+          <dl><div><dt>Rapport</dt><dd>{{ item.reportId }}</dd></div><div><dt>Scénario</dt><dd>{{ item.scenarioCode }}</dd></div><div><dt>Période</dt><dd>{{ item.configuration.dateFrom }} → {{ item.configuration.dateTo }}</dd></div><div><dt>Événement</dt><dd>{{ item.eventCode }}</dd></div><div><dt>Signal</dt><dd>{{ item.signalCode }}</dd></div></dl>
           <h3>Observations sources</h3><ul>@for (id of item.observationIds; track id) { <li>{{ id }}</li> }</ul>
         </section>
 

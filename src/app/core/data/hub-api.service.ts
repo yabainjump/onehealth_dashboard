@@ -56,11 +56,42 @@ export interface HubDecisionApi {
   readonly simulated: boolean;
 }
 
+export type CeeacCountryCode =
+  | 'AO'
+  | 'BI'
+  | 'CM'
+  | 'CF'
+  | 'TD'
+  | 'CG'
+  | 'CD'
+  | 'GQ'
+  | 'GA'
+  | 'RW'
+  | 'ST';
+
+export interface HubScenarioConfigurationApi {
+  readonly sourceCountryCode: CeeacCountryCode;
+  readonly comparisonCountryCode: CeeacCountryCode;
+  readonly dateFrom: string;
+  readonly dateTo: string;
+  readonly sectors: readonly ('human' | 'animal' | 'environment')[];
+  readonly sourceSystems: readonly ('DHIS2' | 'ARIS 3' | 'CAPC-AC')[];
+  readonly analysisType: 'CROSS_SECTOR_CONVERGENCE';
+}
+
+export interface RunHubScenarioInput {
+  readonly sourceCountryCode: CeeacCountryCode;
+  readonly comparisonCountryCode: CeeacCountryCode;
+  readonly dateFrom: string;
+  readonly dateTo: string;
+}
+
 export interface HubScenarioApi {
   readonly scenarioCode: string;
   readonly title: string;
   readonly description: string;
   readonly status: 'READY' | 'RUNNING' | 'COMPLETED' | 'FAILED';
+  readonly configuration: HubScenarioConfigurationApi;
   readonly steps: readonly {
     readonly code: string;
     readonly label: string;
@@ -85,6 +116,7 @@ export interface HubScenarioReportApi {
   readonly title: string;
   readonly executiveSummary: string;
   readonly objective: string;
+  readonly configuration: HubScenarioConfigurationApi;
   readonly countries: readonly {
     readonly countryCode: string;
     readonly countryName: string;
@@ -380,8 +412,12 @@ export class HubApiService {
     return firstValueFrom(this.http.get<HubScenarioApi>(`${this.baseUrl}/demo/scenario`));
   }
 
-  runScenario(): Promise<HubScenarioApi> {
-    return firstValueFrom(this.http.post<HubScenarioApi>(`${this.baseUrl}/demo/scenario/run`, {}));
+  runScenario(input: RunHubScenarioInput): Promise<HubScenarioApi> {
+    return firstValueFrom(
+      this.http
+        .post<HubScenarioApi>(`${this.baseUrl}/demo/scenario/run`, input)
+        .pipe(timeout(120_000)),
+    );
   }
 
   getScenarioReport(scenarioCode: string): Promise<HubScenarioReportApi> {

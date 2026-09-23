@@ -74,4 +74,22 @@ describe('HubApiService bounded loading', () => {
 
     expect(reportId).toBe('SIM-SCN-CM-TD');
   }));
+
+  it('sends only the bounded scenario configuration to the Hub', fakeAsync(() => {
+    const input = {
+      sourceCountryCode: 'GA',
+      comparisonCountryCode: 'CG',
+      dateFrom: '2026-09-01',
+      dateTo: '2026-09-20',
+    } as const;
+    void service.runScenario(input);
+
+    const request = http.expectOne((candidate) =>
+      candidate.url.endsWith('/api/hub/demo/scenario/run'),
+    );
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual(input);
+    request.flush({ scenarioCode: 'SCN-GA-CG-20260901-20260920' });
+    flushMicrotasks();
+  }));
 });
