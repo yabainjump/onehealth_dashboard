@@ -16,7 +16,7 @@ describe('BrandLoaderComponent', () => {
     const element = fixture.nativeElement as HTMLElement;
 
     expect(element.querySelector('img')?.getAttribute('src')).toBe(
-      'assets/brand/one-health-icon.png',
+      'assets/brand/one-health-network-web.png',
     );
     expect(element.querySelector('[role="status"]')?.getAttribute('aria-busy')).toBe('true');
   });

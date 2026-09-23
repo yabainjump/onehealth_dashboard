@@ -17,7 +17,9 @@ describe('ConvergenceMotionComponent', () => {
 
     const host = fixture.nativeElement as HTMLElement;
     expect(host.querySelector('svg')).not.toBeNull();
-    expect(host.querySelector('img')?.getAttribute('src')).toBe('assets/brand/one-health-icon.png');
+    expect(host.querySelector('img')?.getAttribute('src')).toBe(
+      'assets/brand/one-health-network.png',
+    );
   });
 
   it('applies the dark treatment used by the login page', () => {

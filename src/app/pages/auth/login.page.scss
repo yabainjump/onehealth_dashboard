@@ -56,7 +56,7 @@
 
 .auth-panel { display: grid; place-items: center; padding: 40px; }
 .auth-card { width: min(100%, 430px); }
-.auth-brand { display: flex; align-items: center; gap: 12px; margin-bottom: 56px; img { border-radius: 50%; } span { display: grid; } strong { color: var(--oh-primary-900); font-size: 1rem; } small { margin-top: 2px; color: var(--oh-ink-600); font-size: .7rem; } }
+.auth-brand { display: flex; align-items: center; gap: 12px; margin-bottom: 56px; img { border-radius: 50%; object-fit: contain; } span { display: grid; } strong { color: var(--oh-primary-900); font-size: 1rem; } small { margin-top: 2px; color: var(--oh-ink-600); font-size: .7rem; } }
 .auth-card__heading { margin-bottom: 28px; > span { color: #087d61; font-size: .7rem; font-weight: 750; letter-spacing: .12em; text-transform: uppercase; } h2 { margin: 9px 0 7px; color: var(--oh-ink-950); font-size: 1.85rem; letter-spacing: -.035em; } p { margin: 0; color: var(--oh-ink-600); font-size: .86rem; line-height: 1.55; } }
 form { display: grid; gap: 20px; }
 .field { display: grid; gap: 7px; > span:first-child { color: var(--oh-ink-800); font-size: .75rem; font-weight: 650; } small { color: var(--oh-danger); font-size: .68rem; } }

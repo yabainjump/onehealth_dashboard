@@ -9,7 +9,7 @@ import { DashboardAuthService } from '../../core/auth/dashboard-auth.service';
   template: `
     <main class="denied-page">
       <section>
-        <img src="assets/brand/one-health-icon.png" alt="Logo One Health Network" width="58" height="58">
+        <img src="assets/brand/one-health-network-web.png" alt="Logo One Health Network" width="58" height="58">
         <span class="icon"><svg lucideLockKeyhole size="25"></svg></span>
         <h1>Accès au Hub non attribué</h1>
         <p>
@@ -30,7 +30,7 @@ import { DashboardAuthService } from '../../core/auth/dashboard-auth.service';
     :host { display: block; min-height: 100vh; }
     .denied-page { min-height: 100vh; display: grid; place-items: center; padding: 24px; background: #f5f8fc; }
     section { width: min(100%, 540px); padding: 42px; border: 1px solid var(--oh-border); border-radius: 18px; background: #fff; box-shadow: 0 20px 60px rgb(20 45 80 / 10%); text-align: center; }
-    img { border-radius: 50%; }
+    img { border-radius: 50%; object-fit: contain; }
     .icon { width: 52px; height: 52px; display: grid; place-items: center; margin: 28px auto 18px; border-radius: 14px; background: #eef4fc; color: var(--oh-primary-900); }
     h1 { margin: 0 0 12px; color: var(--oh-ink-950); font-size: 1.7rem; letter-spacing: -.03em; }
     p { margin: 0; color: var(--oh-ink-600); font-size: .88rem; line-height: 1.65; }
