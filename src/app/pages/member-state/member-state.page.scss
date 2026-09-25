@@ -3,7 +3,7 @@
 .state-hero { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 30px; padding: 28px; border: 1px solid #d7e3f1; border-radius: 18px; background: radial-gradient(circle at 88% 20%, rgb(54 154 126 / 15%), transparent 28%), linear-gradient(135deg, #f8fbff, #f5fbf8); box-shadow: var(--oh-shadow-sm); }
 .state-hero__copy { max-width: 680px; }
 .eyebrow { display: flex; align-items: center; gap: 7px; margin: 0 0 10px; color: var(--oh-primary-700); font-size: .68rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
-.state-hero h1 { margin: 0; font-size: clamp(1.8rem, 3vw, 2.4rem); line-height: 1.12; letter-spacing: -.045em; }
+.state-hero h1 { margin: 0; font-size: var(--oh-title-page); font-weight: 650; line-height: 1.12; letter-spacing: -.045em; }
 .state-hero__copy > p:last-child { max-width: 630px; margin: 12px 0 0; color: var(--oh-ink-600); font-size: .88rem; line-height: 1.6; }
 .country-picker { min-width: 260px; display: grid; gap: 7px; }
 .country-picker span { color: var(--oh-ink-600); font-size: .68rem; font-weight: 750; }

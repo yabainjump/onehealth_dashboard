@@ -39,6 +39,7 @@
               }
             ],
             "styles": [
+              "node_modules/@fontsource-variable/inter/wght.css",
               "node_modules/leaflet/dist/leaflet.css",
               "src/styles.scss"
             ]
@@ -107,6 +108,7 @@
               "zone.js/testing"
             ],
             "tsConfig": "tsconfig.spec.json",
+            "karmaConfig": "karma.conf.cjs",
             "inlineStyleLanguage": "scss",
             "assets": [
               {
@@ -115,6 +117,7 @@
               }
             ],
             "styles": [
+              "node_modules/@fontsource-variable/inter/wght.css",
               "node_modules/leaflet/dist/leaflet.css",
               "src/styles.scss"
             ]

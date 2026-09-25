@@ -10,6 +10,11 @@ NPM_BIN="${NPM_BIN:-$NODE_BIN_DIR/npm}"
 NODE_BIN="${NODE_BIN:-$NODE_BIN_DIR/node}"
 DASHBOARD_API_BASE_URL="${DASHBOARD_API_BASE_URL:-https://backend.onehealthnetwork.yaba-in.com/api}"
 ALLOW_DEMO_FALLBACK="${ALLOW_DEMO_FALLBACK:-true}"
+MAP_TILE_PROVIDER="${MAP_TILE_PROVIDER:-openstreetmap}"
+MAP_TILE_URL_TEMPLATE="${MAP_TILE_URL_TEMPLATE:-}"
+MAP_TILE_ATTRIBUTION="${MAP_TILE_ATTRIBUTION:-}"
+MAP_TILE_ATTRIBUTION_URL="${MAP_TILE_ATTRIBUTION_URL:-}"
+MAP_TILE_MAX_ZOOM="${MAP_TILE_MAX_ZOOM:-19}"
 PUBLIC_WEB_URL="${PUBLIC_WEB_URL:-https://onehealthdashboard.yaba-in.com}"
 CLEAN_WEB_DIR="${CLEAN_WEB_DIR:-true}"
 VERIFY_PUBLIC_URL="${VERIFY_PUBLIC_URL:-true}"
@@ -49,6 +54,56 @@ case "$ALLOW_DEMO_FALLBACK" in
     exit 1
     ;;
 esac
+
+case "$MAP_TILE_PROVIDER" in
+  openstreetmap|custom|none) ;;
+  *)
+    echo "Error: MAP_TILE_PROVIDER must be openstreetmap, custom or none."
+    exit 1
+    ;;
+esac
+
+if ! [[ "$MAP_TILE_MAX_ZOOM" =~ ^[0-9]+$ ]] || \
+   (( MAP_TILE_MAX_ZOOM < 3 || MAP_TILE_MAX_ZOOM > 22 )); then
+  echo "Error: MAP_TILE_MAX_ZOOM must be an integer between 3 and 22."
+  exit 1
+fi
+
+if [ "$MAP_TILE_PROVIDER" = "custom" ]; then
+  case "$MAP_TILE_URL_TEMPLATE" in
+    https://*'{z}'*'{x}'*'{y}'*) ;;
+    *)
+      echo "Error: a custom MAP_TILE_URL_TEMPLATE must use HTTPS and contain {z}, {x} and {y}."
+      exit 1
+      ;;
+  esac
+  if [ -z "$MAP_TILE_ATTRIBUTION" ]; then
+    echo "Error: MAP_TILE_ATTRIBUTION is required for a custom map provider."
+    exit 1
+  fi
+fi
+
+if [ -n "$MAP_TILE_ATTRIBUTION_URL" ]; then
+  case "$MAP_TILE_ATTRIBUTION_URL" in
+    https://*) ;;
+    *)
+      echo "Error: MAP_TILE_ATTRIBUTION_URL must use HTTPS."
+      exit 1
+      ;;
+  esac
+fi
+
+for MAP_TILE_VALUE in \
+  "$MAP_TILE_URL_TEMPLATE" \
+  "$MAP_TILE_ATTRIBUTION" \
+  "$MAP_TILE_ATTRIBUTION_URL"; do
+  if [[ "$MAP_TILE_VALUE" == *"'"* ]] || [[ "$MAP_TILE_VALUE" == *'\'* ]] || \
+     [[ "$MAP_TILE_VALUE" == *$'\n'* ]] || [[ "$MAP_TILE_VALUE" == *$'\r'* ]]; then
+    echo "Error: map tile configuration contains unsupported characters."
+    exit 1
+  fi
+done
+unset MAP_TILE_VALUE
 
 case "$CLEAN_WEB_DIR" in
   true|false) ;;
@@ -124,6 +179,13 @@ printf '%s\n' \
   '  production: true,' \
   "  apiBaseUrl: '$DASHBOARD_API_BASE_URL'," \
   "  allowDemoFallback: $ALLOW_DEMO_FALLBACK," \
+  '  mapTiles: {' \
+  "    provider: '$MAP_TILE_PROVIDER' as const," \
+  "    urlTemplate: '$MAP_TILE_URL_TEMPLATE'," \
+  "    attribution: '$MAP_TILE_ATTRIBUTION'," \
+  "    attributionUrl: '$MAP_TILE_ATTRIBUTION_URL'," \
+  "    maxZoom: $MAP_TILE_MAX_ZOOM," \
+  '  },' \
   '};' > src/environments/environment.ts
 
 "$NODE_BIN" --version

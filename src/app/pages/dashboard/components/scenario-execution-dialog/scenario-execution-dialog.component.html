@@ -1,0 +1,181 @@
+<div
+  class="scenario-execution-overlay"
+  role="dialog"
+  aria-modal="true"
+  [attr.aria-label]="'scenario.dialogLabel' | t"
+  [attr.aria-busy]="state() === 'running'"
+  (keydown.escape)="requestClose()"
+>
+  <article #dialog class="scenario-execution-modal" tabindex="-1">
+    @if (state() === 'configure') {
+      <div class="scenario-config-icon" aria-hidden="true">
+        <svg lucideSparkles size="23"></svg>
+      </div>
+      <p class="scenario-execution-modal__eyebrow">{{ 'scenario.configure.eyebrow' | t }}</p>
+      <h2>{{ 'scenario.configure.title' | t }}</h2>
+      <p class="scenario-execution-modal__description" id="scenario-config-help">
+        {{ 'scenario.configure.description' | t }}
+      </p>
+      <form
+        class="scenario-config-form"
+        aria-describedby="scenario-config-help"
+        (submit)="submit(); $event.preventDefault()"
+      >
+        <div class="scenario-config-grid">
+          <label>
+            <span>{{ 'scenario.sourceCountry' | t }}</span>
+            <select
+              [value]="draft().sourceCountryCode"
+              (change)="changeCountry('sourceCountryCode', $event)"
+            >
+              @for (country of countries(); track country.code) {
+                <option [value]="country.code">{{ country.name }}</option>
+              }
+            </select>
+            <small>{{ 'scenario.sourceCountry.help' | t }}</small>
+          </label>
+          <label>
+            <span>{{ 'scenario.comparisonCountry' | t }}</span>
+            <select
+              [value]="draft().comparisonCountryCode"
+              (change)="changeCountry('comparisonCountryCode', $event)"
+            >
+              @for (country of countries(); track country.code) {
+                <option [value]="country.code">{{ country.name }}</option>
+              }
+            </select>
+            <small>{{ 'scenario.comparisonCountry.help' | t }}</small>
+          </label>
+          <label
+            ><span>{{ 'scenario.dateFrom' | t }}</span
+            ><input
+              type="date"
+              [max]="maximumDate()"
+              [value]="draft().dateFrom"
+              (change)="changeDate('dateFrom', $event)"
+          /></label>
+          <label
+            ><span>{{ 'scenario.dateTo' | t }}</span
+            ><input
+              type="date"
+              [max]="maximumDate()"
+              [value]="draft().dateTo"
+              (change)="changeDate('dateTo', $event)"
+          /></label>
+        </div>
+        <div class="scenario-config-scope">
+          <div>
+            <span>{{ 'scenario.analysis' | t }}</span
+            ><strong>{{ 'scenario.analysis.value' | t }}</strong
+            ><small>{{ periodLabel() }}</small>
+          </div>
+          <ul [attr.aria-label]="'scenario.flows' | t">
+            <li><i class="scenario-config-dot scenario-config-dot--human"></i>DHIS2</li>
+            <li><i class="scenario-config-dot scenario-config-dot--animal"></i>ARIS 3</li>
+            <li><i class="scenario-config-dot scenario-config-dot--environment"></i>CAPC-AC</li>
+          </ul>
+        </div>
+        @if (configurationError()) {
+          <p class="scenario-config-error" role="alert">
+            <svg lucideTriangleAlert size="15"></svg>{{ configurationError() }}
+          </p>
+        }
+        <div class="scenario-execution-modal__actions">
+          <button class="oh-button" type="button" (click)="requestClose()">
+            {{ 'scenario.cancel' | t }}
+          </button>
+          <button
+            class="oh-button oh-button--primary"
+            type="submit"
+            [disabled]="busy() || !!configurationError()"
+          >
+            <svg lucideSparkles size="16"></svg>{{ 'scenario.start' | t }}
+          </button>
+        </div>
+      </form>
+    } @else if (state() === 'running') {
+      <div class="scenario-loader" aria-hidden="true">
+        <span class="scenario-loader__orbit scenario-loader__orbit--outer"></span
+        ><span class="scenario-loader__orbit scenario-loader__orbit--inner"></span
+        ><img src="assets/brand/one-health-icon.png" alt="" />
+      </div>
+      <p class="scenario-execution-modal__eyebrow">{{ 'scenario.running.eyebrow' | t }}</p>
+      <h2>{{ 'scenario.running.title' | t }}</h2>
+      <p class="scenario-execution-modal__description">{{ 'scenario.running.description' | t }}</p>
+      <div class="scenario-source-flow" [attr.aria-label]="'scenario.running.sources' | t">
+        <span>CAPC-AC</span><i></i><span>ARIS 3</span><i></i><span>DHIS2</span>
+      </div>
+      <div class="scenario-progress" role="status" aria-live="polite">
+        <i></i><span>{{ 'scenario.running.status' | t }}</span>
+      </div>
+      <small class="scenario-execution-modal__hint">{{ 'scenario.running.hint' | t }}</small>
+    } @else if (state() === 'success') {
+      <div class="scenario-result-icon scenario-result-icon--success" aria-hidden="true">
+        <svg lucideCheckCircle2 size="38"></svg>
+      </div>
+      <p class="scenario-execution-modal__eyebrow">{{ 'scenario.success.eyebrow' | t }}</p>
+      <h2>{{ 'scenario.success.title' | t }}</h2>
+      <p class="scenario-execution-modal__description">
+        {{
+          'scenario.success.description'
+            | t
+              : {
+                  source: sourceCountryName(),
+                  comparison: comparisonCountryName(),
+                  period: periodLabel(),
+                }
+        }}
+      </p>
+      <div class="scenario-result-metrics">
+        <span
+          ><strong>4</strong><small>{{ 'scenario.metric.observations' | t }}</small></span
+        ><span
+          ><strong>1</strong><small>{{ 'scenario.metric.event' | t }}</small></span
+        ><span
+          ><strong>1</strong><small>{{ 'scenario.metric.signal' | t }}</small></span
+        ><span
+          ><strong>1</strong><small>{{ 'scenario.metric.report' | t }}</small></span
+        >
+      </div>
+      <div class="scenario-result-trace">
+        <span
+          ><small>{{ 'scenario.metric.event' | t }}</small
+          ><strong>{{ scenario()?.eventCode }}</strong></span
+        ><span
+          ><small>{{ 'scenario.metric.signal' | t }}</small
+          ><strong>{{ scenario()?.signalCode }}</strong></span
+        >
+      </div>
+      <div class="scenario-execution-modal__actions">
+        <button #primaryAction class="oh-button" type="button" (click)="requestClose()">
+          {{ 'scenario.continue' | t }}
+        </button>
+        @if (scenario()?.reportAvailable) {
+          <button
+            class="oh-button oh-button--primary"
+            type="button"
+            (click)="reportRequested.emit()"
+          >
+            <svg lucideFileChartColumn size="16"></svg>{{ 'scenario.showReport' | t }}
+          </button>
+        }
+      </div>
+    } @else {
+      <div class="scenario-result-icon scenario-result-icon--error" aria-hidden="true">
+        <svg lucideTriangleAlert size="36"></svg>
+      </div>
+      <p class="scenario-execution-modal__eyebrow">{{ 'scenario.error.eyebrow' | t }}</p>
+      <h2>{{ 'scenario.error.title' | t }}</h2>
+      <p class="scenario-execution-modal__description">
+        {{ message() || ('scenario.error.unavailable' | t) }}
+      </p>
+      <div class="scenario-execution-modal__actions">
+        <button #primaryAction class="oh-button" type="button" (click)="requestClose()">
+          {{ 'scenario.close' | t }}</button
+        ><button class="oh-button oh-button--primary" type="button" (click)="retryRequested.emit()">
+          {{ 'scenario.retry' | t }}
+        </button>
+      </div>
+    }
+  </article>
+</div>

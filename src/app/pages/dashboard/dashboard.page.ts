@@ -1,13 +1,10 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  ElementRef,
   OnInit,
   computed,
-  effect,
   inject,
   signal,
-  viewChild,
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import {
@@ -26,7 +23,6 @@ import {
   LucideTrees,
   LucideTriangleAlert,
 } from '@lucide/angular';
-import { DOCUMENT } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 
 import { OneHealthDataService } from '../../core/data/one-health-data.service';
@@ -42,6 +38,11 @@ import {
   HubScenarioApi,
   RunHubScenarioInput,
 } from '../../core/data/hub-api.service';
+import {
+  ScenarioExecutionDialogComponent,
+  ScenarioCountryOption,
+  ScenarioOverlayState,
+} from './components/scenario-execution-dialog/scenario-execution-dialog.component';
 
 interface PriorityAlert {
   readonly id: string;
@@ -51,13 +52,6 @@ interface PriorityAlert {
   readonly sector: 'Humain' | 'Animal' | 'Environnement';
   readonly age: string;
   readonly tone: 'critical' | 'high' | 'observation';
-}
-
-type ScenarioOverlayState = 'hidden' | 'configure' | 'running' | 'success' | 'error';
-
-interface ScenarioCountryOption {
-  readonly code: CeeacCountryCode;
-  readonly name: string;
 }
 
 const SCENARIO_COUNTRIES: readonly ScenarioCountryOption[] = [
@@ -101,6 +95,7 @@ function localIsoDate(offsetDays = 0): string {
     LucideStethoscope,
     LucideTrees,
     LucideTriangleAlert,
+    ScenarioExecutionDialogComponent,
   ],
   templateUrl: './dashboard.page.html',
   styleUrl: './dashboard.page.scss',
@@ -110,7 +105,6 @@ export class DashboardPage implements OnInit {
   private readonly dataService = inject(OneHealthDataService);
   private readonly hubApi = inject(HubApiService);
   private readonly router = inject(Router);
-  private readonly document = inject(DOCUMENT);
   protected readonly auth = inject(DashboardAuthService);
 
   protected readonly selectedPeriod = signal<MapPeriod>('year');
@@ -139,7 +133,7 @@ export class DashboardPage implements OnInit {
   protected readonly scenario = signal<HubScenarioApi | null>(null);
   protected readonly scenarioBusy = signal(false);
   protected readonly scenarioMessage = signal<string | null>(null);
-  protected readonly scenarioOverlayState = signal<ScenarioOverlayState>('hidden');
+  protected readonly scenarioOverlayState = signal<ScenarioOverlayState | 'hidden'>('hidden');
   protected readonly scenarioCountries = SCENARIO_COUNTRIES;
   protected readonly scenarioMaximumDate = localIsoDate();
   protected readonly scenarioDraft = signal<RunHubScenarioInput>({
@@ -172,28 +166,6 @@ export class DashboardPage implements OnInit {
   protected readonly scenarioComparisonCountryName = computed(() =>
     this.countryName(this.scenarioDraft().comparisonCountryCode),
   );
-  private readonly scenarioDialog = viewChild<ElementRef<HTMLElement>>('scenarioDialog');
-  private readonly scenarioPrimaryAction =
-    viewChild<ElementRef<HTMLButtonElement>>('scenarioPrimaryAction');
-  private readonly scenarioOverlayScrollLock = effect((onCleanup) => {
-    if (this.scenarioOverlayState() === 'hidden') return;
-    const previousOverflow = this.document.body.style.overflow;
-    this.document.body.style.overflow = 'hidden';
-    onCleanup(() => {
-      this.document.body.style.overflow = previousOverflow;
-    });
-  });
-  private readonly scenarioOverlayFocus = effect(() => {
-    const state = this.scenarioOverlayState();
-    if (state === 'hidden') return;
-    const target =
-      state === 'running' || state === 'configure'
-        ? this.scenarioDialog()
-        : this.scenarioPrimaryAction();
-    if (!target) return;
-    queueMicrotask(() => target.nativeElement.focus());
-  });
-
   protected readonly priorityAlerts = computed<readonly PriorityAlert[]>(() => {
     this.dataService.revision();
     return this.dataService.verifiedAlerts.map((observation) => ({
@@ -230,16 +202,19 @@ export class DashboardPage implements OnInit {
 
   protected updateScenarioCountry(
     field: 'sourceCountryCode' | 'comparisonCountryCode',
-    event: Event,
+    value: CeeacCountryCode,
   ): void {
-    const value = (event.target as HTMLSelectElement).value as CeeacCountryCode;
     if (!SCENARIO_COUNTRIES.some((country) => country.code === value)) return;
     this.scenarioDraft.update((draft) => ({ ...draft, [field]: value }));
   }
 
-  protected updateScenarioDate(field: 'dateFrom' | 'dateTo', event: Event): void {
-    const value = (event.target as HTMLInputElement).value;
+  protected updateScenarioDate(field: 'dateFrom' | 'dateTo', value: string): void {
     this.scenarioDraft.update((draft) => ({ ...draft, [field]: value }));
+  }
+
+  protected scenarioOverlayStateForDialog(): ScenarioOverlayState {
+    const state = this.scenarioOverlayState();
+    return state === 'hidden' ? 'configure' : state;
   }
 
   protected async runScenario(): Promise<void> {

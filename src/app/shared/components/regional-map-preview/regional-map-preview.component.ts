@@ -13,6 +13,7 @@ import {
 import * as L from 'leaflet';
 
 import { OneHealthDataService } from '../../../core/data/one-health-data.service';
+import { MapTileLayerService } from '../../../core/config/map-tile.config';
 import { BrandLoaderComponent } from '../brand-loader/brand-loader.component';
 import { MapFullscreenControlComponent } from '../map-fullscreen-control/map-fullscreen-control.component';
 import {
@@ -66,6 +67,7 @@ export class RegionalMapPreviewComponent implements AfterViewInit, OnDestroy {
   readonly mapReady = signal(false);
 
   private readonly dataService = inject(OneHealthDataService);
+  private readonly mapTiles = inject(MapTileLayerService);
   private map?: L.Map;
   private markersLayer?: L.LayerGroup;
   private boundariesLayer?: L.GeoJSON;
@@ -89,20 +91,7 @@ export class RegionalMapPreviewComponent implements AfterViewInit, OnDestroy {
       scrollWheelZoom: false,
     });
 
-    const tileLayer = L.tileLayer(
-      'https://tile.openstreetmap.org/{z}/{x}/{y}.png?ngsw-bypass=true',
-      {
-        maxZoom: 19,
-        attribution: '&copy; OpenStreetMap contributors',
-        className: 'ohn-operational-tiles',
-        updateWhenIdle: true,
-        updateWhenZooming: false,
-        keepBuffer: 1,
-        noWrap: true,
-      },
-    );
-    tileLayer.once('load', () => this.finishMapLoading());
-    tileLayer.addTo(this.map);
+    this.mapTiles.addBaseLayer(this.map, () => this.finishMapLoading());
     this.tileLoadFallbackTimer = window.setTimeout(() => this.finishMapLoading(), 6_000);
 
     L.control.zoom({ position: 'topright' }).addTo(this.map);

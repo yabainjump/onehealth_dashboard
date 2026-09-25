@@ -1,7 +1,4 @@
-<section
-  class="dashboard"
-  [attr.inert]="scenarioOverlayState() !== 'hidden' ? '' : null"
->
+<section class="dashboard" [attr.inert]="scenarioOverlayState() !== 'hidden' ? '' : null">
   <header class="page-header">
     <div>
       <p class="page-header__eyebrow">Vue régionale</p>
@@ -329,199 +326,23 @@
 </section>
 
 @if (scenarioOverlayState() !== 'hidden') {
-  <div
-    class="scenario-execution-overlay"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="scenario-overlay-title"
-    [attr.aria-busy]="scenarioOverlayState() === 'running'"
-    (keydown.escape)="dismissScenarioOverlay()"
-  >
-    <article #scenarioDialog class="scenario-execution-modal" tabindex="-1">
-      @if (scenarioOverlayState() === 'configure') {
-        <div class="scenario-config-icon" aria-hidden="true">
-          <svg lucideSparkles size="23"></svg>
-        </div>
-        <p class="scenario-execution-modal__eyebrow">Paramètres de simulation</p>
-        <h2 id="scenario-overlay-title">Configurer le rapprochement régional</h2>
-        <p class="scenario-execution-modal__description" id="scenario-config-help">
-          Choisissez les deux États et la période à simuler. Le Hub utilisera uniquement des
-          données fictives et le résultat restera soumis à une vérification humaine.
-        </p>
-
-        <form
-          class="scenario-config-form"
-          aria-describedby="scenario-config-help"
-          (submit)="runScenario(); $event.preventDefault()"
-        >
-          <div class="scenario-config-grid">
-            <label>
-              <span>Pays source</span>
-              <select
-                [value]="scenarioDraft().sourceCountryCode"
-                (change)="updateScenarioCountry('sourceCountryCode', $event)"
-              >
-                @for (country of scenarioCountries; track country.code) {
-                  <option [value]="country.code">{{ country.name }}</option>
-                }
-              </select>
-              <small>État où la convergence multisectorielle est simulée.</small>
-            </label>
-            <label>
-              <span>Pays à comparer</span>
-              <select
-                [value]="scenarioDraft().comparisonCountryCode"
-                (change)="updateScenarioCountry('comparisonCountryCode', $event)"
-              >
-                @for (country of scenarioCountries; track country.code) {
-                  <option [value]="country.code">{{ country.name }}</option>
-                }
-              </select>
-              <small>État recherché pour une tendance concordante.</small>
-            </label>
-            <label>
-              <span>Date de début</span>
-              <input
-                type="date"
-                [max]="scenarioMaximumDate"
-                [value]="scenarioDraft().dateFrom"
-                (change)="updateScenarioDate('dateFrom', $event)"
-              />
-            </label>
-            <label>
-              <span>Date de fin</span>
-              <input
-                type="date"
-                [max]="scenarioMaximumDate"
-                [value]="scenarioDraft().dateTo"
-                (change)="updateScenarioDate('dateTo', $event)"
-              />
-            </label>
-          </div>
-
-          <div class="scenario-config-scope">
-            <div>
-              <span>Analyse imposée</span>
-              <strong>Convergence intersectorielle</strong>
-              <small>{{ scenarioPeriodLabel() }}</small>
-            </div>
-            <ul aria-label="Flux inclus dans la simulation">
-              <li><i class="scenario-config-dot scenario-config-dot--human"></i>DHIS2</li>
-              <li><i class="scenario-config-dot scenario-config-dot--animal"></i>ARIS 3</li>
-              <li><i class="scenario-config-dot scenario-config-dot--environment"></i>CAPC-AC</li>
-            </ul>
-          </div>
-
-          @if (scenarioConfigurationError()) {
-            <p class="scenario-config-error" role="alert">
-              <svg lucideTriangleAlert size="15"></svg>
-              {{ scenarioConfigurationError() }}
-            </p>
-          }
-
-          <div class="scenario-execution-modal__actions">
-            <button
-              class="oh-button"
-              type="button"
-              (click)="dismissScenarioOverlay()"
-            >
-              Annuler
-            </button>
-            <button
-              class="oh-button oh-button--primary"
-              type="submit"
-              [disabled]="scenarioBusy() || !!scenarioConfigurationError()"
-            >
-              <svg lucideSparkles size="16"></svg>
-              Lancer la simulation
-            </button>
-          </div>
-        </form>
-      } @else if (scenarioOverlayState() === 'running') {
-        <div class="scenario-loader" aria-hidden="true">
-          <span class="scenario-loader__orbit scenario-loader__orbit--outer"></span>
-          <span class="scenario-loader__orbit scenario-loader__orbit--inner"></span>
-          <img src="assets/brand/one-health-icon.png" alt="" />
-        </div>
-        <p class="scenario-execution-modal__eyebrow">Moteur de scénario dynamique</p>
-        <h2 id="scenario-overlay-title">Simulation intersectorielle en cours</h2>
-        <p class="scenario-execution-modal__description">
-          Le Hub restaure le socle régional, normalise les flux et rapproche les données
-          humaine, animale et environnementale.
-        </p>
-        <div class="scenario-source-flow" aria-label="Sources en cours de traitement">
-          <span>CAPC-AC</span><i></i><span>ARIS 3</span><i></i><span>DHIS2</span>
-        </div>
-        <div class="scenario-progress" role="status" aria-live="polite">
-          <i></i><span>Exécution sécurisée en cours…</span>
-        </div>
-        <small class="scenario-execution-modal__hint">
-          Ne fermez pas cette page. L’état final est confirmé par le serveur.
-        </small>
-      } @else if (scenarioOverlayState() === 'success') {
-        <div class="scenario-result-icon scenario-result-icon--success" aria-hidden="true">
-          <svg lucideCheckCircle2 size="38"></svg>
-        </div>
-        <p class="scenario-execution-modal__eyebrow">Exécution terminée</p>
-        <h2 id="scenario-overlay-title">Scénario complété avec succès</h2>
-        <p class="scenario-execution-modal__description">
-          Le rapprochement {{ scenarioSourceCountryName() }}–{{ scenarioComparisonCountryName() }}
-          est disponible pour la période {{ scenarioPeriodLabel() }}. Le signal reste soumis à
-          une vérification humaine et le rapport généré demeure non officiel.
-        </p>
-        <div class="scenario-result-metrics">
-          <span><strong>4</strong><small>Observations</small></span>
-          <span><strong>1</strong><small>Événement</small></span>
-          <span><strong>1</strong><small>Signal</small></span>
-          <span><strong>1</strong><small>Rapport</small></span>
-        </div>
-        <div class="scenario-result-trace">
-          <span><small>Événement</small><strong>{{ scenario()?.eventCode }}</strong></span>
-          <span><small>Signal</small><strong>{{ scenario()?.signalCode }}</strong></span>
-        </div>
-        <div class="scenario-execution-modal__actions">
-          <button
-            #scenarioPrimaryAction
-            class="oh-button"
-            type="button"
-            (click)="dismissScenarioOverlay()"
-          >
-            OK, continuer
-          </button>
-          @if (scenario()?.reportAvailable) {
-            <button
-              class="oh-button oh-button--primary"
-              type="button"
-              (click)="openScenarioReport()"
-            >
-              <svg lucideFileChartColumn size="16"></svg>
-              Afficher le rapport
-            </button>
-          }
-        </div>
-      } @else {
-        <div class="scenario-result-icon scenario-result-icon--error" aria-hidden="true">
-          <svg lucideTriangleAlert size="36"></svg>
-        </div>
-        <p class="scenario-execution-modal__eyebrow">Exécution interrompue</p>
-        <h2 id="scenario-overlay-title">Le scénario n’a pas pu être terminé</h2>
-        <p class="scenario-execution-modal__description">
-          {{ scenarioMessage() || 'Le Hub est momentanément indisponible.' }}
-        </p>
-        <div class="scenario-execution-modal__actions">
-          <button
-            #scenarioPrimaryAction
-            class="oh-button"
-            type="button"
-            (click)="dismissScenarioOverlay()"
-          >
-            Fermer
-          </button>
-          <button class="oh-button oh-button--primary" type="button" (click)="retryScenario()">
-            Réessayer
-          </button>
-        </div>
-      }
-    </article>
-  </div>
+  <app-scenario-execution-dialog
+    [state]="scenarioOverlayStateForDialog()"
+    [busy]="scenarioBusy()"
+    [message]="scenarioMessage()"
+    [scenario]="scenario()"
+    [draft]="scenarioDraft()"
+    [countries]="scenarioCountries"
+    [maximumDate]="scenarioMaximumDate"
+    [configurationError]="scenarioConfigurationError()"
+    [sourceCountryName]="scenarioSourceCountryName()"
+    [comparisonCountryName]="scenarioComparisonCountryName()"
+    [periodLabel]="scenarioPeriodLabel()"
+    (closeRequested)="dismissScenarioOverlay()"
+    (retryRequested)="retryScenario()"
+    (runRequested)="runScenario()"
+    (reportRequested)="openScenarioReport()"
+    (countryChanged)="updateScenarioCountry($event.field, $event.value)"
+    (dateChanged)="updateScenarioDate($event.field, $event.value)"
+  />
 }

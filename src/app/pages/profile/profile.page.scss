@@ -2,7 +2,7 @@
 .profile-page { width: min(100%, 1180px); margin: 0 auto; }
 .profile-heading { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 24px; }
 .profile-heading p, .profile-form > header p { margin: 0 0 6px; color: var(--oh-primary-700); font-size: .66rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
-.profile-heading h1 { margin: 0; font-size: clamp(1.8rem, 3vw, 2.3rem); letter-spacing: -.045em; }
+.profile-heading h1 { margin: 0; font-size: var(--oh-title-page); font-weight: 650; letter-spacing: -.045em; }
 .profile-heading > div > span { display: block; max-width: 650px; margin-top: 9px; color: var(--oh-ink-600); font-size: .78rem; line-height: 1.55; }
 .profile-layout { display: grid; grid-template-columns: 310px minmax(0, 1fr); align-items: start; gap: 18px; margin-top: 27px; }
 .identity-column { display: grid; gap: 14px; }

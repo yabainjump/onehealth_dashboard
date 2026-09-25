@@ -27,6 +27,9 @@ import { OneHealthDataService } from '../../core/data/one-health-data.service';
 import { HubAiApiService } from '../../core/data/hub-ai-api.service';
 import { RudolfMarkdownPipe } from '../../shared/pipes/rudolf-markdown.pipe';
 import { revealRudolfText } from '../../shared/utils/reveal-rudolf-text';
+import { TranslatePipe } from '../../core/i18n/translate.pipe';
+import { I18nService } from '../../core/i18n/i18n.service';
+import { LanguageSwitcherComponent } from '../../shared/components/language-switcher/language-switcher.component';
 
 @Component({
   selector: 'app-shell',
@@ -52,6 +55,8 @@ import { revealRudolfText } from '../../shared/utils/reveal-rudolf-text';
     LucideShieldCheck,
     LucideSparkles,
     RudolfMarkdownPipe,
+    TranslatePipe,
+    LanguageSwitcherComponent,
     LucideSlidersHorizontal,
     LucideTriangleAlert,
     LucideX,
@@ -65,6 +70,7 @@ export class AppShellComponent {
   protected readonly dataService = inject(OneHealthDataService);
   private readonly router = inject(Router);
   private readonly hubAi = inject(HubAiApiService);
+  private readonly i18n = inject(I18nService);
   protected readonly menuOpen = signal(false);
   protected readonly profileMenuOpen = signal(false);
   protected readonly assistantOpen = signal(false);
@@ -75,8 +81,7 @@ export class AppShellComponent {
   protected readonly userInitials = computed(() => {
     const user = this.auth.currentUser();
     return (
-      `${user?.firstName?.charAt(0) || ''}${user?.lastName?.charAt(0) || ''}`.toUpperCase() ||
-      'OH'
+      `${user?.firstName?.charAt(0) || ''}${user?.lastName?.charAt(0) || ''}`.toUpperCase() || 'OH'
     );
   });
 
@@ -99,7 +104,7 @@ export class AppShellComponent {
       await revealRudolfText(response.content, (text) => this.assistantAnswer.set(text));
       this.assistantQuestion.set('');
     } catch {
-      this.assistantError.set('Rudolf est indisponible ou votre rôle ne permet pas cette analyse.');
+      this.assistantError.set(this.i18n.t('shell.rudolf.unavailable'));
     } finally {
       this.assistantBusy.set(false);
     }

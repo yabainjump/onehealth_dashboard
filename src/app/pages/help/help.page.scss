@@ -3,7 +3,7 @@
 .help-hero { position: relative; overflow: hidden; display: grid; justify-items: center; padding: 42px 24px 34px; border: 1px solid #d5e1f1; border-radius: 20px; background: radial-gradient(circle at 14% 15%, rgb(33 135 201 / 13%), transparent 25%), radial-gradient(circle at 88% 22%, rgb(21 154 117 / 13%), transparent 25%), linear-gradient(145deg, #f9fbff, #f7fbf9); text-align: center; }
 .help-hero__badge { width: 42px; height: 42px; display: grid; place-items: center; margin-bottom: 11px; border-radius: 12px; background: var(--oh-primary-900); color: #fff; box-shadow: 0 8px 18px rgb(11 61 123 / 20%); }
 .help-hero > p { margin: 0 0 8px; color: var(--oh-primary-700); font-size: .66rem; font-weight: 800; letter-spacing: .11em; text-transform: uppercase; }
-.help-hero h1 { margin: 0; font-size: clamp(1.75rem, 4vw, 2.45rem); letter-spacing: -.045em; }
+.help-hero h1 { margin: 0; font-size: var(--oh-title-page); font-weight: 650; letter-spacing: -.045em; }
 .help-hero > span { margin-top: 10px; color: var(--oh-ink-600); font-size: .82rem; line-height: 1.55; }
 .help-search { width: min(100%, 620px); height: 50px; display: flex; align-items: center; gap: 10px; margin-top: 25px; padding: 0 16px; border: 1px solid #cbd7e6; border-radius: 12px; background: #fff; color: var(--oh-ink-500); box-shadow: 0 10px 30px rgb(28 58 91 / 8%); }
 .help-search:focus-within { border-color: var(--oh-primary-700); box-shadow: 0 0 0 4px rgb(28 94 173 / 10%); }

@@ -7,7 +7,7 @@
 .report-hero::after { position:absolute;right:-65px;bottom:-115px;width:260px;height:260px;border:1px solid rgb(255 255 255 / 20%);border-radius:50%;content:''; }
 .report-hero__content { position:relative;z-index:1;max-width:920px; }
 .report-hero__content>p { margin:0 0 8px;font-size:.68rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase; }
-.report-hero h1 { max-width:820px;margin:0;font-size:clamp(1.65rem,3vw,2.35rem);line-height:1.13; }
+.report-hero h1 { max-width:820px;margin:0;font-size:var(--oh-title-page);font-weight:650;line-height:1.13; }
 .report-hero__content>span { display:block;max-width:820px;margin-top:12px;color:rgb(255 255 255 / 82%);font-size:.88rem;line-height:1.65; }
 .report-hero img { position:relative;z-index:1;width:100px;height:100px;align-self:center;border:1px solid rgb(255 255 255 / 24%);border-radius:24px;background:rgb(255 255 255 / 90%);object-fit:contain;box-shadow:0 16px 35px rgb(0 24 64 / 25%); }
 .report-hero__badges { display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:20px; }

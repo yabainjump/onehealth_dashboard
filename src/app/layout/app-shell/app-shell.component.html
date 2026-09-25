@@ -1,5 +1,9 @@
 <div class="shell">
-  <aside class="sidebar" [class.sidebar--open]="menuOpen()" aria-label="Navigation principale">
+  <aside
+    class="sidebar"
+    [class.sidebar--open]="menuOpen()"
+    [attr.aria-label]="'shell.navigation' | t"
+  >
     <div class="brand">
       <img
         class="brand__logo"
@@ -7,12 +11,17 @@
         alt="Logo One Health Network"
         width="42"
         height="42"
-      >
+      />
       <span class="brand__copy">
         <strong>One Health</strong>
         <small>Convergence Hub</small>
       </span>
-      <button class="sidebar__close" type="button" aria-label="Fermer le menu" (click)="closeMenu()">
+      <button
+        class="sidebar__close"
+        type="button"
+        [attr.aria-label]="'shell.closeMenu' | t"
+        (click)="closeMenu()"
+      >
         <svg lucideX size="20"></svg>
       </button>
     </div>
@@ -25,7 +34,7 @@
         (click)="closeMenu()"
       >
         <svg lucideLayoutDashboard size="18"></svg>
-        <span>Vue d’ensemble</span>
+        <span>{{ 'shell.nav.overview' | t }}</span>
       </a>
       <a
         routerLink="/etat-membre"
@@ -34,7 +43,7 @@
         (click)="closeMenu()"
       >
         <svg lucideLandmark size="18"></svg>
-        <span>États membres</span>
+        <span>{{ 'shell.nav.members' | t }}</span>
       </a>
       <a
         routerLink="/carte"
@@ -43,7 +52,7 @@
         (click)="closeMenu()"
       >
         <svg lucideMap size="18"></svg>
-        <span>Carte interactive</span>
+        <span>{{ 'shell.nav.map' | t }}</span>
       </a>
       <a
         routerLink="/alertes"
@@ -52,7 +61,7 @@
         (click)="closeMenu()"
       >
         <svg lucideTriangleAlert size="18"></svg>
-        <span>Alertes sanitaires</span>
+        <span>{{ 'shell.nav.alerts' | t }}</span>
       </a>
       <a
         routerLink="/analyses"
@@ -61,7 +70,7 @@
         (click)="closeMenu()"
       >
         <svg lucideFlaskConical size="18"></svg>
-        <span>Analyses sectorielles</span>
+        <span>{{ 'shell.nav.analyses' | t }}</span>
       </a>
       <a
         routerLink="/rapports"
@@ -70,10 +79,10 @@
         (click)="closeMenu()"
       >
         <svg lucideFileText size="18"></svg>
-        <span>Rapports</span>
+        <span>{{ 'shell.nav.reports' | t }}</span>
       </a>
 
-      <p class="nav__section">Pilotage</p>
+      <p class="nav__section">{{ 'shell.nav.pilotage' | t }}</p>
       <a
         routerLink="/connecteurs"
         routerLinkActive="nav__link--active"
@@ -81,7 +90,7 @@
         (click)="closeMenu()"
       >
         <svg lucideDatabase size="18"></svg>
-        <span>Connecteurs</span>
+        <span>{{ 'shell.nav.connectors' | t }}</span>
       </a>
       <a
         routerLink="/souverainete"
@@ -90,7 +99,7 @@
         (click)="closeMenu()"
       >
         <svg lucideShieldCheck size="18"></svg>
-        <span>Registre de souveraineté</span>
+        <span>{{ 'shell.nav.sovereignty' | t }}</span>
       </a>
       @if (auth.canManageHubUsers()) {
         <a
@@ -100,7 +109,7 @@
           (click)="closeMenu()"
         >
           <svg lucideSettings size="18"></svg>
-          <span>Administration Hub</span>
+          <span>{{ 'shell.nav.administration' | t }}</span>
         </a>
       }
     </nav>
@@ -113,57 +122,97 @@
         (click)="closeMenu()"
       >
         <svg lucideSlidersHorizontal size="16"></svg>
-        <span>Filtrer par secteur</span>
+        <span>{{ 'shell.nav.filter' | t }}</span>
       </a>
-      <a class="nav__link nav__link--compact" routerLink="/aide" routerLinkActive="nav__link--active" (click)="closeMenu()">
+      <a
+        class="nav__link nav__link--compact"
+        routerLink="/aide"
+        routerLinkActive="nav__link--active"
+        (click)="closeMenu()"
+      >
         <svg lucideCircleHelp size="17"></svg>
-        <span>Aide</span>
+        <span>{{ 'shell.nav.help' | t }}</span>
       </a>
     </div>
   </aside>
 
   @if (menuOpen()) {
-    <button class="backdrop" type="button" aria-label="Fermer le menu" (click)="closeMenu()"></button>
+    <button
+      class="backdrop"
+      type="button"
+      [attr.aria-label]="'shell.closeMenu' | t"
+      (click)="closeMenu()"
+    ></button>
   }
 
   <div class="workspace">
     <header class="topbar">
       <div class="topbar__brand">
-        <button class="menu-toggle" type="button" aria-label="Ouvrir le menu" (click)="toggleMenu()">
+        <button
+          class="menu-toggle"
+          type="button"
+          [attr.aria-label]="'shell.openMenu' | t"
+          (click)="toggleMenu()"
+        >
           <svg lucideMenu size="21"></svg>
         </button>
         <span>One Health Convergence Hub</span>
       </div>
 
-      <nav class="scope-switcher" aria-label="Portée des données">
-        <a class="scope-switcher__item" routerLink="/dashboard" routerLinkActive="scope-switcher__item--active" [routerLinkActiveOptions]="{ exact: true }">Régional</a>
-        <a class="scope-switcher__item" routerLink="/etat-membre" routerLinkActive="scope-switcher__item--active">État membre</a>
+      <nav class="scope-switcher" [attr.aria-label]="'shell.scope' | t">
+        <a
+          class="scope-switcher__item"
+          routerLink="/dashboard"
+          routerLinkActive="scope-switcher__item--active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          >{{ 'shell.scope.regional' | t }}</a
+        >
+        <a
+          class="scope-switcher__item"
+          routerLink="/etat-membre"
+          routerLinkActive="scope-switcher__item--active"
+          >{{ 'shell.scope.member' | t }}</a
+        >
       </nav>
 
       <label class="global-search">
         <svg lucideSearch size="17"></svg>
-        <span class="sr-only">Recherche globale</span>
-        <input type="search" placeholder="Rechercher dans le Hub…">
+        <span class="sr-only">{{ 'shell.search' | t }}</span>
+        <input type="search" [placeholder]="'shell.search.placeholder' | t" />
       </label>
 
       <div class="topbar__actions">
+        <app-language-switcher />
         @if (auth.canAnalyze()) {
-          <button class="rudolf-trigger" type="button" (click)="toggleAssistant()" [attr.aria-expanded]="assistantOpen()">
+          <button
+            class="rudolf-trigger"
+            type="button"
+            (click)="toggleAssistant()"
+            [attr.aria-expanded]="assistantOpen()"
+          >
             <svg lucideSparkles size="17"></svg><span>Rudolf</span>
           </button>
         }
-        <button class="icon-button icon-button--notification" type="button" aria-label="Notifications">
+        <button
+          class="icon-button icon-button--notification"
+          type="button"
+          [attr.aria-label]="'shell.notifications' | t"
+        >
           <svg lucideBell size="18"></svg>
           <span class="notification-dot" aria-hidden="true"></span>
         </button>
-        <button class="icon-button apps-button" type="button" aria-label="Applications">
+        <button
+          class="icon-button apps-button"
+          type="button"
+          [attr.aria-label]="'shell.applications' | t"
+        >
           <svg lucideGrid3x3 size="18"></svg>
         </button>
         <div class="profile-menu">
           <button
             class="profile-button"
             type="button"
-            aria-label="Menu du compte"
+            [attr.aria-label]="'shell.account' | t"
             [attr.aria-expanded]="profileMenuOpen()"
             (click)="toggleProfileMenu()"
           >
@@ -171,16 +220,18 @@
           </button>
           @if (profileMenuOpen()) {
             <div class="profile-popover">
-              <strong>{{ auth.currentUser()?.firstName }} {{ auth.currentUser()?.lastName }}</strong>
+              <strong
+                >{{ auth.currentUser()?.firstName }} {{ auth.currentUser()?.lastName }}</strong
+              >
               <small>{{ auth.currentUser()?.institution || auth.currentUser()?.email }}</small>
               <span>{{ accountRoleLabel() }}</span>
               <a routerLink="/profil" (click)="closeProfileMenu()">
                 <svg lucideCircleUserRound size="16"></svg>
-                Voir mon profil
+                {{ 'shell.profile' | t }}
               </a>
               <button type="button" (click)="logout()">
                 <svg lucideLogOut size="16"></svg>
-                Se déconnecter
+                {{ 'shell.logout' | t }}
               </button>
             </div>
           }
@@ -193,21 +244,58 @@
     </main>
 
     @if (assistantOpen()) {
-      <button class="assistant-backdrop" type="button" aria-label="Fermer Rudolf" (click)="toggleAssistant()"></button>
-      <aside class="rudolf-drawer" aria-label="Assistant Rudolf du Hub">
+      <button
+        class="assistant-backdrop"
+        type="button"
+        [attr.aria-label]="'shell.rudolf.close' | t"
+        (click)="toggleAssistant()"
+      ></button>
+      <aside class="rudolf-drawer" [attr.aria-label]="'shell.rudolf.title' | t">
         <header>
-          <div><svg lucideSparkles size="20"></svg><span><strong>Rudolf</strong><small>Assistant analytique du Hub</small></span></div>
-          <button type="button" aria-label="Fermer" (click)="toggleAssistant()"><svg lucideX size="18"></svg></button>
+          <div>
+            <svg lucideSparkles size="20"></svg
+            ><span
+              ><strong>Rudolf</strong><small>{{ 'shell.rudolf.subtitle' | t }}</small></span
+            >
+          </div>
+          <button
+            type="button"
+            [attr.aria-label]="'shell.rudolf.close' | t"
+            (click)="toggleAssistant()"
+          >
+            <svg lucideX size="18"></svg>
+          </button>
         </header>
-        <div class="rudolf-drawer__notice">Réponses fondées uniquement sur les données de votre périmètre. Rudolf ne valide aucune décision.</div>
+        <div class="rudolf-drawer__notice">{{ 'shell.rudolf.notice' | t }}</div>
         <div class="rudolf-drawer__conversation">
-          @if (assistantAnswer()) { <div class="rudolf-answer rudolf-prose" [class.rudolf-prose--writing]="assistantBusy()" [innerHTML]="assistantAnswer() | rudolfMarkdown"></div> }
-          @else { <p class="rudolf-empty">Demandez une synthèse régionale, les signaux prioritaires ou les rapprochements multisectoriels.</p> }
-          @if (assistantError()) { <p class="rudolf-error">{{ assistantError() }}</p> }
+          @if (assistantAnswer()) {
+            <div
+              class="rudolf-answer rudolf-prose"
+              [class.rudolf-prose--writing]="assistantBusy()"
+              [innerHTML]="assistantAnswer() | rudolfMarkdown"
+            ></div>
+          } @else {
+            <p class="rudolf-empty">{{ 'shell.rudolf.empty' | t }}</p>
+          }
+          @if (assistantError()) {
+            <p class="rudolf-error">{{ assistantError() }}</p>
+          }
         </div>
         <form (submit)="$event.preventDefault(); askRudolf()">
-          <textarea maxlength="1500" rows="4" placeholder="Posez une question sur les données autorisées…" [value]="assistantQuestion()" (input)="onAssistantInput($event)"></textarea>
-          <div><small>{{ assistantQuestion().length }} / 1500</small><button type="submit" [disabled]="!assistantQuestion().trim() || assistantBusy()"><svg lucideSend size="16"></svg>{{ assistantBusy() ? 'Analyse…' : 'Envoyer' }}</button></div>
+          <textarea
+            maxlength="1500"
+            rows="4"
+            [placeholder]="'shell.rudolf.placeholder' | t"
+            [value]="assistantQuestion()"
+            (input)="onAssistantInput($event)"
+          ></textarea>
+          <div>
+            <small>{{ assistantQuestion().length }} / 1500</small
+            ><button type="submit" [disabled]="!assistantQuestion().trim() || assistantBusy()">
+              <svg lucideSend size="16"></svg
+              >{{ assistantBusy() ? ('shell.rudolf.analyzing' | t) : ('shell.rudolf.send' | t) }}
+            </button>
+          </div>
         </form>
       </aside>
     }
@@ -216,15 +304,15 @@
       <span>© 2026 One Health Network</span>
       <strong [class.footer__warning]="dataService.dataMode() === 'fallback'">
         @if (dataService.dataMode() === 'fallback') {
-          API indisponible — Données fictives locales
+          {{ 'shell.footer.apiUnavailable' | t }}
         } @else {
-          Données simulées — Hub régional
+          {{ 'shell.footer.simulated' | t }}
         }
       </strong>
       <span class="footer__links">
-        <a href="#mentions">Mentions légales</a>
-        <a routerLink="/aide">Support</a>
-        <a href="#confidentialite">Confidentialité</a>
+        <a href="#mentions">{{ 'shell.footer.legal' | t }}</a>
+        <a routerLink="/aide">{{ 'shell.footer.support' | t }}</a>
+        <a href="#confidentialite">{{ 'shell.footer.privacy' | t }}</a>
       </span>
     </footer>
   </div>

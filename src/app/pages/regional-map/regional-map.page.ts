@@ -33,10 +33,8 @@ import {
 import * as L from 'leaflet';
 
 import { HubApiService, HubEventApi } from '../../core/data/hub-api.service';
-import {
-  CEEAC_COUNTRIES,
-  DEMO_REFERENCE_DATE,
-} from '../../core/data/mock/ceeac-reference';
+import { MapTileLayerService } from '../../core/config/map-tile.config';
+import { CEEAC_COUNTRIES, DEMO_REFERENCE_DATE } from '../../core/data/mock/ceeac-reference';
 import { OneHealthDataService } from '../../core/data/one-health-data.service';
 import {
   HealthSector,
@@ -122,6 +120,7 @@ export class RegionalMapPage implements AfterViewInit, OnDestroy {
 
   private readonly dataService = inject(OneHealthDataService);
   private readonly hubApi = inject(HubApiService);
+  private readonly mapTiles = inject(MapTileLayerService);
   private readonly zone = inject(NgZone);
   private map?: L.Map;
   private markersLayer?: L.LayerGroup;
@@ -359,11 +358,9 @@ export class RegionalMapPage implements AfterViewInit, OnDestroy {
 
     const country = CEEAC_COUNTRIES.find((item) => item.code === code);
     if (country) {
-      this.map?.flyTo(
-        [country.center[0], country.center[1]],
-        country.code === 'ST' ? 7 : 5.5,
-        { duration: 0.65 },
-      );
+      this.map?.flyTo([country.center[0], country.center[1]], country.code === 'ST' ? 7 : 5.5, {
+        duration: 0.65,
+      });
     } else {
       this.fitCeeac();
     }
@@ -477,20 +474,7 @@ export class RegionalMapPage implements AfterViewInit, OnDestroy {
       preferCanvas: true,
     });
 
-    const tileLayer = L.tileLayer(
-      'https://tile.openstreetmap.org/{z}/{x}/{y}.png?ngsw-bypass=true',
-      {
-        maxZoom: 19,
-        attribution: '&copy; OpenStreetMap contributors',
-        className: 'ohn-operational-tiles',
-        updateWhenIdle: true,
-        updateWhenZooming: false,
-        keepBuffer: 1,
-        noWrap: true,
-      },
-    );
-    tileLayer.once('load', () => this.zone.run(() => this.finishMapLoading()));
-    tileLayer.addTo(this.map);
+    this.mapTiles.addBaseLayer(this.map, () => this.zone.run(() => this.finishMapLoading()));
     this.tileLoadFallbackTimer = window.setTimeout(() => this.finishMapLoading(), 6_000);
 
     L.control.zoom({ position: 'topright' }).addTo(this.map);
@@ -631,15 +615,11 @@ export class RegionalMapPage implements AfterViewInit, OnDestroy {
         return;
       }
       this.boundariesLayer?.remove();
-      this.boundariesLayer = createCeeacBoundaryLayer(
-        this.map,
-        boundaries,
-        {
-          visibleObservations: () => this.boundaryObservations(),
-          selectedCountryCode: () => this.selectedCountryCode(),
-          onCountrySelect: (selection) => this.selectCountryFromMap(selection),
-        },
-      );
+      this.boundariesLayer = createCeeacBoundaryLayer(this.map, boundaries, {
+        visibleObservations: () => this.boundaryObservations(),
+        selectedCountryCode: () => this.selectedCountryCode(),
+        onCountrySelect: (selection) => this.selectCountryFromMap(selection),
+      });
     } catch {
       // La carte et les signaux restent utilisables si le fichier statique est indisponible.
     }

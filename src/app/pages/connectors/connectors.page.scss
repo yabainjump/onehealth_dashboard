@@ -39,7 +39,8 @@
   h1 {
     margin: 0;
     color: var(--oh-ink-950);
-    font-size: clamp(1.75rem, 3vw, 2rem);
+    font-size: var(--oh-title-page);
+    font-weight: 650;
     line-height: 1.2;
     letter-spacing: -0.035em;
   }

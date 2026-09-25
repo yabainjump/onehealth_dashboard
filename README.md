@@ -10,7 +10,7 @@ Démonstrateur Angular du Hub décisionnel régional One Health pour la CEEAC. C
 - indicateurs régionaux, aperçu cartographique, alertes prioritaires et décisions attendues ;
 - représentation des trois flux prévus : DHIS2, ARIS et CAPC-AC / stations météo ;
 - 165 fiches fictives normalisées : 55 DHIS2, 55 ARIS 3 et 55 CAPC-AC ;
-- carte Leaflet/OpenStreetMap interactive avec filtres par période, secteur et niveau de qualification ;
+- carte Leaflet à fournisseur configurable avec filtres par période, secteur et niveau de qualification ;
 - registre responsive des observations, signaux et alertes avec recherche, filtres, pagination et export CSV ;
 - fiche détaillée multisectorielle avec provenance, gouvernance et workflow humain persisté ;
 - couverture des onze États membres de la CEEAC avec traçabilité de l'identifiant source ;
@@ -42,10 +42,20 @@ L'application est ensuite accessible sur `http://localhost:4200`.
 ## Contrôles qualité
 
 ```bash
+npm run api:check
 npm run lint
 npm test -- --watch=false --browsers=ChromeHeadless
 npm run build
 ```
+
+Le contrat source du Dashboard appartient au backend et se trouve dans
+`../onehealth_backend/contracts/dashboard-api.openapi.yaml`. Après toute modification de ce
+contrat, exécuter `npm run api:generate`, puis versionner
+`src/app/core/api/generated/dashboard-api.types.ts`. Ce fichier généré ne doit jamais être modifié
+manuellement. `npm run api:check` échoue si le contrat et les types versionnés divergent.
+
+Dans un pipeline où les dépôts sont clonés séparément, le job du Dashboard doit récupérer la
+version exacte du contrat backend validée pour la livraison avant d'exécuter ces commandes.
 
 La version de production est générée dans `dist/onehealth_dashboard/browser`.
 
@@ -102,9 +112,13 @@ Les URLs sont définies dans `src/environments`. En production, le domaine publi
 
 ## Carte et déploiement
 
-La carte utilise Leaflet et les tuiles publiques OpenStreetMap, sans clé payante. En production, ne pas exposer le serveur Angular de développement et respecter la politique d'utilisation des tuiles OpenStreetMap.
+La carte utilise Leaflet derrière `MapTileLayerService`. `MAP_TILE_PROVIDER=openstreetmap` est le
+mode démonstrateur sans clé et sans SLA ; `custom` accepte un fournisseur HTTPS institutionnel et
+`none` conserve frontières et signaux sans fond externe. Les pages ne codent aucune URL de tuiles.
 
-Si une Content Security Policy est appliquée par l'hébergement, autoriser au minimum `https://*.tile.openstreetmap.org` dans `img-src` et `connect-src`. Pour un trafic institutionnel important, prévoir ensuite un fournisseur de tuiles ou un serveur de tuiles régional dédié.
+La CSP doit autoriser uniquement le domaine du fournisseur réellement configuré dans `img-src` et
+`connect-src`. Ne pas mettre en proxy, précharger ou télécharger massivement les tuiles publiques
+OpenStreetMap. L'attribution visible reste obligatoire.
 
 ### Déploiement cPanel
 
@@ -140,7 +154,9 @@ NODE_BIN="$HOME/.nvm/versions/node/v20.20.2/bin/node" \
 bash "$HOME/deploy-onehealth-dashboard.sh"
 ```
 
-Variables optionnelles : `DASHBOARD_API_BASE_URL`, `ALLOW_DEMO_FALLBACK`, `APP_DIR`, `WEB_DIR`,
+Variables optionnelles : `DASHBOARD_API_BASE_URL`, `ALLOW_DEMO_FALLBACK`, `MAP_TILE_PROVIDER`,
+`MAP_TILE_URL_TEMPLATE`, `MAP_TILE_ATTRIBUTION`, `MAP_TILE_ATTRIBUTION_URL`,
+`MAP_TILE_MAX_ZOOM`, `APP_DIR`, `WEB_DIR`,
 `BRANCH`, `NODE_BIN_DIR`, `NODE_BIN`, `NPM_BIN`, `CLEAN_WEB_DIR`, `PUBLIC_WEB_URL` et
 `VERIFY_PUBLIC_URL`.
 
