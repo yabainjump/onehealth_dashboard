@@ -55,20 +55,27 @@ function safeHttpsUrl(value: string): URL | null {
 }
 
 export function resolveMapTileConfiguration(
-  input: MapTileEnvironment,
+  input?: Partial<MapTileEnvironment>,
 ): ResolvedMapTileConfiguration {
-  if (input.provider === 'none') return DISABLED_CONFIGURATION;
-  if (input.provider === 'openstreetmap') return OSM_CONFIGURATION;
+  const provider = input?.provider ?? 'openstreetmap';
+
+  if (provider === 'none') return DISABLED_CONFIGURATION;
+  if (provider === 'openstreetmap') return OSM_CONFIGURATION;
+
+  const urlTemplate = input?.urlTemplate ?? '';
+  const attributionValue = input?.attribution ?? '';
+  const attributionUrlValue = input?.attributionUrl ?? '';
+  const requestedMaxZoom = input?.maxZoom ?? 19;
 
   const templateUrl = safeHttpsUrl(
-    input.urlTemplate.replace('{z}', '0').replace('{x}', '0').replace('{y}', '0'),
+    urlTemplate.replace('{z}', '0').replace('{x}', '0').replace('{y}', '0'),
   );
-  const hasCoordinates = ['{z}', '{x}', '{y}'].every((token) => input.urlTemplate.includes(token));
-  const attribution = input.attribution.trim();
-  const attributionUrl = input.attributionUrl ? safeHttpsUrl(input.attributionUrl) : null;
+  const hasCoordinates = ['{z}', '{x}', '{y}'].every((token) => urlTemplate.includes(token));
+  const attribution = attributionValue.trim();
+  const attributionUrl = attributionUrlValue ? safeHttpsUrl(attributionUrlValue) : null;
   const maxZoom =
-    Number.isInteger(input.maxZoom) && input.maxZoom >= 3 && input.maxZoom <= 22
-      ? input.maxZoom
+    Number.isInteger(requestedMaxZoom) && requestedMaxZoom >= 3 && requestedMaxZoom <= 22
+      ? requestedMaxZoom
       : 19;
 
   if (!templateUrl || !hasCoordinates || !attribution) {
@@ -81,7 +88,7 @@ export function resolveMapTileConfiguration(
   const safeAttribution = escapeHtml(attribution.slice(0, 160));
   return {
     enabled: true,
-    urlTemplate: input.urlTemplate,
+    urlTemplate,
     attributionHtml: attributionUrl
       ? `&copy; <a href="${escapeHtml(attributionUrl.href)}" target="_blank" rel="noopener noreferrer">${safeAttribution}</a>`
       : `&copy; ${safeAttribution}`,
@@ -91,7 +98,13 @@ export function resolveMapTileConfiguration(
 
 @Injectable({ providedIn: 'root' })
 export class MapTileLayerService {
-  readonly configuration = resolveMapTileConfiguration(environment.mapTiles);
+  // Local and server-generated environment files are intentionally ignored by Git. The optional
+  // shape keeps older deployments buildable while the deployment script is being upgraded.
+  private readonly runtimeEnvironment = environment as typeof environment & {
+    readonly mapTiles?: Partial<MapTileEnvironment>;
+  };
+
+  readonly configuration = resolveMapTileConfiguration(this.runtimeEnvironment.mapTiles);
 
   addBaseLayer(map: L.Map, onSettled: () => void): L.TileLayer | null {
     if (!this.configuration.enabled) {

@@ -1,6 +1,13 @@
 import { resolveMapTileConfiguration } from './map-tile.config';
 
 describe('map tile configuration', () => {
+  it('keeps older environment files compatible with the demonstration provider', () => {
+    const result = resolveMapTileConfiguration(undefined);
+
+    expect(result.enabled).toBeTrue();
+    expect(result.urlTemplate).toContain('openstreetmap.org');
+  });
+
   it('supports an explicit provider-disabled mode', () => {
     const result = resolveMapTileConfiguration({
       provider: 'none',
