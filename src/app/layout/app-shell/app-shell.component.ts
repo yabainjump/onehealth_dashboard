@@ -137,7 +137,17 @@ export class AppShellComponent {
 
   protected async logout(): Promise<void> {
     this.profileMenuOpen.set(false);
-    await this.auth.logout();
-    await this.router.navigateByUrl('/connexion');
+    this.assistantOpen.set(false);
+    this.assistantQuestion.set('');
+    this.assistantAnswer.set('');
+    this.assistantError.set('');
+    // logout() clears local identity and Hub data before its first await.
+    // Do not keep the protected outlet visible while server revocation waits.
+    const revocation = this.auth.logout();
+    try {
+      await this.router.navigateByUrl('/connexion');
+    } finally {
+      await revocation;
+    }
   }
 }
