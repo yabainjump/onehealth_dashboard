@@ -136,7 +136,7 @@ export class AlertDetailPage {
       const response = await this.hubAi.alertSummary(observation.id);
       await revealRudolfText(response.content, (text) => this.aiDraft.set(text));
     } catch {
-      this.aiError.set('La synthèse Rudolf n’a pas pu être générée. Vérifiez Groq et votre accès Hub.');
+      this.aiError.set('La synthèse Rudolf n’a pas pu être générée. Vérifiez la configuration IA et votre accès Hub.');
     } finally {
       this.aiBusy.set(false);
     }
