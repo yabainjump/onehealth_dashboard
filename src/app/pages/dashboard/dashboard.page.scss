@@ -144,21 +144,6 @@
   }
 }
 
-.scenario-status {
-  padding: 5px 8px;
-  border-radius: 999px;
-  background: #edf1f6;
-  color: var(--oh-ink-600);
-  font-size: var(--oh-text-xs);
-  font-weight: 700;
-  letter-spacing: 0.06em;
-
-  &--done {
-    background: #e6f6ee;
-    color: var(--oh-success);
-  }
-}
-
 .scenario-steps {
   grid-column: 1 / -1;
   display: grid;
@@ -620,43 +605,13 @@
   overflow: hidden;
 }
 
-.decision-table {
+.decision-table-shell {
   padding: 0 16px 10px;
-
-  &__header,
-  .decision-row {
-    display: grid;
-    grid-template-columns: minmax(280px, 2fr) 0.8fr 0.65fr 0.85fr 80px;
-    align-items: center;
-    gap: 14px;
-  }
-
-  &__header {
-    min-height: 42px;
-    color: var(--oh-ink-500);
-    font-size: var(--oh-text-xs);
-    font-weight: 650;
-    letter-spacing: 0.07em;
-    text-transform: uppercase;
-  }
+  overflow: hidden;
 }
 
-.decision-row {
-  min-height: 61px;
-  border-top: 1px solid var(--oh-border);
-  color: var(--oh-ink-600);
-  font-size: var(--oh-text-sm);
-
-  > strong {
-    color: var(--oh-ink-950);
-    font-size: var(--oh-text-base);
-  }
-
-  &__sectors {
-    display: flex;
-    gap: 4px;
-  }
-}
+.decision-title { color: var(--oh-ink-950); font-size: var(--oh-text-base); }
+.decision-action-cell { text-align: right; }
 
 .mini-sector {
   width: 25px;
@@ -668,24 +623,6 @@
   color: var(--oh-primary-800);
   font-size: var(--oh-text-xs);
   font-weight: 650;
-}
-
-.priority-badge {
-  width: max-content;
-  display: inline-flex;
-  padding: 4px 7px;
-  border: 1px solid var(--oh-border);
-  border-radius: 5px;
-  color: var(--oh-ink-600);
-  font-size: var(--oh-text-xs);
-  font-weight: 650;
-  text-transform: uppercase;
-
-  &--high {
-    border-color: #f0b4b8;
-    background: #fff1f2;
-    color: var(--oh-danger);
-  }
 }
 
 .table-action {
@@ -809,18 +746,6 @@
     grid-template-columns: repeat(3, 1fr);
   }
 
-  .decision-table {
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
-    scrollbar-width: thin;
-    scrollbar-color: #b9c5d5 transparent;
-
-    /* Assez large pour rester lisible, assez étroit pour tenir sur une tablette. */
-    &__header,
-    .decision-row {
-      min-width: 690px;
-    }
-  }
 }
 
 @container workspace (max-width: 644px) {
@@ -875,47 +800,6 @@
   .alert-list,
   .sources {
     grid-template-columns: 1fr;
-  }
-
-  .decision-table {
-    display: grid;
-    gap: 10px;
-    padding: 12px;
-    overflow: visible;
-
-    &__header {
-      display: none;
-    }
-
-    .decision-row {
-      min-width: 0;
-      min-height: 0;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 10px 12px;
-      padding: 13px;
-      border: 1px solid var(--oh-border);
-      border-radius: 9px;
-
-      > strong {
-        grid-column: 1 / -1;
-        line-height: 1.45;
-      }
-
-      > :nth-child(4) {
-        align-self: center;
-        font-size: var(--oh-text-xs);
-
-        &::before {
-          content: 'Échéance · ';
-          color: var(--oh-ink-800);
-          font-weight: 700;
-        }
-      }
-
-      > :last-child {
-        justify-self: end;
-      }
-    }
   }
 
   .sources__intro {

@@ -24,7 +24,7 @@
         [attr.aria-label]="'shell.closeMenu' | t"
         (click)="closeMenu()"
       >
-        <svg lucideX size="20"></svg>
+        <i class="pi pi-times" aria-hidden="true"></i>
       </button>
     </div>
 
@@ -35,7 +35,7 @@
         class="nav__link"
         (click)="closeMenu()"
       >
-        <svg lucideLayoutDashboard size="18"></svg>
+        <i class="pi pi-home" aria-hidden="true"></i>
         <span>{{ 'shell.nav.overview' | t }}</span>
       </a>
       <a
@@ -44,7 +44,7 @@
         class="nav__link"
         (click)="closeMenu()"
       >
-        <svg lucideLandmark size="18"></svg>
+        <i class="pi pi-building-columns" aria-hidden="true"></i>
         <span>{{ 'shell.nav.members' | t }}</span>
       </a>
       <a
@@ -53,7 +53,7 @@
         class="nav__link"
         (click)="closeMenu()"
       >
-        <svg lucideMap size="18"></svg>
+        <i class="pi pi-map" aria-hidden="true"></i>
         <span>{{ 'shell.nav.map' | t }}</span>
       </a>
       <a
@@ -62,7 +62,7 @@
         class="nav__link"
         (click)="closeMenu()"
       >
-        <svg lucideTriangleAlert size="18"></svg>
+        <i class="pi pi-exclamation-triangle" aria-hidden="true"></i>
         <span>{{ 'shell.nav.alerts' | t }}</span>
       </a>
       <a
@@ -71,7 +71,7 @@
         class="nav__link"
         (click)="closeMenu()"
       >
-        <svg lucideFlaskConical size="18"></svg>
+        <i class="pi pi-chart-line" aria-hidden="true"></i>
         <span>{{ 'shell.nav.analyses' | t }}</span>
       </a>
       <a
@@ -80,7 +80,7 @@
         class="nav__link"
         (click)="closeMenu()"
       >
-        <svg lucideFileText size="18"></svg>
+        <i class="pi pi-file" aria-hidden="true"></i>
         <span>{{ 'shell.nav.reports' | t }}</span>
       </a>
 
@@ -91,7 +91,7 @@
         class="nav__link"
         (click)="closeMenu()"
       >
-        <svg lucideDatabase size="18"></svg>
+        <i class="pi pi-database" aria-hidden="true"></i>
         <span>{{ 'shell.nav.connectors' | t }}</span>
       </a>
       <a
@@ -100,7 +100,7 @@
         class="nav__link"
         (click)="closeMenu()"
       >
-        <svg lucideShieldCheck size="18"></svg>
+        <i class="pi pi-shield" aria-hidden="true"></i>
         <span>{{ 'shell.nav.sovereignty' | t }}</span>
       </a>
       @if (auth.canManageHubUsers()) {
@@ -110,7 +110,7 @@
           class="nav__link"
           (click)="closeMenu()"
         >
-          <svg lucideSettings size="18"></svg>
+          <i class="pi pi-cog" aria-hidden="true"></i>
           <span>{{ 'shell.nav.administration' | t }}</span>
         </a>
       }
@@ -123,7 +123,7 @@
         [queryParams]="{ filtres: 'secteurs' }"
         (click)="closeMenu()"
       >
-        <svg lucideSlidersHorizontal size="16"></svg>
+        <i class="pi pi-sliders-h" aria-hidden="true"></i>
         <span>{{ 'shell.nav.filter' | t }}</span>
       </a>
       <a
@@ -132,7 +132,7 @@
         routerLinkActive="nav__link--active"
         (click)="closeMenu()"
       >
-        <svg lucideCircleHelp size="17"></svg>
+        <i class="pi pi-question-circle" aria-hidden="true"></i>
         <span>{{ 'shell.nav.help' | t }}</span>
       </a>
     </div>
@@ -156,7 +156,7 @@
           [attr.aria-label]="'shell.openMenu' | t"
           (click)="toggleMenu()"
         >
-          <svg lucideMenu size="21"></svg>
+          <i class="pi pi-bars" aria-hidden="true"></i>
         </button>
         <span>One Health Convergence Hub</span>
       </div>
@@ -178,9 +178,9 @@
       </nav>
 
       <label class="global-search">
-        <svg lucideSearch size="17"></svg>
+        <i class="pi pi-search" aria-hidden="true"></i>
         <span class="sr-only">{{ 'shell.search' | t }}</span>
-        <input type="search" [placeholder]="'shell.search.placeholder' | t" />
+        <input pInputText type="search" [placeholder]="'shell.search.placeholder' | t" />
       </label>
 
       <div class="topbar__actions">
@@ -192,7 +192,7 @@
             (click)="toggleAssistant()"
             [attr.aria-expanded]="assistantOpen()"
           >
-            <svg lucideSparkles size="17"></svg><span>Rudolf</span>
+            <i class="pi pi-sparkles" aria-hidden="true"></i><span>Rudolf</span>
           </button>
         }
         <button
@@ -200,7 +200,7 @@
           type="button"
           [attr.aria-label]="'shell.notifications' | t"
         >
-          <svg lucideBell size="18"></svg>
+          <i class="pi pi-bell" aria-hidden="true"></i>
           <span class="notification-dot" aria-hidden="true"></span>
         </button>
         <button
@@ -208,35 +208,35 @@
           type="button"
           [attr.aria-label]="'shell.applications' | t"
         >
-          <svg lucideGrid3x3 size="18"></svg>
+          <i class="pi pi-th-large" aria-hidden="true"></i>
         </button>
         <div class="profile-menu">
           <button
             class="profile-button"
             type="button"
             [attr.aria-label]="'shell.account' | t"
-            [attr.aria-expanded]="profileMenuOpen()"
-            (click)="toggleProfileMenu()"
+            aria-haspopup="menu"
+            (click)="profilePopover.toggle($event)"
           >
             <span>{{ userInitials() }}</span>
           </button>
-          @if (profileMenuOpen()) {
-            <div class="profile-popover">
+          <p-popover #profilePopover styleClass="ohn-profile-popover">
+            <div class="profile-popover" role="menu">
               <strong
                 >{{ auth.currentUser()?.firstName }} {{ auth.currentUser()?.lastName }}</strong
               >
               <small>{{ auth.currentUser()?.institution || auth.currentUser()?.email }}</small>
               <span>{{ accountRoleLabel() }}</span>
-              <a routerLink="/profil" (click)="closeProfileMenu()">
-                <svg lucideCircleUserRound size="16"></svg>
+              <a routerLink="/profil" role="menuitem" (click)="profilePopover.hide()">
+                <i class="pi pi-user" aria-hidden="true"></i>
                 {{ 'shell.profile' | t }}
               </a>
-              <button type="button" (click)="logout()">
-                <svg lucideLogOut size="16"></svg>
+              <button type="button" role="menuitem" (click)="profilePopover.hide(); logout()">
+                <i class="pi pi-sign-out" aria-hidden="true"></i>
                 {{ 'shell.logout' | t }}
               </button>
             </div>
-          }
+          </p-popover>
         </div>
       </div>
     </header>
@@ -245,29 +245,19 @@
       <router-outlet />
     </main>
 
-    @if (assistantOpen()) {
-      <button
-        class="assistant-backdrop"
-        type="button"
-        [attr.aria-label]="'shell.rudolf.close' | t"
-        (click)="toggleAssistant()"
-      ></button>
-      <aside class="rudolf-drawer" [attr.aria-label]="'shell.rudolf.title' | t">
-        <header>
-          <div>
-            <svg lucideSparkles size="20"></svg
-            ><span
-              ><strong>Rudolf</strong><small>{{ 'shell.rudolf.subtitle' | t }}</small></span
-            >
-          </div>
-          <button
-            type="button"
-            [attr.aria-label]="'shell.rudolf.close' | t"
-            (click)="toggleAssistant()"
-          >
-            <svg lucideX size="18"></svg>
-          </button>
-        </header>
+    <p-drawer
+      header="Rudolf — Assistant du Hub"
+      position="right"
+      [visible]="assistantOpen()"
+      (visibleChange)="assistantOpen.set($event)"
+      [modal]="true"
+      [dismissible]="true"
+      [closeOnEscape]="true"
+      [blockScroll]="true"
+      [style]="{ width: 'min(430px, 100vw)' }"
+      styleClass="ohn-rudolf-drawer"
+    >
+      <div class="rudolf-panel">
         <div class="rudolf-drawer__notice">{{ 'shell.rudolf.notice' | t }}</div>
         <div class="rudolf-drawer__conversation">
           @if (assistantAnswer()) {
@@ -285,6 +275,7 @@
         </div>
         <form (submit)="$event.preventDefault(); askRudolf()">
           <textarea
+            pTextarea
             maxlength="1500"
             rows="4"
             [placeholder]="'shell.rudolf.placeholder' | t"
@@ -294,13 +285,13 @@
           <div>
             <small>{{ assistantQuestion().length }} / 1500</small
             ><button type="submit" [disabled]="!assistantQuestion().trim() || assistantBusy()">
-              <svg lucideSend size="16"></svg
-              >{{ assistantBusy() ? ('shell.rudolf.analyzing' | t) : ('shell.rudolf.send' | t) }}
+              <i class="pi pi-send" aria-hidden="true"></i>
+              {{ assistantBusy() ? ('shell.rudolf.analyzing' | t) : ('shell.rudolf.send' | t) }}
             </button>
           </div>
         </form>
-      </aside>
-    }
+      </div>
+    </p-drawer>
 
     <footer class="footer">
       <span>© 2026 One Health Network</span>

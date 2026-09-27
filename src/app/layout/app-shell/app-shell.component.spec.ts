@@ -7,8 +7,8 @@ import { DashboardAuthService } from '../../core/auth/dashboard-auth.service';
 import { OneHealthDataService } from '../../core/data/one-health-data.service';
 
 describe('AppShellComponent logout privacy', () => {
-  const configure = () => {
-    const currentUser = signal<unknown | null>(null);
+  const configure = (initialUser: unknown | null = null) => {
+    const currentUser = signal<unknown | null>(initialUser);
     let finishRevocation!: () => void;
     const revocation = new Promise<void>((resolve) => {
       finishRevocation = resolve;
@@ -40,6 +40,22 @@ describe('AppShellComponent logout privacy', () => {
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('.shell')).toBeNull();
     expect(fixture.nativeElement.querySelector('router-outlet')).toBeNull();
+  });
+
+  it('renders the protected shell for an authenticated Hub user', () => {
+    const { fixture } = configure({
+      firstName: 'Test',
+      lastName: 'User',
+      email: 'test@example.invalid',
+      institution: 'CEEAC',
+      role: 'user',
+      hubRoles: ['hub_viewer'],
+    });
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.shell')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('.topbar')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('router-outlet')).not.toBeNull();
   });
 
   it('navigates before server logout completes', async () => {

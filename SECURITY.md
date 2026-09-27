@@ -9,6 +9,9 @@ Application Angular avec landing publique et espace Hub authentifié. Le navigat
 - Ne montrer que les données autorisées par l’API ; vider les états privés lors d’un changement de session ou de pays et ne jamais transformer une erreur API en succès simulé en production.
 - Toute action sensible doit appeler une API qui vérifie rôle, propriété et portée pays côté serveur ; l’interface ne remplace pas ce contrôle.
 - Les rapports et scénarios simulés restent identifiés comme non officiels.
+- Les overlays PrimeNG restent configurés localement sous la CSP existante : aucun thème, script,
+  police ou composant ne doit être chargé depuis un CDN. Les contenus API et Rudolf projetés dans
+  un tiroir, tableau, tag ou popover restent non fiables et suivent les mêmes règles d'échappement.
 
 ## Signalements pertinents
 Signaler exposition de données entre comptes/pays, XSS, fuite de jeton, contournement d’un flux protégé ou confusion exploitable entre simulation et données officielles. Établir un chemin utilisateur réel et l’impact ; ne pas assimiler un simple contrôle visuel absent à une autorisation backend cassée.

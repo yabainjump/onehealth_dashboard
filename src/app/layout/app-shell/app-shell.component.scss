@@ -568,31 +568,22 @@
 }
 
 .rudolf-trigger { display: inline-flex; align-items: center; gap: 7px; border: 1px solid #d5cff8; background: #f7f5ff; color: #4637a8; border-radius: 9px; padding: 9px 12px; font-weight: 700; cursor: pointer; }
-.assistant-backdrop { position: fixed; inset: 0; z-index: 60; border: 0; background: rgb(15 23 42 / .35); }
-.rudolf-drawer { position: fixed; z-index: 61; top: 0; right: 0; width: min(430px, 100vw); height: 100dvh; background: #fff; box-shadow: -16px 0 40px rgb(15 23 42 / .18); display: flex; flex-direction: column; }
-.rudolf-drawer > header { flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px; padding-right: max(18px, env(safe-area-inset-right)); border-bottom: 1px solid #e4e7ec; }
-.rudolf-drawer > header > div { min-width: 0; }
-.rudolf-drawer > header strong, .rudolf-drawer > header small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.rudolf-drawer > header div, .rudolf-drawer > header span { display: flex; align-items: center; gap: 9px; }
-.rudolf-drawer > header span { align-items: flex-start; flex-direction: column; gap: 1px; }
-.rudolf-drawer > header small { color: #667085; font-weight: 400; }
-.rudolf-drawer > header button { border: 0; background: transparent; cursor: pointer; }
+.rudolf-panel { min-height: 0; height: 100%; display: flex; flex-direction: column; }
 .rudolf-drawer__notice { margin: 14px; padding: 11px; background: #fff8e8; border-radius: 8px; color: #805b10; font-size: 12px; }
 .rudolf-drawer__conversation { flex: 1 1 auto; min-height: 0; overflow: auto; overscroll-behavior: contain; padding: 8px 18px 18px; }
 .rudolf-answer { white-space: pre-wrap; line-height: 1.65; background: #f7f5ff; border-radius: 12px; padding: 14px; }
 .rudolf-empty { color: #667085; text-align: center; margin-top: 30%; }
 .rudolf-error { color: #b42318; }
-.rudolf-drawer form { flex: 0 0 auto; padding: 14px; padding-bottom: calc(14px + env(safe-area-inset-bottom)); border-top: 1px solid #e4e7ec; }
-.rudolf-drawer textarea { width: 100%; resize: none; box-sizing: border-box; border: 1px solid #d0d5dd; border-radius: 10px; padding: 11px; font: inherit; }
-.rudolf-drawer form div { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; }
-.rudolf-drawer form button { display: inline-flex; gap: 7px; align-items: center; border: 0; border-radius: 8px; padding: 9px 13px; background: #4637a8; color: #fff; font-weight: 700; }
-.rudolf-drawer form button:disabled { opacity: .55; }
+.rudolf-panel form { flex: 0 0 auto; padding: 14px; padding-bottom: calc(14px + env(safe-area-inset-bottom)); border-top: 1px solid #e4e7ec; }
+.rudolf-panel textarea { width: 100%; resize: none; box-sizing: border-box; }
+.rudolf-panel form div { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; }
+.rudolf-panel form button { display: inline-flex; gap: 7px; align-items: center; border: 0; border-radius: 8px; padding: 9px 13px; background: #4637a8; color: #fff; font-weight: 700; }
+.rudolf-panel form button:disabled { opacity: .55; }
 @media (max-width: 700px) { .rudolf-trigger span { display: none; } }
 
 /* Paysage téléphone : la zone de saisie confisquait toute la hauteur du tiroir. */
 @media (max-height: 560px) {
   .rudolf-drawer__notice { margin: 10px 14px; padding: 8px 10px; font-size: var(--oh-text-xs); }
-  .rudolf-drawer > header { padding: 12px 14px; }
-  .rudolf-drawer textarea { height: 62px; }
+  .rudolf-panel textarea { height: 62px; }
   .rudolf-empty { margin-top: 8%; }
 }

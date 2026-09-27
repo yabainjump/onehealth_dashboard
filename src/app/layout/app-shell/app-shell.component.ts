@@ -1,27 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import {
-  LucideBell,
-  LucideCircleHelp,
-  LucideCircleUserRound,
-  LucideDatabase,
-  LucideFileText,
-  LucideFlaskConical,
-  LucideGrid3x3,
-  LucideLayoutDashboard,
-  LucideLandmark,
-  LucideLogOut,
-  LucideMap,
-  LucideMenu,
-  LucideSearch,
-  LucideSettings,
-  LucideSend,
-  LucideShieldCheck,
-  LucideSparkles,
-  LucideSlidersHorizontal,
-  LucideTriangleAlert,
-  LucideX,
-} from '@lucide/angular';
+import { DrawerModule } from 'primeng/drawer';
+import { InputTextModule } from 'primeng/inputtext';
+import { PopoverModule } from 'primeng/popover';
+import { TextareaModule } from 'primeng/textarea';
 import { DashboardAuthService } from '../../core/auth/dashboard-auth.service';
 import { OneHealthDataService } from '../../core/data/one-health-data.service';
 import { HubAiApiService } from '../../core/data/hub-ai-api.service';
@@ -37,29 +19,13 @@ import { LanguageSwitcherComponent } from '../../shared/components/language-swit
     RouterOutlet,
     RouterLink,
     RouterLinkActive,
-    LucideBell,
-    LucideCircleHelp,
-    LucideCircleUserRound,
-    LucideDatabase,
-    LucideFileText,
-    LucideFlaskConical,
-    LucideGrid3x3,
-    LucideLayoutDashboard,
-    LucideLandmark,
-    LucideLogOut,
-    LucideMap,
-    LucideMenu,
-    LucideSearch,
-    LucideSettings,
-    LucideSend,
-    LucideShieldCheck,
-    LucideSparkles,
+    DrawerModule,
+    InputTextModule,
+    PopoverModule,
+    TextareaModule,
     RudolfMarkdownPipe,
     TranslatePipe,
     LanguageSwitcherComponent,
-    LucideSlidersHorizontal,
-    LucideTriangleAlert,
-    LucideX,
   ],
   templateUrl: './app-shell.component.html',
   styleUrl: './app-shell.component.scss',
@@ -72,7 +38,6 @@ export class AppShellComponent {
   private readonly hubAi = inject(HubAiApiService);
   private readonly i18n = inject(I18nService);
   protected readonly menuOpen = signal(false);
-  protected readonly profileMenuOpen = signal(false);
   protected readonly assistantOpen = signal(false);
   protected readonly assistantQuestion = signal('');
   protected readonly assistantAnswer = signal('');
@@ -118,14 +83,6 @@ export class AppShellComponent {
     this.menuOpen.set(false);
   }
 
-  protected toggleProfileMenu(): void {
-    this.profileMenuOpen.update((open) => !open);
-  }
-
-  protected closeProfileMenu(): void {
-    this.profileMenuOpen.set(false);
-  }
-
   protected accountRoleLabel(): string {
     const user = this.auth.currentUser();
     if (user?.role === 'admin') return 'Super administrateur';
@@ -136,7 +93,6 @@ export class AppShellComponent {
   }
 
   protected async logout(): Promise<void> {
-    this.profileMenuOpen.set(false);
     this.assistantOpen.set(false);
     this.assistantQuestion.set('');
     this.assistantAnswer.set('');

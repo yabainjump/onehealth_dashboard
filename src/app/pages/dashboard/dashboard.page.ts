@@ -24,6 +24,9 @@ import {
   LucideTriangleAlert,
 } from '@lucide/angular';
 import { HttpErrorResponse } from '@angular/common/http';
+import { BadgeModule } from 'primeng/badge';
+import { TableModule } from 'primeng/table';
+import { TagModule } from 'primeng/tag';
 
 import { OneHealthDataService } from '../../core/data/one-health-data.service';
 import { DEMO_REFERENCE_DATE } from '../../core/data/mock/ceeac-reference';
@@ -80,6 +83,9 @@ function localIsoDate(offsetDays = 0): string {
   selector: 'app-dashboard-page',
   imports: [
     RouterLink,
+    BadgeModule,
+    TableModule,
+    TagModule,
     RegionalMapPreviewComponent,
     LucideArrowRight,
     LucideCheckCircle2,
@@ -129,6 +135,8 @@ export class DashboardPage implements OnInit {
     this.dataService.dataMode() === 'api' ? 'Données API Hub' : 'Données de démonstration',
   );
   protected readonly decisions = signal<readonly HubDecisionApi[]>([]);
+  protected readonly decisionRows = computed(() => [...this.decisions()]);
+  protected readonly decisionsLoading = signal(true);
   protected readonly events = signal<readonly HubEventApi[]>([]);
   protected readonly scenario = signal<HubScenarioApi | null>(null);
   protected readonly scenarioBusy = signal(false);
@@ -321,6 +329,16 @@ export class DashboardPage implements OnInit {
     return { critical: 'Critique', high: 'Haute', medium: 'Normale', low: 'Faible' }[priority];
   }
 
+  protected prioritySeverity(
+    priority: HubDecisionApi['priority'],
+  ): 'danger' | 'warn' | 'info' | 'secondary' {
+    return { critical: 'danger', high: 'warn', medium: 'info', low: 'secondary' }[priority] as
+      | 'danger'
+      | 'warn'
+      | 'info'
+      | 'secondary';
+  }
+
   protected deadlineLabel(value: string): string {
     return new Intl.DateTimeFormat('fr-FR', { dateStyle: 'short', timeStyle: 'short' }).format(
       new Date(value),
@@ -349,6 +367,8 @@ export class DashboardPage implements OnInit {
           simulated: true,
         })),
       );
+    } finally {
+      this.decisionsLoading.set(false);
     }
   }
 

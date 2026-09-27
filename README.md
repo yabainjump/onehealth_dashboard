@@ -1,6 +1,6 @@
 # One Health Network Dashboard
 
-Démonstrateur Angular du Hub décisionnel régional One Health pour la CEEAC. Cette application est séparée de l'application communautaire Ionic et consomme les API Hub du backend NestJS commun.
+Démonstrateur Angular 21 du Hub décisionnel régional One Health pour la CEEAC. Cette application est séparée de l'application communautaire Ionic et consomme les API Hub du backend NestJS commun.
 
 ## État de cette première étape
 
@@ -20,6 +20,7 @@ Démonstrateur Angular du Hub décisionnel régional One Health pour la CEEAC. C
 - administration sécurisée des rôles Hub et des périmètres pays CEEAC ;
 - registre de souveraineté avec politiques de partage par État et audit des décisions ;
 - données de démonstration clairement identifiées comme fictives.
+- design system PrimeNG 21 / PrimeIcons, thème Aura One Health et shell institutionnel responsive inspiré de Sakai ;
 - moteur de scénario dynamique administrateur, idempotent et traçable, reliant CAPC-AC, ARIS 3 et DHIS2 entre le Cameroun et le Tchad ;
 - file de décisions chargée depuis l'API avec accès direct au dossier concerné ;
 - rapports par alerte persistants et versionnés, avec workflow brouillon, revue, validation et publication ;
@@ -30,7 +31,7 @@ Les principaux écrans du démonstrateur sont maintenant fonctionnels. Les rappo
 
 ## Démarrage
 
-Prérequis : Node.js 20 ou 22 et npm.
+Prérequis : Node.js `20.19+`, `22.12+` ou `24.x` et npm. Le serveur de référence utilise Node.js `20.20.2` (voir `.nvmrc`).
 
 ```bash
 npm install
@@ -58,6 +59,19 @@ Dans un pipeline où les dépôts sont clonés séparément, le job du Dashboard
 version exacte du contrat backend validée pour la livraison avant d'exécuter ces commandes.
 
 La version de production est générée dans `dist/onehealth_dashboard/browser`.
+
+## Migration UI Angular 21 / PrimeNG 21
+
+La modernisation est progressive afin de préserver les services, contrats, permissions et cartes :
+
+- **P0 — nécessaire, terminé :** Angular 21.2, PrimeNG 21.1, thème local, Node compatible, build/lint/tests et CSP inchangée ;
+- **P1 — fortement recommandé, premier lot terminé :** shell, topbar, menu profil, tiroir Rudolf et dashboard stratégique ;
+- **P2 — amélioration fonctionnelle :** tableaux, filtres et formulaires des alertes, connecteurs, souveraineté et administration, page par page ;
+- **P3 — cosmétique :** finitions des pages secondaires et suppression du CSS devenu réellement inutilisé après validation.
+
+PrimeNG fournit les composants génériques. Leaflet, les composants cartographiques et les couleurs
+sectorielles restent spécifiques au domaine. Le budget initial avertit à 600 kB brut et échoue
+toujours à 1 MB ; la base mesurée de ce lot est d'environ 561 kB brut / 137 kB transférés.
 
 ## Routes
 
