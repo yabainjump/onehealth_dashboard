@@ -1,9 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import {
   LucideActivity,
-  LucideArrowRight,
-  LucideChevronLeft,
   LucideChevronRight,
   LucideDownload,
   LucideMap,
@@ -15,6 +14,13 @@ import {
   LucideTrees,
   LucideTriangleAlert,
 } from '@lucide/angular';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { PaginatorModule } from 'primeng/paginator';
+import type { PaginatorState } from 'primeng/types/paginator';
+import { SelectModule } from 'primeng/select';
+import { TableModule } from 'primeng/table';
+import { TagModule } from 'primeng/tag';
 
 import { AlertRegistryStore } from './alert-registry.store';
 import { BrandLoaderComponent } from '../../shared/components/brand-loader/brand-loader.component';
@@ -39,10 +45,15 @@ type StageFilter = 'all' | ObservationStage;
   selector: 'app-alert-list-page',
   imports: [
     RouterLink,
+    FormsModule,
     BrandLoaderComponent,
+    ButtonModule,
+    InputTextModule,
+    PaginatorModule,
+    SelectModule,
+    TableModule,
+    TagModule,
     LucideActivity,
-    LucideArrowRight,
-    LucideChevronLeft,
     LucideChevronRight,
     LucideDownload,
     LucideMap,
@@ -61,9 +72,8 @@ type StageFilter = 'all' | ObservationStage;
 })
 export class AlertListPage {
   protected readonly registry = inject(AlertRegistryStore);
-  private readonly pageSize = 8;
+  protected readonly pageSize = 8;
   protected readonly summary = this.registry.summary;
-  protected readonly countries = CEEAC_COUNTRIES;
   protected readonly viewMode = this.registry.viewMode;
   protected readonly searchTerm = this.registry.searchTerm;
   protected readonly selectedCountry = this.registry.selectedCountry;
@@ -72,6 +82,24 @@ export class AlertListPage {
   protected readonly currentPage = this.registry.currentPage;
   protected readonly totalPages = this.registry.totalPages;
   protected readonly pagedObservations = this.registry.items;
+  protected readonly tableObservations = computed(() => [...this.pagedObservations()]);
+  protected readonly countryOptions = [
+    { label: 'Tous les pays', value: 'all' },
+    ...CEEAC_COUNTRIES.map((country) => ({ label: country.name, value: country.code })),
+  ];
+  protected readonly sectorOptions = [
+    { label: 'Tous les secteurs', value: 'all' },
+    { label: 'Santé humaine', value: 'human' },
+    { label: 'Santé animale', value: 'animal' },
+    { label: 'Climat et environnement', value: 'environment' },
+  ];
+  protected readonly stageOptions = [
+    { label: 'Tous les niveaux', value: 'all' },
+    { label: 'Observation source', value: 'observation' },
+    { label: 'Signal à vérifier', value: 'signal' },
+    { label: 'Alerte vérifiée', value: 'verified-alert' },
+  ];
+  protected readonly paginatorTotal = computed(() => Math.min(this.registry.total(), 8000));
 
   protected readonly resultRange = computed(() => {
     const total = this.registry.total();
@@ -98,27 +126,23 @@ export class AlertListPage {
     this.currentPage.set(1);
   }
 
-  protected onCountryChange(event: Event): void {
-    this.selectedCountry.set((event.target as HTMLSelectElement).value);
+  protected onCountryChange(value: string): void {
+    this.selectedCountry.set(value);
     this.currentPage.set(1);
   }
 
-  protected onSectorChange(event: Event): void {
-    this.selectedSector.set((event.target as HTMLSelectElement).value as SectorFilter);
+  protected onSectorChange(value: SectorFilter): void {
+    this.selectedSector.set(value);
     this.currentPage.set(1);
   }
 
-  protected onStageChange(event: Event): void {
-    this.selectedStage.set((event.target as HTMLSelectElement).value as StageFilter);
+  protected onStageChange(value: StageFilter): void {
+    this.selectedStage.set(value);
     this.currentPage.set(1);
   }
 
-  protected previousPage(): void {
-    this.currentPage.update((page) => Math.max(1, page - 1));
-  }
-
-  protected nextPage(): void {
-    this.currentPage.update((page) => Math.min(this.totalPages(), page + 1));
+  protected onPageChange(event: PaginatorState): void {
+    this.currentPage.set(Math.min(this.totalPages(), (event.page ?? 0) + 1));
   }
 
   protected sectorLabel(sector: HealthSector): string {
@@ -131,6 +155,23 @@ export class AlertListPage {
 
   protected severityLabel(observation: OneHealthObservation): string {
     return SEVERITY_LABELS[observation.severity];
+  }
+
+  protected severityTone(
+    observation: OneHealthObservation,
+  ): 'danger' | 'warn' | 'info' | 'success' {
+    return {
+      critical: 'danger',
+      high: 'warn',
+      medium: 'info',
+      low: 'success',
+    }[observation.severity] as 'danger' | 'warn' | 'info' | 'success';
+  }
+
+  protected stageTone(
+    stage: ObservationStage,
+  ): 'success' | 'warn' | 'secondary' {
+    return stage === 'verified-alert' ? 'success' : stage === 'signal' ? 'warn' : 'secondary';
   }
 
   protected formatDate(isoDate: string): string {

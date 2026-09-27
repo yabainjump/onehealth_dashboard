@@ -7,15 +7,21 @@ import {
   inject,
   signal,
 } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import {
-  LucideChevronLeft,
-  LucideChevronRight,
   LucideCircleAlert,
   LucideCircleUserRound,
   LucideRefreshCw,
   LucideSearch,
   LucideShieldCheck,
 } from '@lucide/angular';
+import { AvatarModule } from 'primeng/avatar';
+import { ButtonModule } from 'primeng/button';
+import { CheckboxModule } from 'primeng/checkbox';
+import { InputTextModule } from 'primeng/inputtext';
+import { PaginatorModule } from 'primeng/paginator';
+import type { PaginatorState } from 'primeng/types/paginator';
+import { TagModule } from 'primeng/tag';
 import { HubRole } from '../../core/auth/dashboard-user.model';
 import { HubAdminApiService, HubManagedUser } from '../../core/data/hub-admin-api.service';
 import { CEEAC_COUNTRIES } from '../../core/data/mock/ceeac-reference';
@@ -32,8 +38,13 @@ interface RoleOption {
   selector: 'app-administration-page',
   imports: [
     BrandLoaderComponent,
-    LucideChevronLeft,
-    LucideChevronRight,
+    FormsModule,
+    AvatarModule,
+    ButtonModule,
+    CheckboxModule,
+    InputTextModule,
+    PaginatorModule,
+    TagModule,
     LucideCircleAlert,
     LucideCircleUserRound,
     LucideRefreshCw,
@@ -46,7 +57,7 @@ interface RoleOption {
 })
 export class AdministrationPage implements OnInit {
   private readonly api = inject(HubAdminApiService);
-  private readonly pageSize = 20;
+  protected readonly pageSize = 20;
 
   protected readonly countries = CEEAC_COUNTRIES;
   protected readonly roleOptions: readonly RoleOption[] = [
@@ -163,8 +174,7 @@ export class AdministrationPage implements OnInit {
     return this.draftRoles().includes(role);
   }
 
-  protected toggleRole(role: HubRole, event: Event): void {
-    const checked = (event.target as HTMLInputElement).checked;
+  protected toggleRole(role: HubRole, checked: boolean): void {
     const roles = checked
       ? [...this.draftRoles(), role]
       : this.draftRoles().filter((candidate) => candidate !== role);
@@ -178,9 +188,8 @@ export class AdministrationPage implements OnInit {
     return this.draftCountries().includes(code);
   }
 
-  protected toggleCountry(code: string, event: Event): void {
+  protected toggleCountry(code: string, checked: boolean): void {
     if (this.isGlobalDraft()) return;
-    const checked = (event.target as HTMLInputElement).checked;
     this.draftCountries.update((countries) =>
       checked ? [...new Set([...countries, code])] : countries.filter((item) => item !== code),
     );
@@ -226,15 +235,10 @@ export class AdministrationPage implements OnInit {
     }
   }
 
-  protected previousPage(): void {
-    if (this.currentPage() <= 1 || this.loading()) return;
-    this.currentPage.update((page) => page - 1);
-    void this.loadUsers();
-  }
-
-  protected nextPage(): void {
-    if (this.currentPage() >= this.totalPages() || this.loading()) return;
-    this.currentPage.update((page) => page + 1);
+  protected onPageChange(event: PaginatorState): void {
+    const page = Math.min(this.totalPages(), (event.page ?? 0) + 1);
+    if (page === this.currentPage() || this.loading()) return;
+    this.currentPage.set(page);
     void this.loadUsers();
   }
 
@@ -251,6 +255,12 @@ export class AdministrationPage implements OnInit {
     if (user.hubRoles.includes('hub_admin')) return 'Administrateur Hub';
     if (!user.hubRoles.length) return 'Aucun accès Hub';
     return `${user.hubRoles.length} rôle(s) · ${user.hubCountryCodes.length} pays`;
+  }
+
+  protected roleSeverity(user: HubManagedUser): 'danger' | 'success' | 'info' | 'secondary' {
+    if (user.role === 'admin') return 'danger';
+    if (user.hubRoles.includes('hub_admin')) return 'success';
+    return user.hubRoles.length ? 'info' : 'secondary';
   }
 
   private errorMessage(error: unknown, fallback: string): string {

@@ -24,6 +24,10 @@ import {
   LucideUsers,
   LucideX,
 } from '@lucide/angular';
+import { ButtonModule } from 'primeng/button';
+import { TagModule } from 'primeng/tag';
+import { TextareaModule } from 'primeng/textarea';
+import { TimelineModule } from 'primeng/timeline';
 
 import { OneHealthDataService } from '../../core/data/one-health-data.service';
 import {
@@ -63,6 +67,10 @@ interface WorkflowStep {
   imports: [
     RouterLink,
     ConsolidatedEventCardComponent,
+    ButtonModule,
+    TagModule,
+    TextareaModule,
+    TimelineModule,
     LucideActivity,
     LucideArrowLeft,
     LucideArrowRight,
@@ -209,6 +217,7 @@ export class AlertDetailPage {
       },
     ];
   });
+  protected readonly workflowItems = computed(() => [...this.workflow()]);
 
   protected readonly primaryActionLabel = computed(() => {
     if (this.workflowStage() === 'observation') {
@@ -470,6 +479,21 @@ export class AlertDetailPage {
 
   protected severityLabel(observation: OneHealthObservation): string {
     return SEVERITY_LABELS[observation.severity];
+  }
+
+  protected severityTone(
+    observation: OneHealthObservation,
+  ): 'danger' | 'warn' | 'info' | 'success' {
+    return {
+      critical: 'danger',
+      high: 'warn',
+      medium: 'info',
+      low: 'success',
+    }[observation.severity] as 'danger' | 'warn' | 'info' | 'success';
+  }
+
+  protected stageTone(stage: ObservationStage): 'success' | 'warn' | 'secondary' {
+    return stage === 'verified-alert' ? 'success' : stage === 'signal' ? 'warn' : 'secondary';
   }
 
   protected formatDate(isoDate: string, includeTime = false): string {

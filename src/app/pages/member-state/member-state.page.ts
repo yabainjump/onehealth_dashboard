@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import {
   LucideActivity,
@@ -13,6 +14,7 @@ import {
   LucideTrees,
   LucideTriangleAlert,
 } from '@lucide/angular';
+import { SelectModule } from 'primeng/select';
 import { DashboardAuthService } from '../../core/auth/dashboard-auth.service';
 import { CEEAC_COUNTRIES } from '../../core/data/mock/ceeac-reference';
 import {
@@ -32,7 +34,9 @@ const SEVERITY_RANK: Readonly<Record<ObservationSeverity, number>> = {
 @Component({
   selector: 'app-member-state-page',
   imports: [
+    FormsModule,
     RouterLink,
+    SelectModule,
     LucideActivity,
     LucideArrowRight,
     LucideBuilding2,
@@ -136,8 +140,8 @@ export class MemberStatePage {
       .slice(0, 5),
   );
 
-  protected selectCountry(event: Event): void {
-    this.selectedCountryCode.set((event.target as HTMLSelectElement).value);
+  protected selectCountry(countryCode: string): void {
+    this.selectedCountryCode.set(countryCode);
   }
 
   protected formatDate(value: string): string {

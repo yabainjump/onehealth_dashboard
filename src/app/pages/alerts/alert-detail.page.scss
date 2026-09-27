@@ -63,9 +63,7 @@
   }
 }
 
-.identifier-badge,
-.severity-badge,
-.stage-badge {
+.identifier-badge {
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -78,48 +76,6 @@
 .identifier-badge {
   background: #e8eef8;
   color: var(--oh-primary-900);
-}
-
-.severity-badge {
-  &::before {
-    width: 6px;
-    height: 6px;
-    content: '';
-    border-radius: 50%;
-    background: currentColor;
-  }
-
-  &--critical {
-    background: #fff0f1;
-    color: var(--oh-danger);
-  }
-  &--high {
-    background: #fff3e8;
-    color: var(--oh-warning);
-  }
-  &--medium {
-    background: #edf5ff;
-    color: var(--oh-observation);
-  }
-  &--low {
-    background: #eef6f1;
-    color: var(--oh-success);
-  }
-}
-
-.stage-badge {
-  &--observation {
-    background: #e8f5fc;
-    color: var(--oh-observation);
-  }
-  &--signal {
-    background: #fff3e8;
-    color: #ad510c;
-  }
-  &--verified-alert {
-    background: #e8f6ef;
-    color: var(--oh-success);
-  }
 }
 
 .human-control-notice,
@@ -527,58 +483,33 @@
   padding-top: 12px;
 }
 
-.workflow-step {
-  position: relative;
+.workflow-marker {
+  width: 30px;
+  height: 30px;
   display: grid;
-  grid-template-columns: 30px minmax(0, 1fr);
-  gap: 9px;
-  min-height: 62px;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--oh-ink-500);
+  background: #edf1f6;
 
-  &:not(:last-child)::after {
-    position: absolute;
-    top: 30px;
-    bottom: 0;
-    left: 14px;
-    width: 1px;
-    content: '';
-    background: var(--oh-border-strong);
-  }
+  &--done { color: var(--oh-success); background: #e8f6ef; }
+  &--active { color: var(--oh-primary-800); background: #e7f0fd; }
+}
 
-  > span {
-    width: 30px;
-    height: 30px;
-    display: grid;
-    place-items: center;
-    border-radius: 50%;
-    background: #edf1f6;
-    color: var(--oh-ink-500);
-  }
+.workflow-content {
+  display: grid;
+  gap: 4px;
+  padding: 3px 0 18px;
 
-  > div {
-    display: grid;
-    align-content: start;
-    gap: 4px;
-    padding-top: 3px;
+  strong { color: var(--oh-ink-800); font-size: .625rem; }
+  small { color: var(--oh-ink-500); font-size: .5rem; line-height: 1.4; }
+}
 
-    strong {
-      font-size: 0.625rem;
-    }
-
-    small {
-      color: var(--oh-ink-500);
-      font-size: 0.5rem;
-      line-height: 1.4;
-    }
-  }
-
-  &--done > span {
-    background: #e8f6ef;
-    color: var(--oh-success);
-  }
-  &--active > span {
-    background: #e7f0fd;
-    color: var(--oh-primary-800);
-  }
+:host ::ng-deep {
+  .workflow-list .p-timeline-event-opposite { display: none; }
+  .workflow-list .p-timeline-event-separator { flex: 0 0 30px; }
+  .workflow-list .p-timeline-event-connector { background: var(--oh-border-strong); }
+  .detail-header__badges .p-tag { font-size: .5625rem; }
 }
 
 .comment-button {
@@ -699,7 +630,7 @@
   padding: 18px 20px;
   border-bottom: 1px solid var(--oh-border);
 }
-.report-card__heading .oh-button {
+.report-card__heading .p-button {
   margin-left: auto;
 }
 .report-summary {
@@ -920,7 +851,7 @@
     align-items: flex-start;
     flex-wrap: wrap;
   }
-  .report-card__heading .oh-button {
+  .report-card__heading .p-button {
     width: 100%;
     margin-left: 0;
   }

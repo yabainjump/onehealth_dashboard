@@ -60,18 +60,26 @@ version exacte du contrat backend validée pour la livraison avant d'exécuter c
 
 La version de production est générée dans `dist/onehealth_dashboard/browser`.
 
+Inter Variable reste auto-hébergée dans les builds de développement et de production. La suite
+Karma utilise volontairement la pile système : les tests unitaires ne réalisent pas de comparaison
+visuelle et n'émettent ainsi aucune requête de police inutile ou erreur 404.
+
 ## Migration UI Angular 21 / PrimeNG 21
 
 La modernisation est progressive afin de préserver les services, contrats, permissions et cartes :
 
 - **P0 — nécessaire, terminé :** Angular 21.2, PrimeNG 21.1, thème local, Node compatible, build/lint/tests et CSP inchangée ;
-- **P1 — fortement recommandé, premier lot terminé :** shell, topbar, menu profil, tiroir Rudolf et dashboard stratégique ;
-- **P2 — amélioration fonctionnelle :** tableaux, filtres et formulaires des alertes, connecteurs, souveraineté et administration, page par page ;
-- **P3 — cosmétique :** finitions des pages secondaires et suppression du CSS devenu réellement inutilisé après validation.
+- **P1 — fortement recommandé, terminé :** shell, topbar, menu profil, tiroir Rudolf conversationnel et dashboard stratégique ;
+- **P2 — amélioration fonctionnelle, terminé :** registre et détail Alertes, Connecteurs, Souveraineté et Administration migrés sélectivement vers les tables, sélecteurs, tags, boutons, formulaires, timelines et paginations PrimeNG, sans remplacer les services, permissions ni paginations serveur ;
+- **P3 — cosmétique, terminé :** finitions État membre, Aide, Profil, Analyses et Rapports (y compris le rapport de scénario), puis suppression ciblée du CSS remplacé par PrimeNG après validation du build et des tests.
 
 PrimeNG fournit les composants génériques. Leaflet, les composants cartographiques et les couleurs
 sectorielles restent spécifiques au domaine. Le budget initial avertit à 600 kB brut et échoue
 toujours à 1 MB ; la base mesurée de ce lot est d'environ 561 kB brut / 137 kB transférés.
+
+Le tiroir Rudolf conserve uniquement un fil de conversation volatil dans la mémoire de l'onglet.
+Chaque question continue d'appeler l'endpoint Hub autorisé ; le fil est effacé par « Nouvelle », au
+rechargement et à la déconnexion. Il ne remplace pas l'historique privé persistant de l'application Ionic.
 
 ## Routes
 

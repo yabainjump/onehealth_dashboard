@@ -7,7 +7,7 @@
     <label class="help-search">
       <svg lucideSearch size="19"></svg>
       <span class="sr-only">Rechercher dans l’aide</span>
-      <input type="search" placeholder="Rechercher une question ou une fonctionnalité…" [value]="search()" (input)="onSearch($event)">
+      <input pInputText type="search" maxlength="120" placeholder="Rechercher une question ou une fonctionnalité…" [value]="search()" (input)="onSearch($event)">
     </label>
   </header>
 

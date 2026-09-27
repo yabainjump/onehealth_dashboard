@@ -183,28 +183,6 @@
   }
 }
 
-.availability-track {
-  height: 5px;
-  margin-top: 10px;
-  overflow: hidden;
-  border-radius: 999px;
-  background: #edf1f6;
-
-  i {
-    display: block;
-    height: 100%;
-    border-radius: inherit;
-    background: var(--oh-primary-700);
-  }
-}
-
-.availability-card--animal .availability-track i {
-  background: var(--oh-animal);
-}
-.availability-card--environment .availability-track i {
-  background: var(--oh-environment);
-}
-
 .flows-card {
   margin-top: 20px;
   overflow: hidden;
@@ -270,7 +248,7 @@
   border-bottom: 1px solid var(--oh-border);
   background: #fafbfd;
 
-  label {
+  .filter-field {
     display: grid;
     gap: 4px;
 
@@ -283,16 +261,39 @@
     }
   }
 
-  select {
-    min-width: 0;
-    height: 34px;
-    padding: 0 27px 0 9px;
-    border: 1px solid var(--oh-border);
-    border-radius: 7px;
-    background: #fff;
-    color: var(--oh-ink-800);
-    font-size: 0.625rem;
+}
+
+:host ::ng-deep {
+  .availability-card .p-progressbar {
+    height: 5px;
+    margin-top: 10px;
+    background: #edf1f6;
   }
+  .availability-card--human .p-progressbar-value { background: var(--oh-primary-700); }
+  .availability-card--animal .p-progressbar-value { background: var(--oh-animal); }
+  .availability-card--environment .p-progressbar-value { background: var(--oh-environment); }
+  .connector-filters .p-select { min-height: 36px; font-size: .6875rem; }
+  .connector-table .p-datatable-thead > tr > th {
+    padding: 12px 13px;
+    border-color: var(--oh-border);
+    color: var(--oh-ink-500);
+    background: #f5f8fc;
+    font-size: .5625rem;
+    font-weight: 760;
+    letter-spacing: .045em;
+    text-transform: uppercase;
+  }
+  .connector-table .p-datatable-tbody > tr > td {
+    padding: 13px;
+    border-color: var(--oh-border);
+    color: var(--oh-ink-600);
+    font-size: .625rem;
+  }
+  .connector-table .p-datatable-tbody > tr:hover { background: #f8faff; }
+  .connector-table .connector-row--error { background: #fff6f6; }
+  .connector-table .connector-row--suspended { opacity: .66; }
+  .connector-table .p-tag { font-size: .5375rem; }
+  .pagination .p-paginator { padding: 0; background: transparent; }
 }
 
 .status-summary {
@@ -323,51 +324,6 @@
   }
   &--error {
     background: var(--oh-danger);
-  }
-}
-
-.connector-table {
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
-  scrollbar-width: thin;
-  scrollbar-color: #b9c5d5 transparent;
-
-  &__head,
-  .connector-row {
-    min-width: 1040px;
-    display: grid;
-    grid-template-columns: 145px 125px 145px 125px 115px 125px 75px 125px;
-    align-items: center;
-    gap: 10px;
-    padding-inline: 18px;
-  }
-
-  &__head {
-    min-height: 44px;
-    background: #f0f4fc;
-    color: var(--oh-ink-600);
-    font-size: 0.5rem;
-    font-weight: 760;
-    letter-spacing: 0.045em;
-    text-transform: uppercase;
-  }
-}
-
-.connector-row {
-  min-height: 66px;
-  border-top: 1px solid var(--oh-border);
-  color: var(--oh-ink-600);
-  font-size: 0.625rem;
-  transition: background 150ms ease;
-
-  &:hover {
-    background: #f8faff;
-  }
-  &--error {
-    background: #fff6f6;
-  }
-  &--suspended {
-    opacity: 0.66;
   }
 }
 
@@ -458,19 +414,6 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-}
-
-.protocol-badge {
-  display: inline-flex;
-  width: fit-content;
-  padding: 4px 6px;
-  border: 1px solid #d4deec;
-  border-radius: 5px;
-  background: #eaf0f9;
-  color: #506077;
-  font-size: 0.5rem;
-  font-style: normal;
-  font-weight: 680;
 }
 
 .status-badge {
@@ -571,34 +514,10 @@
   border-top: 1px solid var(--oh-border);
   background: #fafbfd;
 
-  > span,
-  strong {
+  > span {
     color: var(--oh-ink-600);
     font-size: 0.5625rem;
     font-weight: 610;
-  }
-
-  > div {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  button {
-    width: 30px;
-    height: 30px;
-    display: grid;
-    place-items: center;
-    border: 1px solid var(--oh-border-strong);
-    border-radius: 6px;
-    background: #fff;
-    color: var(--oh-primary-900);
-    cursor: pointer;
-
-    &:disabled {
-      opacity: 0.4;
-      cursor: default;
-    }
   }
 }
 
@@ -665,7 +584,7 @@
     width: 100%;
   }
 
-  .connector-table {
+  .desktop-connector-table {
     display: none;
   }
 

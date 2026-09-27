@@ -11,7 +11,7 @@
   } @else if (error()) {
     <div class="report-state report-state--error oh-card" role="alert">
       <svg lucideTriangleAlert size="28"></svg><h1>Rapport indisponible</h1><p>{{ error() }}</p>
-      <div><a class="oh-button" routerLink="/dashboard">Retour au tableau de bord</a><button class="oh-button oh-button--primary" type="button" (click)="loadReport()"><svg lucideRefreshCw size="16"></svg> Réessayer</button></div>
+      <div><a pButton severity="secondary" [outlined]="true" routerLink="/dashboard">Retour au tableau de bord</a><button pButton type="button" (click)="loadReport()"><svg lucideRefreshCw pButtonIcon size="16"></svg><span pButtonLabel>Réessayer</span></button></div>
     </div>
   } @else if (report(); as item) {
     <header class="report-hero">
@@ -35,8 +35,8 @@
     <div class="report-toolbar">
       <span><svg lucideCheckCircle2 size="16"></svg> Exécution terminée et traçable</span>
       <div>
-        <button class="oh-button" type="button" (click)="printReport()"><svg lucidePrinter size="16"></svg> Imprimer / PDF</button>
-        <button class="oh-button oh-button--primary" type="button" (click)="downloadReport()"><svg lucideDownload size="16"></svg> Télécharger HTML</button>
+        <button pButton type="button" severity="secondary" [outlined]="true" (click)="printReport()"><svg lucidePrinter pButtonIcon size="16"></svg><span pButtonLabel>Imprimer / PDF</span></button>
+        <button pButton type="button" (click)="downloadReport()"><svg lucideDownload pButtonIcon size="16"></svg><span pButtonLabel>Télécharger HTML</span></button>
       </div>
     </div>
     @if (feedback()) { <p class="report-feedback" role="status">{{ feedback() }}</p> }

@@ -13,6 +13,7 @@ import {
   LucideShieldCheck,
   LucideTriangleAlert,
 } from '@lucide/angular';
+import { ButtonModule } from 'primeng/button';
 import {
   HubApiService,
   HubScenarioReportApi,
@@ -28,6 +29,7 @@ import {
   imports: [
     RouterLink,
     BrandLoaderComponent,
+    ButtonModule,
     LucideArrowLeft,
     LucideCheckCircle2,
     LucideDatabase,

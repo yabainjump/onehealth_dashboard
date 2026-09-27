@@ -14,6 +14,7 @@ import {
   LucideSparkles,
   LucideTriangleAlert,
 } from '@lucide/angular';
+import { InputTextModule } from 'primeng/inputtext';
 import { DashboardAuthService } from '../../core/auth/dashboard-auth.service';
 
 interface HelpQuestion {
@@ -71,6 +72,7 @@ const HELP_QUESTIONS: readonly HelpQuestion[] = [
   selector: 'app-help-page',
   imports: [
     RouterLink,
+    InputTextModule,
     LucideArrowRight,
     LucideBookOpen,
     LucideCircleHelp,

@@ -13,6 +13,9 @@ import {
   LucideShieldCheck,
   LucideUserRound,
 } from '@lucide/angular';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { TextareaModule } from 'primeng/textarea';
 import {
   DashboardAuthService,
   DashboardLoginError,
@@ -33,6 +36,9 @@ const HUB_ROLE_LABELS: Readonly<Record<HubRole, string>> = {
   imports: [
     ReactiveFormsModule,
     RouterLink,
+    ButtonModule,
+    InputTextModule,
+    TextareaModule,
     LucideBadgeCheck,
     LucideBriefcase,
     LucideCheckCircle2,

@@ -246,7 +246,6 @@
     </main>
 
     <p-drawer
-      header="Rudolf — Assistant du Hub"
       position="right"
       [visible]="assistantOpen()"
       (visibleChange)="assistantOpen.set($event)"
@@ -254,41 +253,117 @@
       [dismissible]="true"
       [closeOnEscape]="true"
       [blockScroll]="true"
-      [style]="{ width: 'min(430px, 100vw)' }"
+      [style]="{ width: 'min(520px, 100vw)' }"
       styleClass="ohn-rudolf-drawer"
     >
+      <ng-template #header>
+        <div class="rudolf-drawer__header">
+          <span class="rudolf-avatar" aria-hidden="true">
+            <img src="assets/brand/one-health-icon.png" alt="" width="42" height="42" />
+            <i></i>
+          </span>
+          <span>
+            <strong>Rudolf</strong>
+            <small>{{ 'shell.rudolf.subtitle' | t }}</small>
+          </span>
+          <button
+            type="button"
+            class="rudolf-new"
+            [disabled]="assistantBusy() || !assistantMessages().length"
+            (click)="startAssistantConversation()"
+          >
+            <i class="pi pi-plus" aria-hidden="true"></i>
+            {{ 'shell.rudolf.newConversation' | t }}
+          </button>
+        </div>
+      </ng-template>
       <div class="rudolf-panel">
-        <div class="rudolf-drawer__notice">{{ 'shell.rudolf.notice' | t }}</div>
-        <div class="rudolf-drawer__conversation">
-          @if (assistantAnswer()) {
-            <div
-              class="rudolf-answer rudolf-prose"
-              [class.rudolf-prose--writing]="assistantBusy()"
-              [innerHTML]="assistantAnswer() | rudolfMarkdown"
-            ></div>
+        <div class="rudolf-drawer__notice">
+          <i class="pi pi-shield" aria-hidden="true"></i>
+          <span>{{ 'shell.rudolf.notice' | t }}</span>
+        </div>
+        <div #assistantConversation class="rudolf-drawer__conversation" aria-live="polite">
+          @if (assistantMessages().length) {
+            <div class="rudolf-message-list">
+              @for (message of assistantMessages(); track message.id) {
+                <article
+                  class="rudolf-message"
+                  [class.rudolf-message--user]="message.role === 'user'"
+                >
+                  @if (message.role === 'assistant') {
+                    <span class="rudolf-message__avatar" aria-hidden="true">
+                      <img src="assets/brand/one-health-icon.png" alt="" width="32" height="32" />
+                    </span>
+                  }
+                  <div class="rudolf-message__body">
+                    @if (message.role === 'assistant') {
+                      <strong>Rudolf</strong>
+                    }
+                    @if (message.content) {
+                      <div
+                        class="rudolf-answer rudolf-prose"
+                        [class.rudolf-prose--writing]="assistantBusy() && $last"
+                        [innerHTML]="message.content | rudolfMarkdown"
+                      ></div>
+                    } @else {
+                      <span class="rudolf-word-loader" aria-label="Analyse en cours">
+                        <i></i><i></i><i></i>
+                      </span>
+                    }
+                  </div>
+                </article>
+              }
+            </div>
           } @else {
-            <p class="rudolf-empty">{{ 'shell.rudolf.empty' | t }}</p>
+            <section class="rudolf-empty">
+              <div class="rudolf-empty__orbit" aria-hidden="true">
+                <i></i>
+                <img src="assets/brand/one-health-icon.png" alt="" width="60" height="60" />
+              </div>
+              <span>ONE HEALTH INTELLIGENCE</span>
+              <h2>{{ 'shell.rudolf.title' | t }}</h2>
+              <p>{{ 'shell.rudolf.empty' | t }}</p>
+              <div class="rudolf-suggestions">
+                @for (suggestion of assistantSuggestions(); track suggestion) {
+                  <button type="button" (click)="useAssistantSuggestion(suggestion)">
+                    <i class="pi pi-sparkles" aria-hidden="true"></i>
+                    <span>{{ suggestion }}</span>
+                    <i class="pi pi-arrow-right" aria-hidden="true"></i>
+                  </button>
+                }
+              </div>
+            </section>
           }
           @if (assistantError()) {
-            <p class="rudolf-error">{{ assistantError() }}</p>
+            <p class="rudolf-error" role="alert">
+              <i class="pi pi-exclamation-circle" aria-hidden="true"></i>
+              {{ assistantError() }}
+            </p>
           }
         </div>
         <form (submit)="$event.preventDefault(); askRudolf()">
-          <textarea
-            pTextarea
-            maxlength="1500"
-            rows="4"
-            [placeholder]="'shell.rudolf.placeholder' | t"
-            [value]="assistantQuestion()"
-            (input)="onAssistantInput($event)"
-          ></textarea>
-          <div>
-            <small>{{ assistantQuestion().length }} / 1500</small
-            ><button type="submit" [disabled]="!assistantQuestion().trim() || assistantBusy()">
-              <i class="pi pi-send" aria-hidden="true"></i>
-              {{ assistantBusy() ? ('shell.rudolf.analyzing' | t) : ('shell.rudolf.send' | t) }}
+          <div class="rudolf-composer">
+            <textarea
+              pTextarea
+              maxlength="1500"
+              rows="2"
+              [placeholder]="'shell.rudolf.placeholder' | t"
+              [value]="assistantQuestion()"
+              [disabled]="assistantBusy()"
+              (input)="onAssistantInput($event)"
+            ></textarea>
+            <button
+              type="submit"
+              [attr.aria-label]="'shell.rudolf.send' | t"
+              [disabled]="!assistantQuestion().trim() || assistantBusy()"
+            >
+              <i
+                [class]="assistantBusy() ? 'pi pi-spin pi-spinner' : 'pi pi-arrow-up'"
+                aria-hidden="true"
+              ></i>
             </button>
           </div>
+          <small>{{ assistantQuestion().length }} / 1500 · {{ 'shell.rudolf.disclaimer' | t }}</small>
         </form>
       </div>
     </p-drawer>

@@ -6,9 +6,9 @@
       <span>Notes pays, situations régionales et veilles sectorielles produites à partir des données consolidées.</span>
       <small>{{ dataModeLabel() }}</small>
     </div>
-    <button class="oh-button oh-button--primary" type="button" (click)="exportCatalogue()">
-      <svg lucideDownload size="16"></svg>
-      Exporter le catalogue
+    <button pButton type="button" (click)="exportCatalogue()">
+      <svg lucideDownload pButtonIcon size="16"></svg>
+      <span pButtonLabel>Exporter le catalogue</span>
     </button>
   </header>
 
@@ -45,27 +45,17 @@
     <strong><svg lucideFilter size="16"></svg> Rechercher</strong>
     <label class="search-field">
       <svg lucideSearch size="16"></svg>
-      <input type="search" placeholder="Titre, pays ou période…" [value]="searchTerm()" (input)="onSearch($event)">
+      <input pInputText type="search" maxlength="120" placeholder="Titre, pays ou période…" [value]="searchTerm()" (input)="onSearch($event)">
     </label>
-    <label>
+    <div class="filter-field">
       <span>Type de rapport</span>
-      <select [value]="selectedScope()" (change)="onScopeChange($event)">
-        <option value="all">Tous les formats</option>
-        <option value="regional">Situation régionale</option>
-        <option value="country">Notes pays</option>
-        <option value="sector">Veilles sectorielles</option>
-      </select>
-    </label>
-    <label>
+      <p-select [options]="scopeOptions" optionLabel="label" optionValue="value" [ngModel]="selectedScope()" (ngModelChange)="onScopeChange($event)" ariaLabel="Type de rapport" />
+    </div>
+    <div class="filter-field">
       <span>Pays</span>
-      <select [value]="selectedCountry()" (change)="onCountryChange($event)">
-        <option value="all">Tous les pays</option>
-        @for (country of countries; track country.code) {
-          <option [value]="country.code">{{ country.name }}</option>
-        }
-      </select>
-    </label>
-    <button type="button" (click)="resetFilters()">Réinitialiser</button>
+      <p-select [options]="countryOptions" optionLabel="label" optionValue="value" [ngModel]="selectedCountry()" (ngModelChange)="onCountryChange($event)" ariaLabel="Pays du rapport" />
+    </div>
+    <button pButton type="button" [text]="true" size="small" (click)="resetFilters()">Réinitialiser</button>
   </div>
 
   <div class="reports-layout">
@@ -141,9 +131,9 @@
         @if (feedback()) { <p class="report-feedback" role="status">{{ feedback() }}</p> }
 
         <footer>
-          <button class="oh-button" type="button" [disabled]="aiBusy() || !auth.canAnalyze()" (click)="prepareRudolfDraft()"><svg lucideSparkles size="16"></svg> {{ aiBusy() ? 'Préparation…' : 'Préparer avec Rudolf' }}</button>
-          <button class="oh-button" type="button" (click)="printReport()"><svg lucidePrinter size="16"></svg> Imprimer / PDF</button>
-          <button class="oh-button oh-button--primary" type="button" (click)="downloadReport()"><svg lucideDownload size="16"></svg> Télécharger HTML</button>
+          <button pButton type="button" severity="help" [outlined]="true" [loading]="aiBusy()" [disabled]="aiBusy() || !auth.canAnalyze()" (click)="prepareRudolfDraft()"><svg lucideSparkles pButtonIcon size="16"></svg><span pButtonLabel>{{ aiBusy() ? 'Préparation…' : 'Préparer avec Rudolf' }}</span></button>
+          <button pButton type="button" severity="secondary" [outlined]="true" (click)="printReport()"><svg lucidePrinter pButtonIcon size="16"></svg><span pButtonLabel>Imprimer / PDF</span></button>
+          <button pButton type="button" (click)="downloadReport()"><svg lucideDownload pButtonIcon size="16"></svg><span pButtonLabel>Télécharger HTML</span></button>
         </footer>
       } @else {
         <div class="empty-state empty-state--detail"><svg lucideFileText size="28"></svg><strong>Sélectionnez un rapport</strong><span>Son aperçu apparaîtra dans cet espace.</span></div>

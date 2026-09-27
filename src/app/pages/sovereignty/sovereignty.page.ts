@@ -7,6 +7,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import {
   LucideCircleAlert,
   LucideDatabase,
@@ -14,6 +15,12 @@ import {
   LucideSearch,
   LucideShieldCheck,
 } from '@lucide/angular';
+import { ButtonModule } from 'primeng/button';
+import { CheckboxModule } from 'primeng/checkbox';
+import { InputNumberModule } from 'primeng/inputnumber';
+import { InputTextModule } from 'primeng/inputtext';
+import { SelectModule } from 'primeng/select';
+import { TagModule } from 'primeng/tag';
 import { DashboardAuthService } from '../../core/auth/dashboard-auth.service';
 import { HubRole } from '../../core/auth/dashboard-user.model';
 import {
@@ -29,7 +36,6 @@ import {
   SHARING_LEVEL_LABELS,
   buildDemoSharingPolicies,
   normalizeSharingPolicy,
-  sharingLevelTone,
   validateSharingPolicy,
 } from './sharing-policy-presenter';
 
@@ -39,6 +45,13 @@ type SharingFilter = 'all' | HubSharingLevel;
   selector: 'app-sovereignty-page',
   imports: [
     BrandLoaderComponent,
+    FormsModule,
+    ButtonModule,
+    CheckboxModule,
+    InputNumberModule,
+    InputTextModule,
+    SelectModule,
+    TagModule,
     LucideCircleAlert,
     LucideDatabase,
     LucideRefreshCw,
@@ -56,13 +69,22 @@ export class SovereigntyPage implements OnInit {
   protected readonly countries = CEEAC_COUNTRIES;
   protected readonly sharingLabels = SHARING_LEVEL_LABELS;
   protected readonly aggregationLabels = AGGREGATION_LABELS;
-  protected readonly levelTone = sharingLevelTone;
   protected readonly roleOptions: readonly { value: HubRole; label: string }[] = [
     { value: 'hub_viewer', label: 'Lecteur' },
     { value: 'hub_analyst', label: 'Analyste' },
     { value: 'hub_verifier', label: 'Vérificateur' },
     { value: 'hub_admin', label: 'Administrateur Hub' },
   ];
+  protected readonly sharingFilterOptions = [
+    { label: 'Tous les niveaux', value: 'all' },
+    ...Object.entries(SHARING_LEVEL_LABELS).map(([value, label]) => ({ value, label })),
+  ];
+  protected readonly sharingOptions = Object.entries(SHARING_LEVEL_LABELS).map(
+    ([value, label]) => ({ value, label }),
+  );
+  protected readonly aggregationOptions = Object.entries(AGGREGATION_LABELS).map(
+    ([value, label]) => ({ value, label }),
+  );
   protected readonly loading = signal(true);
   protected readonly saving = signal(false);
   protected readonly fallbackMode = signal(false);
@@ -145,8 +167,8 @@ export class SovereigntyPage implements OnInit {
     this.searchTerm.set((event.target as HTMLInputElement).value.trim().slice(0, 80));
   }
 
-  protected onLevelFilter(event: Event): void {
-    this.selectedLevel.set((event.target as HTMLSelectElement).value as SharingFilter);
+  protected onLevelFilter(value: SharingFilter): void {
+    this.selectedLevel.set(value);
   }
 
   protected selectPolicy(policy: HubSharingPolicyApi | null): void {
@@ -162,23 +184,22 @@ export class SovereigntyPage implements OnInit {
     this.error.set('');
   }
 
-  protected onDraftLevel(event: Event): void {
-    const level = (event.target as HTMLSelectElement).value as HubSharingLevel;
+  protected onDraftLevel(level: HubSharingLevel): void {
     this.draftLevel.set(level);
     this.applyNormalization();
   }
 
-  protected onDraftAggregation(event: Event): void {
-    this.draftAggregation.set((event.target as HTMLSelectElement).value as HubAggregationLevel);
+  protected onDraftAggregation(value: HubAggregationLevel): void {
+    this.draftAggregation.set(value);
     this.applyNormalization();
   }
 
-  protected onRetention(event: Event): void {
-    this.draftRetention.set(Number((event.target as HTMLInputElement).value));
+  protected onRetention(value: number | null): void {
+    this.draftRetention.set(value ?? 1);
   }
 
-  protected onPersonalData(event: Event): void {
-    this.draftPersonalData.set((event.target as HTMLInputElement).checked);
+  protected onPersonalData(checked: boolean): void {
+    this.draftPersonalData.set(checked);
     this.applyNormalization();
   }
 
@@ -186,8 +207,7 @@ export class SovereigntyPage implements OnInit {
     return this.draftRoles().includes(role);
   }
 
-  protected toggleRole(role: HubRole, event: Event): void {
-    const checked = (event.target as HTMLInputElement).checked;
+  protected toggleRole(role: HubRole, checked: boolean): void {
     this.draftRoles.update((roles) =>
       checked ? [...new Set([...roles, role])] : roles.filter((item) => item !== role),
     );
@@ -198,8 +218,7 @@ export class SovereigntyPage implements OnInit {
     return this.draftCountries().includes(code);
   }
 
-  protected toggleCountry(code: string, event: Event): void {
-    const checked = (event.target as HTMLInputElement).checked;
+  protected toggleCountry(code: string, checked: boolean): void {
     this.draftCountries.update((countries) =>
       checked ? [...new Set([...countries, code])] : countries.filter((item) => item !== code),
     );
@@ -247,6 +266,18 @@ export class SovereigntyPage implements OnInit {
       month: 'short',
       year: 'numeric',
     }).format(new Date(value));
+  }
+
+  protected levelSeverity(
+    level: HubSharingLevel,
+  ): 'danger' | 'warn' | 'success' | 'info' | 'secondary' {
+    return {
+      OWNER_ONLY: 'danger',
+      OWNER_AND_CEEAC: 'warn',
+      AUTHORIZED_COUNTRIES: 'warn',
+      REGIONAL_AUTHORIZED: 'success',
+      PUBLIC_AGGREGATED: 'info',
+    }[level] as 'danger' | 'warn' | 'success' | 'info' | 'secondary';
   }
 
   private applyNormalization(): void {

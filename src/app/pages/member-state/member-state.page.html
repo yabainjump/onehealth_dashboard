@@ -8,14 +8,17 @@
         périmètre de souveraineté.
       </p>
     </div>
-    <label class="country-picker">
+    <div class="country-picker">
       <span>État membre affiché</span>
-      <select [value]="selectedCountry().code || ''" (change)="selectCountry($event)">
-        @for (country of countries(); track country.code) {
-          <option [value]="country.code">{{ country.name }}</option>
-        }
-      </select>
-    </label>
+      <p-select
+        [options]="countries()"
+        optionLabel="name"
+        optionValue="code"
+        [ngModel]="selectedCountry().code || ''"
+        (ngModelChange)="selectCountry($event)"
+        ariaLabel="État membre affiché"
+      />
+    </div>
   </header>
 
   <div class="simulation-notice" role="status">

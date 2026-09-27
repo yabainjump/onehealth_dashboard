@@ -6,9 +6,8 @@ import {
   inject,
   signal,
 } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import {
-  LucideChevronLeft,
-  LucideChevronRight,
   LucideCircleAlert,
   LucideMail,
   LucidePawPrint,
@@ -18,6 +17,14 @@ import {
   LucideStethoscope,
   LucideTrees,
 } from '@lucide/angular';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { PaginatorModule } from 'primeng/paginator';
+import type { PaginatorState } from 'primeng/types/paginator';
+import { ProgressBarModule } from 'primeng/progressbar';
+import { SelectModule } from 'primeng/select';
+import { TableModule } from 'primeng/table';
+import { TagModule } from 'primeng/tag';
 import { DashboardAuthService } from '../../core/auth/dashboard-auth.service';
 import { BrandLoaderComponent } from '../../shared/components/brand-loader/brand-loader.component';
 import {
@@ -42,8 +49,14 @@ type ConnectorStatusFilter = 'all' | HubConnectorStatus;
   selector: 'app-connectors-page',
   imports: [
     BrandLoaderComponent,
-    LucideChevronLeft,
-    LucideChevronRight,
+    FormsModule,
+    ButtonModule,
+    InputTextModule,
+    PaginatorModule,
+    ProgressBarModule,
+    SelectModule,
+    TableModule,
+    TagModule,
     LucideCircleAlert,
     LucideMail,
     LucidePawPrint,
@@ -60,7 +73,7 @@ type ConnectorStatusFilter = 'all' | HubConnectorStatus;
 export class ConnectorsPage implements OnInit {
   private readonly api = inject(HubApiService);
   protected readonly auth = inject(DashboardAuthService);
-  private readonly pageSize = 8;
+  protected readonly pageSize = 8;
 
   protected readonly loading = signal(true);
   protected readonly synchronizing = signal(false);
@@ -78,6 +91,19 @@ export class ConnectorsPage implements OnInit {
   protected readonly protocolLabel = connectorProtocolLabel;
   protected readonly formatLastSync = formatConnectorLastSync;
   protected readonly availabilityTone = connectorAvailabilityTone;
+  protected readonly sectorOptions = [
+    { label: 'Tous les secteurs', value: 'all' },
+    { label: 'Santé humaine', value: 'human' },
+    { label: 'Santé animale', value: 'animal' },
+    { label: 'Environnement', value: 'environment' },
+  ];
+  protected readonly statusOptions = [
+    { label: 'Tous les statuts', value: 'all' },
+    { label: 'Opérationnel', value: 'operational' },
+    { label: 'Dégradé', value: 'degraded' },
+    { label: 'En erreur', value: 'error' },
+    { label: 'Suspendu', value: 'suspended' },
+  ];
 
   protected readonly filteredConnectors = computed(() => {
     const search = this.searchTerm().toLocaleLowerCase('fr');
@@ -110,6 +136,7 @@ export class ConnectorsPage implements OnInit {
     const offset = (page - 1) * this.pageSize;
     return this.filteredConnectors().slice(offset, offset + this.pageSize);
   });
+  protected readonly tableConnectors = computed(() => [...this.pagedConnectors()]);
 
   protected readonly resultRange = computed(() => {
     const total = this.filteredConnectors().length;
@@ -176,22 +203,27 @@ export class ConnectorsPage implements OnInit {
     this.currentPage.set(1);
   }
 
-  protected onSectorChange(event: Event): void {
-    this.selectedSector.set((event.target as HTMLSelectElement).value as ConnectorSector);
+  protected onSectorChange(value: ConnectorSector): void {
+    this.selectedSector.set(value);
     this.currentPage.set(1);
   }
 
-  protected onStatusChange(event: Event): void {
-    this.selectedStatus.set((event.target as HTMLSelectElement).value as ConnectorStatusFilter);
+  protected onStatusChange(value: ConnectorStatusFilter): void {
+    this.selectedStatus.set(value);
     this.currentPage.set(1);
   }
 
-  protected previousPage(): void {
-    this.currentPage.update((page) => Math.max(1, page - 1));
+  protected onPageChange(event: PaginatorState): void {
+    this.currentPage.set(Math.min(this.totalPages(), (event.page ?? 0) + 1));
   }
 
-  protected nextPage(): void {
-    this.currentPage.update((page) => Math.min(this.totalPages(), page + 1));
+  protected statusTone(status: HubConnectorStatus): 'success' | 'warn' | 'danger' | 'secondary' {
+    return {
+      operational: 'success',
+      degraded: 'warn',
+      error: 'danger',
+      suspended: 'secondary',
+    }[status] as 'success' | 'warn' | 'danger' | 'secondary';
   }
 
   protected sectorSummary(sector: HubConnectorApi['sector']): HubConnectorSectorSummaryApi {

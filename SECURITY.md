@@ -12,6 +12,8 @@ Application Angular avec landing publique et espace Hub authentifié. Le navigat
 - Les overlays PrimeNG restent configurés localement sous la CSP existante : aucun thème, script,
   police ou composant ne doit être chargé depuis un CDN. Les contenus API et Rudolf projetés dans
   un tiroir, tableau, tag ou popover restent non fiables et suivent les mêmes règles d'échappement.
+- Le fil Rudolf du Dashboard reste volatil en mémoire, n'est jamais écrit dans `localStorage` et est
+  purgé à la déconnexion. Son affichage Markdown passe uniquement par le pipe d'échappement dédié.
 
 ## Signalements pertinents
 Signaler exposition de données entre comptes/pays, XSS, fuite de jeton, contournement d’un flux protégé ou confusion exploitable entre simulation et données officielles. Établir un chemin utilisateur réel et l’impact ; ne pas assimiler un simple contrôle visuel absent à une autorisation backend cassée.

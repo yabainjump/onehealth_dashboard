@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import {
   LucideActivity,
@@ -13,6 +14,8 @@ import {
   LucideStethoscope,
   LucideTrees,
 } from '@lucide/angular';
+import { ButtonModule } from 'primeng/button';
+import { SelectModule } from 'primeng/select';
 import { OneHealthDataService } from '../../core/data/one-health-data.service';
 import { HubAiApiService } from '../../core/data/hub-ai-api.service';
 import { DashboardAuthService } from '../../core/auth/dashboard-auth.service';
@@ -47,7 +50,10 @@ const SEVERITY_ORDER: Readonly<Record<ObservationSeverity, number>> = {
 @Component({
   selector: 'app-analyses-page',
   imports: [
+    FormsModule,
     RouterLink,
+    ButtonModule,
+    SelectModule,
     LucideActivity,
     LucideChevronRight,
     LucideCloudRain,
@@ -103,6 +109,21 @@ export class AnalysesPage {
   ]
     .map(([code, name]) => ({ code, name }))
     .sort((left, right) => left.name.localeCompare(right.name, 'fr'));
+  protected readonly countryOptions = [
+    { label: 'Tous les pays autorisés', value: 'all' },
+    ...this.availableCountries.map((country) => ({ label: country.name, value: country.code })),
+  ];
+  protected readonly sectorOptions: { label: string; value: AnalysisSector }[] = [
+    { label: 'Multisectoriel', value: 'all' },
+    { label: 'Santé humaine', value: 'human' },
+    { label: 'Santé animale', value: 'animal' },
+    { label: 'Climat et environnement', value: 'environment' },
+  ];
+  protected readonly periodOptions: { label: string; value: AnalysisPeriod }[] = [
+    { label: '30 derniers jours', value: 30 },
+    { label: '90 derniers jours', value: 90 },
+    { label: '12 derniers mois', value: 365 },
+  ];
 
   protected readonly filteredObservations = computed(() =>
     filterAnalysisObservations(
@@ -172,16 +193,16 @@ export class AnalysesPage {
       : 0;
   });
 
-  protected onCountryChange(event: Event): void {
-    this.selectedCountry.set((event.target as HTMLSelectElement).value);
+  protected onCountryChange(countryCode: string): void {
+    this.selectedCountry.set(countryCode);
   }
 
-  protected onSectorChange(event: Event): void {
-    this.selectedSector.set((event.target as HTMLSelectElement).value as AnalysisSector);
+  protected onSectorChange(sector: AnalysisSector): void {
+    this.selectedSector.set(sector);
   }
 
-  protected onPeriodChange(event: Event): void {
-    this.selectedPeriod.set(Number((event.target as HTMLSelectElement).value) as AnalysisPeriod);
+  protected onPeriodChange(period: AnalysisPeriod): void {
+    this.selectedPeriod.set(period);
   }
 
   protected resetFilters(): void {

@@ -6,6 +6,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import {
   LucideDownload,
@@ -17,6 +18,9 @@ import {
   LucideShieldCheck,
   LucideSparkles,
 } from '@lucide/angular';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { SelectModule } from 'primeng/select';
 import { OneHealthDataService } from '../../core/data/one-health-data.service';
 import { HubApiService, HubScenarioApi } from '../../core/data/hub-api.service';
 import { HubAiApiService } from '../../core/data/hub-ai-api.service';
@@ -39,7 +43,11 @@ type ReportScopeFilter = 'all' | ReportScope;
 @Component({
   selector: 'app-reports-page',
   imports: [
+    FormsModule,
     RouterLink,
+    ButtonModule,
+    InputTextModule,
+    SelectModule,
     LucideDownload,
     LucideFileText,
     LucideFilter,
@@ -112,6 +120,16 @@ export class ReportsPage implements OnInit {
   ]
     .map(([code, name]) => ({ code, name }))
     .sort((left, right) => left.name.localeCompare(right.name, 'fr'));
+  protected readonly scopeOptions: { label: string; value: ReportScopeFilter }[] = [
+    { label: 'Tous les formats', value: 'all' },
+    { label: 'Situation régionale', value: 'regional' },
+    { label: 'Notes pays', value: 'country' },
+    { label: 'Veilles sectorielles', value: 'sector' },
+  ];
+  protected readonly countryOptions = [
+    { label: 'Tous les pays', value: 'all' },
+    ...this.countries.map((country) => ({ label: country.name, value: country.code })),
+  ];
 
   protected readonly filteredReports = computed(() => {
     const query = this.searchTerm().toLocaleLowerCase('fr');
@@ -146,13 +164,13 @@ export class ReportsPage implements OnInit {
     this.searchTerm.set((event.target as HTMLInputElement).value.trim().slice(0, 120));
   }
 
-  protected onScopeChange(event: Event): void {
-    this.selectedScope.set((event.target as HTMLSelectElement).value as ReportScopeFilter);
+  protected onScopeChange(scope: ReportScopeFilter): void {
+    this.selectedScope.set(scope);
     this.selectFirstFiltered();
   }
 
-  protected onCountryChange(event: Event): void {
-    this.selectedCountry.set((event.target as HTMLSelectElement).value);
+  protected onCountryChange(countryCode: string): void {
+    this.selectedCountry.set(countryCode);
     this.selectFirstFiltered();
   }
 

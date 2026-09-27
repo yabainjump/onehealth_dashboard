@@ -118,7 +118,6 @@
               }
             ],
             "styles": [
-              "node_modules/@fontsource-variable/inter/wght.css",
               "node_modules/primeicons/primeicons.css",
               "node_modules/leaflet/dist/leaflet.css",
               "src/styles.scss"

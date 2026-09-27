@@ -7,8 +7,8 @@
       <small>Données simulées — Version démonstrateur</small>
     </div>
     <div class="analysis-header__actions">
-      <button class="oh-button" type="button" [disabled]="aiBusy() || !auth.canAnalyze()" (click)="explainWithRudolf()"><svg lucideSparkles size="16"></svg>{{ aiBusy() ? 'Analyse…' : 'Expliquer avec Rudolf' }}</button>
-      <button class="oh-button oh-button--primary" type="button" (click)="exportCsv()"><svg lucideDownload size="16"></svg>Exporter l’analyse</button>
+      <button pButton type="button" severity="help" [outlined]="true" [loading]="aiBusy()" [disabled]="aiBusy() || !auth.canAnalyze()" (click)="explainWithRudolf()"><svg lucideSparkles pButtonIcon size="16"></svg><span pButtonLabel>{{ aiBusy() ? 'Analyse…' : 'Expliquer avec Rudolf' }}</span></button>
+      <button pButton type="button" (click)="exportCsv()"><svg lucideDownload pButtonIcon size="16"></svg><span pButtonLabel>Exporter l’analyse</span></button>
     </div>
   </header>
 
@@ -31,33 +31,19 @@
 
   <div class="analysis-filters oh-card">
     <strong><svg lucideFilter size="16"></svg> Filtres actifs</strong>
-    <label>
+    <div class="filter-field">
       <span>Pays</span>
-      <select [value]="selectedCountry()" (change)="onCountryChange($event)">
-        <option value="all">Tous les pays autorisés</option>
-        @for (country of availableCountries; track country.code) {
-          <option [value]="country.code">{{ country.name }}</option>
-        }
-      </select>
-    </label>
-    <label>
+      <p-select [options]="countryOptions" optionLabel="label" optionValue="value" [ngModel]="selectedCountry()" (ngModelChange)="onCountryChange($event)" ariaLabel="Pays analysé" />
+    </div>
+    <div class="filter-field">
       <span>Secteur</span>
-      <select [value]="selectedSector()" (change)="onSectorChange($event)">
-        <option value="all">Multisectoriel</option>
-        <option value="human">Santé humaine</option>
-        <option value="animal">Santé animale</option>
-        <option value="environment">Climat et environnement</option>
-      </select>
-    </label>
-    <label>
+      <p-select [options]="sectorOptions" optionLabel="label" optionValue="value" [ngModel]="selectedSector()" (ngModelChange)="onSectorChange($event)" ariaLabel="Secteur analysé" />
+    </div>
+    <div class="filter-field">
       <span>Période</span>
-      <select [value]="selectedPeriod()" (change)="onPeriodChange($event)">
-        <option value="30">30 derniers jours</option>
-        <option value="90">90 derniers jours</option>
-        <option value="365">12 derniers mois</option>
-      </select>
-    </label>
-    <button type="button" (click)="resetFilters()">Réinitialiser</button>
+      <p-select [options]="periodOptions" optionLabel="label" optionValue="value" [ngModel]="selectedPeriod()" (ngModelChange)="onPeriodChange($event)" ariaLabel="Période analysée" />
+    </div>
+    <button pButton type="button" [text]="true" size="small" (click)="resetFilters()">Réinitialiser</button>
   </div>
 
   <div class="analysis-grid">
@@ -194,8 +180,8 @@
           <small>Priorité calculée à partir du statut et de la gravité</small>
         </div>
       </div>
-      <button class="oh-button" type="button" (click)="exportCsv()">
-        <svg lucideDownload size="15"></svg> Exporter CSV
+      <button pButton type="button" severity="secondary" [outlined]="true" size="small" (click)="exportCsv()">
+        <svg lucideDownload pButtonIcon size="15"></svg><span pButtonLabel>Exporter CSV</span>
       </button>
     </header>
 

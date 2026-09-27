@@ -9,24 +9,22 @@
       <div>
         <div class="detail-header__badges">
           <span class="identifier-badge">{{ item.id }}</span>
-          <span [class]="'severity-badge severity-badge--' + item.severity">
-            {{ severityLabel(item) }}
-          </span>
-          <span [class]="'stage-badge stage-badge--' + workflowStage()">
-            {{ stageLabel(workflowStage()) }}
-          </span>
+          <p-tag [value]="severityLabel(item)" [severity]="severityTone(item)" [rounded]="true" />
+          <p-tag [value]="stageLabel(workflowStage())" [severity]="stageTone(workflowStage())" />
         </div>
         <h1>{{ item.title }}</h1>
         <p><svg lucideMapPin size="16"></svg>{{ item.adminArea }} · {{ item.countryName }}</p>
       </div>
 
       <div class="detail-header__actions">
-        <button class="oh-button" type="button" [disabled]="aiBusy() || !auth.canAnalyze()" (click)="generateRudolfSummary()">
-          <svg lucideSparkles size="16"></svg>
-          {{ aiBusy() ? 'Rudolf analyse…' : 'Générer une synthèse avec Rudolf' }}
+        <button pButton type="button" severity="help" [outlined]="true" [disabled]="aiBusy() || !auth.canAnalyze()" (click)="generateRudolfSummary()">
+          <svg lucideSparkles pButtonIcon size="16"></svg>
+          <span pButtonLabel>{{ aiBusy() ? 'Rudolf analyse…' : 'Générer une synthèse avec Rudolf' }}</span>
         </button>
         <button
-          class="oh-button"
+          pButton
+          severity="secondary"
+          [outlined]="true"
           type="button"
           [disabled]="
             expertAssigned() ||
@@ -37,21 +35,21 @@
           (click)="assignExpert()"
         >
           @if (expertAssigned()) {
-            <svg lucideCheck size="16"></svg>
-            Expert affecté
+            <svg lucideCheck pButtonIcon size="16"></svg>
+            <span pButtonLabel>Expert affecté</span>
           } @else {
-            <svg lucideUserPlus size="16"></svg>
-            Affecter un expert
+            <svg lucideUserPlus pButtonIcon size="16"></svg>
+            <span pButtonLabel>Affecter un expert</span>
           }
         </button>
         <button
-          class="oh-button oh-button--primary"
+          pButton
           type="button"
           [disabled]="primaryActionDisabled()"
           (click)="runPrimaryAction()"
         >
-          <svg lucideShieldCheck size="16"></svg>
-          {{ primaryActionLabel() }}
+          <svg lucideShieldCheck pButtonIcon size="16"></svg>
+          <span pButtonLabel>{{ primaryActionLabel() }}</span>
         </button>
       </div>
     </header>
@@ -219,13 +217,15 @@
               </div>
               @if (auth.canAnalyze()) {
                 <button
-                  class="oh-button"
+                  pButton
+                  severity="secondary"
+                  [outlined]="true"
                   type="button"
                   [disabled]="reportBusy()"
                   (click)="generateReport()"
                 >
-                  <svg lucideFileText size="15"></svg
-                  >{{ reportBusy() ? 'Traitement…' : 'Nouvelle version' }}
+                  <svg lucideFileText pButtonIcon size="15"></svg>
+                  <span pButtonLabel>{{ reportBusy() ? 'Traitement…' : 'Nouvelle version' }}</span>
                 </button>
               }
             </div>
@@ -260,17 +260,17 @@
                   </div>
                 </div>
                 <div class="report-actions">
-                  <button class="oh-button" type="button" (click)="printReport(report)">
-                    <svg lucideDownload size="15"></svg>Imprimer / PDF
+                  <button pButton type="button" severity="secondary" [outlined]="true" (click)="printReport(report)">
+                    <svg lucideDownload pButtonIcon size="15"></svg><span pButtonLabel>Imprimer / PDF</span>
                   </button>
                   @if (canTransitionReport(report)) {
                     <button
-                      class="oh-button oh-button--primary"
+                      pButton
                       type="button"
                       [disabled]="reportBusy()"
                       (click)="transitionReport(report)"
                     >
-                      {{ reportActionLabel(report.status) }}
+                      <span pButtonLabel>{{ reportActionLabel(report.status) }}</span>
                     </button>
                   }
                 </div>
@@ -335,30 +335,30 @@
             <svg lucideActivity size="17"></svg>
             <h2>Workflow</h2>
           </div>
-          <div class="workflow-list">
-            @for (step of workflow(); track step.title) {
-              <div [class]="'workflow-step workflow-step--' + step.state">
-                <span>
-                  @if (step.state === 'done') {
-                    <svg lucideCheck size="14"></svg>
-                  } @else if (step.state === 'active') {
-                    <svg lucideActivity size="14"></svg>
-                  } @else {
-                    <svg lucideClock3 size="14"></svg>
-                  }
-                </span>
-                <div>
-                  <strong>{{ step.title }}</strong
-                  ><small>{{ step.detail }}</small>
-                </div>
+          <p-timeline [value]="workflowItems()" styleClass="workflow-list">
+            <ng-template #marker let-step>
+              <span [class]="'workflow-marker workflow-marker--' + step.state">
+                @if (step.state === 'done') {
+                  <svg lucideCheck size="14"></svg>
+                } @else if (step.state === 'active') {
+                  <svg lucideActivity size="14"></svg>
+                } @else {
+                  <svg lucideClock3 size="14"></svg>
+                }
+              </span>
+            </ng-template>
+            <ng-template #content let-step>
+              <div class="workflow-content">
+                <strong>{{ step.title }}</strong><small>{{ step.detail }}</small>
               </div>
-            }
-          </div>
+            </ng-template>
+          </p-timeline>
 
           @if (dataService.dataMode() === 'api' && workflowStage() === 'signal') {
             <div class="decision-form">
               <label for="decision-note">Justification de la décision *</label>
               <textarea
+                pTextarea
                 id="decision-note"
                 rows="4"
                 maxlength="1000"
@@ -368,6 +368,9 @@
               ></textarea>
               <small>{{ decisionNote().trim().length }} / 1000 · minimum 10 caractères</small>
               <button
+                pButton
+                severity="danger"
+                [outlined]="true"
                 class="reject-button"
                 type="button"
                 [disabled]="
@@ -380,15 +383,16 @@
             </div>
           }
 
-          <button class="comment-button" type="button" (click)="toggleCommentPanel()">
-            <svg lucideMessageSquarePlus size="15"></svg>
-            Ajouter un commentaire
+          <button pButton class="comment-button" type="button" severity="secondary" [outlined]="true" (click)="toggleCommentPanel()">
+            <svg lucideMessageSquarePlus pButtonIcon size="15"></svg>
+            <span pButtonLabel>Ajouter un commentaire</span>
           </button>
 
           @if (commentPanelOpen()) {
             <div class="comment-form">
               <label for="workflow-comment">Commentaire interne</label>
               <textarea
+                pTextarea
                 id="workflow-comment"
                 rows="4"
                 maxlength="500"
