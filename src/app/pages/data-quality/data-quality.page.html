@@ -1,0 +1,342 @@
+<section class="quality-page">
+  <header class="page-header">
+    <div>
+      <p><i class="pi pi-shield"></i> GOUVERNANCE DES DONNÉES</p>
+      <h1>Qualité & intégration</h1>
+      <span>Préparez les futurs flux institutionnels sans simuler leurs API réelles.</span>
+    </div>
+    <button
+      pButton
+      type="button"
+      severity="secondary"
+      [outlined]="true"
+      [disabled]="loading() || busy()"
+      (click)="load()"
+    >
+      <i class="pi pi-refresh"></i> Actualiser
+    </button>
+  </header>
+
+  <div class="demo-notice">
+    <i class="pi pi-info-circle"></i>
+    <span
+      ><strong>Environnement démonstrateur.</strong> Les imports et scénarios sont fictifs,
+      auditables et ne créent jamais automatiquement une alerte vérifiée.</span
+    >
+  </div>
+
+  @if (loading()) {
+    <app-brand-loader
+      message="Préparation du bac d’intégration…"
+      detail="Chargement du dictionnaire, de la qualité et des connecteurs"
+    />
+  } @else if (error() && !dictionary()) {
+    <div class="state state--error" role="alert">
+      <i class="pi pi-exclamation-circle"></i><strong>Chargement impossible</strong
+      ><span>{{ error() }}</span>
+    </div>
+  } @else {
+    @if (error()) {
+      <div class="feedback feedback--error" role="alert">{{ error() }}</div>
+    }
+    @if (feedback()) {
+      <div class="feedback feedback--success" role="status">{{ feedback() }}</div>
+    }
+
+    <div class="kpis">
+      <article>
+        <span>Lots contrôlés</span><strong>{{ batches()?.total || 0 }}</strong
+        ><small>Importations simulées</small>
+      </article>
+      <article>
+        <span>Anomalies ouvertes</span><strong>{{ openIssueCount() }}</strong
+        ><small>À corriger avant ingestion</small>
+      </article>
+      <article>
+        <span>Lignes rejetées</span><strong>{{ rejectedCount() }}</strong
+        ><small>Aucune alerte créée</small>
+      </article>
+      <article>
+        <span>Contrat canonique</span><strong>v1</strong
+        ><small>{{ dictionary()?.fields?.length || 0 }} champs documentés</small>
+      </article>
+    </div>
+
+    <div class="workspace-grid">
+      <article class="card import-card">
+        <header>
+          <div>
+            <span>PRIORITÉ 1</span>
+            <h2>Import contrôlé</h2>
+          </div>
+          <i class="pi pi-upload"></i>
+        </header>
+        <div class="form-grid">
+          <div class="form-control">
+            <span>Système source</span
+            ><p-select
+              ariaLabel="Système source"
+              [fluid]="true"
+              [options]="sourceOptions"
+              [ngModel]="sourceSystem()"
+              (ngModelChange)="sourceSystem.set($event); preview.set(null)"
+            />
+          </div>
+          <div class="form-control">
+            <span>État membre</span
+            ><p-select
+              ariaLabel="État membre"
+              [fluid]="true"
+              [options]="countryOptions"
+              [ngModel]="countryCode()"
+              (ngModelChange)="onCountryChange($event)"
+            />
+          </div>
+          <label
+            ><span>Instance fictive</span
+            ><input
+              maxlength="64"
+              [ngModel]="sourceInstance()"
+              (ngModelChange)="sourceInstance.set($event); preview.set(null)"
+          /></label>
+          <label
+            ><span>Politique de partage</span
+            ><input
+              maxlength="80"
+              [ngModel]="sharingPolicyId()"
+              (ngModelChange)="sharingPolicyId.set($event); preview.set(null)"
+          /></label>
+        </div>
+        <label class="file-drop">
+          <i class="pi pi-file-import"></i>
+          <strong>{{ fileName() || 'Choisir un fichier CSV, JSON ou GeoJSON' }}</strong>
+          <small
+            >{{ dictionary()?.maxFileBytes || 49152 }} octets et 500 lignes maximum · aperçu
+            obligatoire</small
+          >
+          <input
+            type="file"
+            accept=".csv,.json,.geojson,application/json,text/csv"
+            (change)="onFileSelected($event)"
+          />
+        </label>
+        <div class="actions">
+          <button
+            pButton
+            type="button"
+            [loading]="busy()"
+            [disabled]="!fileContent() || busy()"
+            (click)="previewImport()"
+          >
+            Prévisualiser
+          </button>
+          @if (preview()) {
+            <button
+              pButton
+              type="button"
+              severity="success"
+              [disabled]="busy() || !preview()?.counts?.accepted"
+              (click)="confirmImport()"
+            >
+              Confirmer l’import simulé
+            </button>
+          }
+          <a
+            class="sample-link"
+            href="assets/samples/import-one-health-demo.json"
+            download="import-one-health-demo.json"
+          >
+            <i class="pi pi-download"></i> Télécharger un modèle JSON
+          </a>
+        </div>
+        @if (preview(); as result) {
+          <section class="preview">
+            <header>
+              <strong>Aperçu sans écriture</strong><p-tag value="SIMULÉ" severity="info" />
+            </header>
+            <div>
+              <span
+                ><b>{{ result.counts.total }}</b
+                >Total</span
+              ><span
+                ><b>{{ result.counts.accepted }}</b
+                >Acceptées</span
+              ><span
+                ><b>{{ result.counts.rejected }}</b
+                >Rejetées</span
+              ><span
+                ><b>{{ result.counts.duplicates }}</b
+                >Doublons</span
+              >
+            </div>
+            @if (result.issues.length) {
+              <ul>
+                @for (issue of result.issues.slice(0, 5); track $index) {
+                  <li>
+                    <b>Ligne {{ issue.rowNumber }} · {{ issue.field }}</b
+                    ><span>{{ issue.message }}</span>
+                  </li>
+                }
+              </ul>
+            }
+          </section>
+        }
+      </article>
+
+      <article class="card simulator-card">
+        <header>
+          <div>
+            <span>PRIORITÉ 3</span>
+            <h2>Simulateur de connecteur</h2>
+          </div>
+          <i class="pi pi-sliders-h"></i>
+        </header>
+        <p>
+          Testez les chemins succès, doublons, données invalides et indisponibilité sans secret ni
+          appel réseau.
+        </p>
+        <div class="form-control">
+          <span>Connecteur de démonstration</span
+          ><p-select
+            ariaLabel="Connecteur de démonstration"
+            [fluid]="true"
+            [options]="connectorOptions()"
+            [ngModel]="selectedConnectorId()"
+            (ngModelChange)="selectedConnectorId.set($event)"
+          />
+        </div>
+        <div class="form-control">
+          <span>Résultat à simuler</span
+          ><p-select
+            ariaLabel="Résultat à simuler"
+            [fluid]="true"
+            [options]="scenarioOptions"
+            [ngModel]="selectedScenario()"
+            (ngModelChange)="selectedScenario.set($event)"
+          />
+        </div>
+        <button
+          pButton
+          type="button"
+          [loading]="busy()"
+          [disabled]="!selectedConnectorId() || busy()"
+          (click)="simulateConnector()"
+        >
+          <i class="pi pi-play"></i> Lancer le test
+        </button>
+        @if (simulation(); as run) {
+          <section class="simulation-result">
+            <p-tag
+              [value]="run.status"
+              [severity]="
+                run.status === 'SUCCESS' ? 'success' : run.status === 'PARTIAL' ? 'warn' : 'danger'
+              "
+            />
+            <strong>{{ run.scenario }}</strong
+            ><small>{{ run.runId }}</small>
+            <div>
+              <span>{{ run.counts.received }} reçues</span
+              ><span>{{ run.counts.accepted }} acceptées</span
+              ><span>{{ run.counts.rejected }} rejetées</span>
+            </div>
+          </section>
+        }
+      </article>
+    </div>
+
+    <article class="card dictionary-card">
+      <header>
+        <div>
+          <span>PRIORITÉ 4</span>
+          <h2>Dictionnaire canonique & mapping</h2>
+        </div>
+        <small>{{ dictionary()?.version }}</small>
+      </header>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Champ One Health</th>
+              <th>Champ du fichier</th>
+              <th>Type</th>
+              <th>Obligatoire</th>
+              <th>Règle</th>
+              <th>Exemple</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (field of dictionary()?.fields || []; track field.field) {
+              <tr>
+                <td>
+                  <strong>{{ field.label }}</strong
+                  ><small>{{ field.field }}</small>
+                </td>
+                <td>
+                  <input
+                    [value]="mappings()[field.field] || ''"
+                    maxlength="80"
+                    (input)="updateMapping(field.field, $event)"
+                  />
+                </td>
+                <td>{{ field.type }}</td>
+                <td>{{ field.required ? 'Oui' : 'Non' }}</td>
+                <td>{{ field.constraints }}</td>
+                <td>
+                  <code>{{ example(field.example) }}</code>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </article>
+
+    <article class="card registry-card">
+      <header>
+        <div>
+          <span>PRIORITÉ 2</span>
+          <h2>Registre de quarantaine</h2>
+        </div>
+        <small>{{ issues()?.total || 0 }} anomalie(s)</small>
+      </header>
+      @if (issues()?.items?.length) {
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Gravité</th>
+                <th>Source</th>
+                <th>Ligne</th>
+                <th>Champ</th>
+                <th>Problème</th>
+                <th>Statut</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (issue of issues()?.items || []; track issue.issueId) {
+                <tr>
+                  <td><p-tag [value]="issue.severity" [severity]="issueTone(issue.severity)" /></td>
+                  <td>
+                    <strong>{{ issue.sourceSystem }}</strong
+                    ><small>{{ issue.countryCode }} · {{ issue.batchId }}</small>
+                  </td>
+                  <td>{{ issue.rowNumber }}</td>
+                  <td>
+                    <code>{{ issue.field }}</code>
+                  </td>
+                  <td>{{ issue.message }}</td>
+                  <td>{{ issue.status }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <div class="state">
+          <i class="pi pi-check-circle"></i><strong>Aucune anomalie enregistrée</strong
+          ><span>Prévisualisez un fichier pour exercer les contrôles.</span>
+        </div>
+      }
+    </article>
+  }
+</section>

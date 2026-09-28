@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { dashboardAdministratorGuard } from './core/auth/dashboard-administrator.guard';
 import { dashboardAuthGuard } from './core/auth/dashboard-auth.guard';
+import { dashboardHubAdministratorGuard } from './core/auth/dashboard-hub-administrator.guard';
 import { hubDataResolver } from './core/data/hub-data.resolver';
 
 export const routes: Routes = [
@@ -40,9 +41,7 @@ export const routes: Routes = [
         resolve: { hubData: hubDataResolver },
         title: 'État membre | One Health Network Dashboard',
         loadComponent: () =>
-          import('./pages/member-state/member-state.page').then(
-            (module) => module.MemberStatePage,
-          ),
+          import('./pages/member-state/member-state.page').then((module) => module.MemberStatePage),
       },
       {
         path: 'carte',
@@ -96,9 +95,7 @@ export const routes: Routes = [
         path: 'souverainete',
         title: 'Registre de souveraineté | One Health Network Dashboard',
         loadComponent: () =>
-          import('./pages/sovereignty/sovereignty.page').then(
-            (module) => module.SovereigntyPage,
-          ),
+          import('./pages/sovereignty/sovereignty.page').then((module) => module.SovereigntyPage),
       },
       {
         path: 'administration',
@@ -110,10 +107,16 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'qualite-donnees',
+        title: 'Qualité des données | One Health Network Dashboard',
+        canActivate: [dashboardHubAdministratorGuard],
+        loadComponent: () =>
+          import('./pages/data-quality/data-quality.page').then((module) => module.DataQualityPage),
+      },
+      {
         path: 'aide',
         title: 'Centre d’aide | One Health Network Dashboard',
-        loadComponent: () =>
-          import('./pages/help/help.page').then((module) => module.HelpPage),
+        loadComponent: () => import('./pages/help/help.page').then((module) => module.HelpPage),
       },
       {
         path: 'profil',

@@ -92,4 +92,43 @@ describe('HubApiService bounded loading', () => {
     request.flush({ scenarioCode: 'SCN-GA-CG-20260901-20260920' });
     flushMicrotasks();
   }));
+
+  it('keeps preview and explicit import confirmation as separate requests', fakeAsync(() => {
+    const input = {
+      fileName: 'demo.json',
+      format: 'JSON',
+      sourceSystem: 'DHIS2',
+      sourceInstance: 'sandbox-minsante',
+      countryCode: 'CM',
+      sharingPolicyId: 'POLICY-DEMO-CM',
+      simulated: true,
+      content: '[]',
+      mapping: [],
+    } as const;
+    void service.previewImport(input);
+    const preview = http.expectOne((request) => request.url.endsWith('/api/hub/imports/preview'));
+    expect(preview.request.method).toBe('POST');
+    expect(preview.request.body).toEqual(input);
+    preview.flush({ batchId: 'IMP-1' });
+    flushMicrotasks();
+
+    void service.confirmImport('IMP/1');
+    const confirmation = http.expectOne((request) =>
+      request.url.endsWith('/api/hub/imports/IMP%2F1/confirm'),
+    );
+    expect(confirmation.request.body).toEqual({ confirmation: 'INGEST_SIMULATED_DATA' });
+    confirmation.flush({ batchId: 'IMP/1', status: 'COMPLETED' });
+    flushMicrotasks();
+  }));
+
+  it('runs connector simulations on the dedicated endpoint', fakeAsync(() => {
+    void service.simulateConnector({ connectorId: 'CON-DHIS2-CM', scenario: 'TIMEOUT' });
+    const request = http.expectOne((candidate) =>
+      candidate.url.endsWith('/api/hub/connectors/simulate'),
+    );
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({ connectorId: 'CON-DHIS2-CM', scenario: 'TIMEOUT' });
+    request.flush({ runId: 'RUN-SIM-1', status: 'FAILED' });
+    flushMicrotasks();
+  }));
 });

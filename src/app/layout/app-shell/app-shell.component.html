@@ -103,6 +103,17 @@
         <i class="pi pi-shield" aria-hidden="true"></i>
         <span>{{ 'shell.nav.sovereignty' | t }}</span>
       </a>
+      @if (auth.canManageConnectors()) {
+        <a
+          routerLink="/qualite-donnees"
+          routerLinkActive="nav__link--active"
+          class="nav__link"
+          (click)="closeMenu()"
+        >
+          <i class="pi pi-verified" aria-hidden="true"></i>
+          <span>{{ 'shell.nav.dataQuality' | t }}</span>
+        </a>
+      }
       @if (auth.canManageHubUsers()) {
         <a
           routerLink="/administration"

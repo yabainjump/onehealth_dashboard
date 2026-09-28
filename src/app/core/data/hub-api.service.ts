@@ -29,6 +29,14 @@ export type HubConnectorPageApi = HubSchemas['HubConnectorPage'];
 export type HubConnectorSectorSummaryApi = HubSchemas['HubConnectorSectorSummary'];
 export type HubConnectorSummaryApi = HubSchemas['HubConnectorSummary'];
 export type HubConnectorSyncApi = HubSchemas['HubConnectorSync'];
+export type HubConnectorSimulationApi = HubSchemas['HubConnectorSimulation'];
+export type SimulateHubConnectorInput = HubSchemas['SimulateHubConnectorInput'];
+export type HubImportDictionaryApi = HubSchemas['HubImportDictionary'];
+export type HubImportPreviewInput = HubSchemas['HubImportPreviewInput'];
+export type HubImportPreviewApi = HubSchemas['HubImportPreview'];
+export type HubImportConfirmationApi = HubSchemas['HubImportConfirmation'];
+export type HubImportBatchPageApi = HubSchemas['HubImportBatchPage'];
+export type HubDataQualityIssuePageApi = HubSchemas['HubDataQualityIssuePage'];
 export type HubSharingPolicyApi = HubSchemas['HubSharingPolicy'];
 export type HubSharingLevel = HubSharingPolicyApi['sharingLevel'];
 export type HubAggregationLevel = HubSharingPolicyApi['aggregationLevel'];
@@ -65,7 +73,8 @@ export class HubApiService {
     for (const [key, value] of Object.entries(query)) {
       if (value !== undefined && value !== '') params[key] = value;
     }
-    return this.http.get<HubObservationPage>(`${this.baseUrl}/observations`, { params })
+    return this.http
+      .get<HubObservationPage>(`${this.baseUrl}/observations`, { params })
       .pipe(timeout(30_000));
   }
 
@@ -141,9 +150,7 @@ export class HubApiService {
     );
   }
 
-  getAlertReports(
-    observationId: string,
-  ): Promise<HubAlertReportListApi> {
+  getAlertReports(observationId: string): Promise<HubAlertReportListApi> {
     return firstValueFrom(
       this.http.get<HubAlertReportListApi>(
         `${this.baseUrl}/alerts/${encodeURIComponent(observationId)}/reports`,
@@ -211,6 +218,53 @@ export class HubApiService {
   synchronizeConnectors(): Promise<HubConnectorSyncApi> {
     return firstValueFrom(
       this.http.post<HubConnectorSyncApi>(`${this.baseUrl}/connectors/synchronize`, {}),
+    );
+  }
+
+  simulateConnector(input: SimulateHubConnectorInput): Promise<HubConnectorSimulationApi> {
+    return firstValueFrom(
+      this.http.post<HubConnectorSimulationApi>(`${this.baseUrl}/connectors/simulate`, input),
+    );
+  }
+
+  getImportDictionary(): Promise<HubImportDictionaryApi> {
+    return firstValueFrom(
+      this.http.get<HubImportDictionaryApi>(`${this.baseUrl}/imports/dictionary`),
+    );
+  }
+
+  previewImport(input: HubImportPreviewInput): Promise<HubImportPreviewApi> {
+    return firstValueFrom(
+      this.http
+        .post<HubImportPreviewApi>(`${this.baseUrl}/imports/preview`, input)
+        .pipe(timeout(30_000)),
+    );
+  }
+
+  confirmImport(batchId: string): Promise<HubImportConfirmationApi> {
+    return firstValueFrom(
+      this.http
+        .post<HubImportConfirmationApi>(
+          `${this.baseUrl}/imports/${encodeURIComponent(batchId)}/confirm`,
+          { confirmation: 'INGEST_SIMULATED_DATA' },
+        )
+        .pipe(timeout(30_000)),
+    );
+  }
+
+  getImportBatches(page = 1, limit = 20): Promise<HubImportBatchPageApi> {
+    return firstValueFrom(
+      this.http.get<HubImportBatchPageApi>(`${this.baseUrl}/imports`, {
+        params: { page, limit },
+      }),
+    );
+  }
+
+  getDataQualityIssues(page = 1, limit = 50): Promise<HubDataQualityIssuePageApi> {
+    return firstValueFrom(
+      this.http.get<HubDataQualityIssuePageApi>(`${this.baseUrl}/data-quality/issues`, {
+        params: { page, limit },
+      }),
     );
   }
 

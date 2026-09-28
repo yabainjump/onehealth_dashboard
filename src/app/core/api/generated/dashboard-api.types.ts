@@ -244,6 +244,102 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/hub/connectors/simulate": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        readonly post: operations["simulateHubConnector"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/hub/imports/dictionary": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get: operations["getHubImportDictionary"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/hub/imports": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get: operations["listHubImports"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/hub/imports/preview": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        readonly post: operations["previewHubImport"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/hub/imports/{batchId}/confirm": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        readonly post: operations["confirmHubImport"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/hub/data-quality/issues": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get: operations["listHubDataQualityIssues"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/hub/sharing-policies": {
         readonly parameters: {
             readonly query?: never;
@@ -584,6 +680,157 @@ export interface components {
             /** @constant */
             readonly simulated: true;
             readonly message: string;
+        };
+        readonly SimulateHubConnectorInput: {
+            readonly connectorId: string;
+            /** @enum {string} */
+            readonly scenario: "SUCCESS" | "DUPLICATES" | "INVALID_RECORDS" | "PARTIAL_FAILURE" | "AUTH_FAILURE" | "TIMEOUT";
+        };
+        readonly HubConnectorSimulation: {
+            readonly runId: string;
+            /** @enum {string} */
+            readonly scenario: "SUCCESS" | "DUPLICATES" | "INVALID_RECORDS" | "PARTIAL_FAILURE" | "AUTH_FAILURE" | "TIMEOUT";
+            /** @enum {string} */
+            readonly status: "SUCCESS" | "PARTIAL" | "FAILED";
+            readonly connector: components["schemas"]["HubConnector"];
+            readonly counts: {
+                readonly received: number;
+                readonly accepted: number;
+                readonly rejected: number;
+                readonly duplicates: number;
+            };
+            readonly errorCode: string | null;
+            /** @constant */
+            readonly simulated: true;
+            readonly message: string;
+        };
+        readonly HubImportFieldDefinition: {
+            /** @enum {string} */
+            readonly field: "sourceRecordId" | "observedAt" | "countryCode" | "sector" | "category" | "title" | "summary" | "adminArea" | "longitude" | "latitude" | "severity" | "metricLabel" | "metricValue" | "metricUnit";
+            readonly label: string;
+            /** @enum {string} */
+            readonly type: "string" | "date-time" | "number" | "enum";
+            readonly required: boolean;
+            readonly constraints: string;
+            readonly example: unknown;
+        };
+        readonly HubImportDictionary: {
+            readonly version: string;
+            readonly fields: readonly components["schemas"]["HubImportFieldDefinition"][];
+            readonly formats: readonly ("CSV" | "JSON" | "GEOJSON")[];
+            readonly maxFileBytes: number;
+            readonly maxRecords: number;
+            /** @constant */
+            readonly simulatedOnly: true;
+        };
+        readonly HubImportFieldMapping: {
+            readonly sourceField: string;
+            readonly targetField: string;
+        };
+        readonly HubImportPreviewInput: {
+            readonly fileName: string;
+            /** @enum {string} */
+            readonly format: "CSV" | "JSON" | "GEOJSON";
+            readonly sourceSystem: components["schemas"]["SourceSystem"];
+            readonly sourceInstance: string;
+            readonly countryCode: components["schemas"]["CeeacCountryCode"];
+            readonly sharingPolicyId: string;
+            /** @constant */
+            readonly simulated: true;
+            readonly content: string;
+            readonly mapping: readonly components["schemas"]["HubImportFieldMapping"][];
+        };
+        readonly HubImportCounts: {
+            readonly total: number;
+            readonly accepted: number;
+            readonly rejected: number;
+            readonly duplicates: number;
+        };
+        readonly HubImportBatch: {
+            readonly batchId: string;
+            readonly fileName: string;
+            /** @enum {string} */
+            readonly format: "CSV" | "JSON" | "GEOJSON";
+            readonly sourceSystem: components["schemas"]["SourceSystem"];
+            readonly sourceInstance: string;
+            readonly countryCode: components["schemas"]["CeeacCountryCode"];
+            readonly mappingVersion: string;
+            readonly counts: components["schemas"]["HubImportCounts"];
+            /** @enum {string} */
+            readonly status: "PREVIEW" | "INGESTING" | "COMPLETED" | "FAILED";
+            /** Format: date-time */
+            readonly expiresAt: string;
+            /** Format: date-time */
+            readonly confirmedAt: string | null;
+            readonly failureCode: string;
+            /** Format: date-time */
+            readonly createdAt: string | null;
+            /** @constant */
+            readonly simulated: true;
+        };
+        readonly HubImportIssue: {
+            readonly rowNumber: number;
+            readonly sourceRecordId: string;
+            readonly code: string;
+            readonly field: string;
+            readonly message: string;
+            /** @enum {string} */
+            readonly severity: "ERROR" | "WARNING";
+        };
+        readonly HubImportPreview: components["schemas"]["HubImportBatch"] & {
+            readonly issues: readonly components["schemas"]["HubImportIssue"][];
+            readonly sample: readonly {
+                readonly [key: string]: unknown;
+            }[];
+        };
+        readonly HubImportConfirmation: {
+            readonly batchId: string;
+            /** @constant */
+            readonly status: "COMPLETED";
+            readonly observationsCreated: number;
+            readonly duplicatesIgnored: number;
+            readonly rawRecordsCreated: number;
+            readonly runId: string;
+            /** @constant */
+            readonly simulated: true;
+            readonly message: string;
+        };
+        readonly HubImportBatchPage: {
+            readonly items: readonly components["schemas"]["HubImportBatch"][];
+            readonly total: number;
+            readonly page: number;
+            readonly limit: number;
+            readonly pages: number;
+            /** @constant */
+            readonly simulated: true;
+        };
+        readonly HubDataQualityIssue: {
+            readonly issueId: string;
+            readonly batchId: string;
+            readonly rowNumber: number;
+            readonly sourceRecordId: string;
+            readonly countryCode: components["schemas"]["CeeacCountryCode"];
+            readonly sourceSystem: components["schemas"]["SourceSystem"];
+            readonly code: string;
+            readonly field: string;
+            readonly message: string;
+            /** @enum {string} */
+            readonly severity: "ERROR" | "WARNING";
+            /** @enum {string} */
+            readonly status: "OPEN" | "RESOLVED" | "DISMISSED";
+            /** Format: date-time */
+            readonly createdAt: string;
+            /** @constant */
+            readonly simulated: true;
+        };
+        readonly HubDataQualityIssuePage: {
+            readonly items: readonly components["schemas"]["HubDataQualityIssue"][];
+            readonly total: number;
+            readonly page: number;
+            readonly limit: number;
+            readonly pages: number;
+            /** @constant */
+            readonly simulated: true;
         };
         readonly HubSharingPolicy: {
             readonly policyId: string;
@@ -1043,6 +1290,152 @@ export interface operations {
                 };
                 content: {
                     readonly "application/json": components["schemas"]["HubConnectorSync"];
+                };
+            };
+        };
+    };
+    readonly simulateHubConnector: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["SimulateHubConnectorInput"];
+            };
+        };
+        readonly responses: {
+            /** @description Simulated connector run */
+            readonly 201: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["HubConnectorSimulation"];
+                };
+            };
+        };
+    };
+    readonly getHubImportDictionary: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Canonical import dictionary */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["HubImportDictionary"];
+                };
+            };
+        };
+    };
+    readonly listHubImports: {
+        readonly parameters: {
+            readonly query?: {
+                readonly page?: number;
+                readonly limit?: number;
+            };
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Import batches */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["HubImportBatchPage"];
+                };
+            };
+        };
+    };
+    readonly previewHubImport: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["HubImportPreviewInput"];
+            };
+        };
+        readonly responses: {
+            /** @description Import preview without observation write */
+            readonly 201: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["HubImportPreview"];
+                };
+            };
+        };
+    };
+    readonly confirmHubImport: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly batchId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": {
+                    /** @constant */
+                    readonly confirmation: "INGEST_SIMULATED_DATA";
+                };
+            };
+        };
+        readonly responses: {
+            /** @description Confirmed simulated import */
+            readonly 201: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["HubImportConfirmation"];
+                };
+            };
+        };
+    };
+    readonly listHubDataQualityIssues: {
+        readonly parameters: {
+            readonly query?: {
+                readonly page?: number;
+                readonly limit?: number;
+                readonly countryCode?: components["schemas"]["CeeacCountryCode"];
+                readonly sourceSystem?: components["schemas"]["SourceSystem"];
+                readonly status?: "OPEN" | "RESOLVED" | "DISMISSED";
+            };
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Data quality issue registry */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["HubDataQualityIssuePage"];
                 };
             };
         };

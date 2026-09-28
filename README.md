@@ -193,6 +193,13 @@ Le backend doit autoriser `https://onehealthdashboard.yaba-in.com` dans la varia
 `CORS_ORIGIN` de `$HOME/apps/onehealth_backend/.env`, sans supprimer l'origine de l'application
 communautaire. Le processus PM2 doit ensuite être redémarré avec `--update-env`.
 
+## Préparation des futures sources
+
+La route administrateur `/qualite-donnees` regroupe quatre outils de démonstration : import borné
+CSV/JSON/GeoJSON avec aperçu, registre des anomalies, simulateur de connecteur sans réseau et
+dictionnaire de mapping canonique. La confirmation crée seulement des observations simulées ; elle
+ne valide ni signal ni alerte.
+
 ## Limite du démonstrateur
 
 Le moteur prouve le parcours d'une convergence intersectorielle, mais il ne remplace pas encore un moteur statistique connecté aux API nationales réelles. Aucune donnée fictive ne doit être confondue avec une donnée sanitaire officielle et aucune alerte n'est validée automatiquement.

@@ -1,0 +1,34 @@
+[
+  {
+    "sourceRecordId": "CM-HUM-DEMO-001",
+    "observedAt": "2026-09-20T08:30:00+01:00",
+    "countryCode": "CM",
+    "sector": "human",
+    "category": "Syndrome fébrile",
+    "title": "Hausse simulée des consultations",
+    "summary": "Agrégat fictif destiné au test du bac d'intégration, sans donnée nominative.",
+    "adminArea": "Centre",
+    "longitude": 11.52,
+    "latitude": 3.87,
+    "severity": "medium",
+    "metricLabel": "Cas suspects",
+    "metricValue": 12,
+    "metricUnit": "cas"
+  },
+  {
+    "sourceRecordId": "CM-HUM-DEMO-002",
+    "observedAt": "2026-09-21T10:15:00+01:00",
+    "countryCode": "CM",
+    "sector": "human",
+    "category": "Syndrome respiratoire",
+    "title": "Signal agrégé de démonstration",
+    "summary": "Deuxième observation fictive pour vérifier la normalisation et la provenance.",
+    "adminArea": "Littoral",
+    "longitude": 9.7,
+    "latitude": 4.05,
+    "severity": "low",
+    "metricLabel": "Consultations",
+    "metricValue": 7,
+    "metricUnit": "consultations"
+  }
+]

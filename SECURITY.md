@@ -18,6 +18,10 @@ Application Angular avec landing publique et espace Hub authentifié. Le navigat
   jeton de production ou appel vers le backend public ne doit entrer dans ses fixtures. Elle vérifie
   notamment le refus de la route Administration pour un lecteur, le stockage du jeton en session,
   son envoi aux API autorisées et l'absence de persistance locale du fil Rudolf.
+- `/qualite-donnees` est réservé aux administrateurs dans le routeur, mais l'autorisation décisive
+  reste celle des gardes backend. Le navigateur refuse les fichiers trop grands pour l'ergonomie ;
+  le backend répète toutes les limites et validations. Le contenu importé n'est jamais rendu comme
+  HTML et aucun secret fournisseur n'est demandé par le simulateur.
 
 ## Signalements pertinents
 Signaler exposition de données entre comptes/pays, XSS, fuite de jeton, contournement d’un flux protégé ou confusion exploitable entre simulation et données officielles. Établir un chemin utilisateur réel et l’impact ; ne pas assimiler un simple contrôle visuel absent à une autorisation backend cassée.
