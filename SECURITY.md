@@ -14,6 +14,10 @@ Application Angular avec landing publique et espace Hub authentifié. Le navigat
   un tiroir, tableau, tag ou popover restent non fiables et suivent les mêmes règles d'échappement.
 - Le fil Rudolf du Dashboard reste volatil en mémoire, n'est jamais écrit dans `localStorage` et est
   purgé à la déconnexion. Son affichage Markdown passe uniquement par le pipe d'échappement dédié.
+- La suite E2E P4 intercepte l'API avec des données fictives locales : aucun secret, compte réel,
+  jeton de production ou appel vers le backend public ne doit entrer dans ses fixtures. Elle vérifie
+  notamment le refus de la route Administration pour un lecteur, le stockage du jeton en session,
+  son envoi aux API autorisées et l'absence de persistance locale du fil Rudolf.
 
 ## Signalements pertinents
 Signaler exposition de données entre comptes/pays, XSS, fuite de jeton, contournement d’un flux protégé ou confusion exploitable entre simulation et données officielles. Établir un chemin utilisateur réel et l’impact ; ne pas assimiler un simple contrôle visuel absent à une autorisation backend cassée.

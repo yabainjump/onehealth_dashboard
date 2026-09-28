@@ -46,6 +46,8 @@ L'application est ensuite accessible sur `http://localhost:4200`.
 npm run api:check
 npm run lint
 npm test -- --watch=false --browsers=ChromeHeadless
+npm run test:e2e:install
+npm run test:e2e
 npm run build
 ```
 
@@ -72,6 +74,11 @@ La modernisation est progressive afin de préserver les services, contrats, perm
 - **P1 — fortement recommandé, terminé :** shell, topbar, menu profil, tiroir Rudolf conversationnel et dashboard stratégique ;
 - **P2 — amélioration fonctionnelle, terminé :** registre et détail Alertes, Connecteurs, Souveraineté et Administration migrés sélectivement vers les tables, sélecteurs, tags, boutons, formulaires, timelines et paginations PrimeNG, sans remplacer les services, permissions ni paginations serveur ;
 - **P3 — cosmétique, terminé :** finitions État membre, Aide, Profil, Analyses et Rapports (y compris le rapport de scénario), puis suppression ciblée du CSS remplacé par PrimeNG après validation du build et des tests.
+- **P4 — stabilisation, terminé :** parcours E2E Playwright reproductibles avec API simulée locale, contrôles de rôles et de session, scénario/rapport, Rudolf, navigation mobile, premier rendu et règles WCAG automatisables. Les contrastes secondaires détectés pendant cette phase ont été corrigés dans le thème.
+
+La procédure, les limites et la checklist manuelle P4 sont décrites dans `e2e/README.md`.
+Les tests ne contactent jamais la production et n'embarquent aucun identifiant réel. Les contrôles
+automatisés d'accessibilité complètent, sans remplacer, les essais clavier et lecteur d'écran.
 
 PrimeNG fournit les composants génériques. Leaflet, les composants cartographiques et les couleurs
 sectorielles restent spécifiques au domaine. Le budget initial avertit à 600 kB brut et échoue
